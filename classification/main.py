@@ -105,7 +105,7 @@ def main():
         optimizer_dict = checkpoint['optimizer']
 
     orig_stdout = sys.stdout
-    screen = open(f"{args.checkpoint}/screen_{time_str}.txt", "w")
+    screen = open(f"{args.checkpoint}/screen.txt", "w")
     sys.stdout = screen
 
     print('==> Preparing data..')
