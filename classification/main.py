@@ -7,6 +7,7 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/
 """
 import argparse
 import os
+import sys
 import datetime
 import torch
 import torch.nn.parallel
@@ -59,7 +60,9 @@ def main():
         message = "-"+args.msg
     args.checkpoint = 'checkpoints/' + args.model + message
 
-
+    orig_stdout = sys.stdout
+    screen = open(f"{args.checkpoint}/screen.txt", "a")
+    sys.stdout = screen
 
 
     # Model
@@ -162,6 +165,9 @@ def main():
     print(f"++  Best Train acc_B: {best_train_acc_avg} | Best Test acc_B: {best_test_acc_avg}  ++")
     print(f"++  Best Train acc: {best_train_acc} | Best Test acc: {best_test_acc}  ++")
     print(f"++++++++" * 5)
+
+    sys.stdout = orig_stdout
+    screen.close()
 
 
 def train(net, trainloader, optimizer, criterion, device):
