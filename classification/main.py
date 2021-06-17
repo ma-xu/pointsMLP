@@ -54,14 +54,15 @@ def main():
     else:
         device = 'cpu'
     print(f"==> Using device: {device}")
+    time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
     if args.msg is None:
-        message = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
+        message = time_str
     else:
         message = "-"+args.msg
     args.checkpoint = 'checkpoints/' + args.model + message
 
     orig_stdout = sys.stdout
-    screen = open(f"{args.checkpoint}/screen.txt", "a")
+    screen = open(f"{args.checkpoint}/screen_{time_str}.txt", "w")
     sys.stdout = screen
 
 
