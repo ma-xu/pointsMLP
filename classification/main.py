@@ -61,13 +61,9 @@ def main():
         message = "-"+args.msg
     args.checkpoint = 'checkpoints/' + args.model + message
 
-    orig_stdout = sys.stdout
-    screen = open(f"{args.checkpoint}/screen_{time_str}.txt", "w")
-    sys.stdout = screen
-
 
     # Model
-    print('==> Building model..')
+    # print('==> Building model..')
     net = models.__dict__[args.model]()
     criterion = cal_loss
     net = net.to(device)
@@ -107,6 +103,10 @@ def main():
         best_train_loss = checkpoint['best_train_loss']
         logger = Logger(os.path.join(args.checkpoint, 'log.txt'), title="ModelNet" + args.model, resume=True)
         optimizer_dict = checkpoint['optimizer']
+
+    orig_stdout = sys.stdout
+    screen = open(f"{args.checkpoint}/screen_{time_str}.txt", "w")
+    sys.stdout = screen
 
     print('==> Preparing data..')
     train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=args.workers,
