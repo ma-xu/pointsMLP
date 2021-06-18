@@ -8,8 +8,8 @@ import glob
 import h5py
 import numpy as np
 from torch.utils.data import Dataset
-os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 
 def load_scanobjectnn_data(partition):
@@ -35,6 +35,7 @@ def translate_pointcloud(pointcloud):
 
     translated_pointcloud = np.add(np.multiply(pointcloud, xyz1), xyz2).astype('float32')
     return translated_pointcloud
+
 
 class ScanObjectNN(Dataset):
     def __init__(self, num_points, partition='training'):
