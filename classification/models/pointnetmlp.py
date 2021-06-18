@@ -32,7 +32,7 @@ class PointNetEncoder(nn.Module):
 
 class PointNetMLP(nn.Module):
     def __init__(self, num_classes=40, use_normals=False, **kwargs):
-        super(PointNet, self).__init__()
+        super(PointNetMLP, self).__init__()
         if use_normals:
             channel = 6
         else:
