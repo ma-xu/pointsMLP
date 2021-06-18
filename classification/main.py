@@ -7,7 +7,7 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/
 """
 import argparse
 import os
-import sys
+import logging
 import datetime
 import torch
 import torch.nn.parallel
@@ -43,7 +43,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print(f"args: {args}")
     os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
     if args.seed is not None:
         torch.manual_seed(args.seed)
@@ -53,17 +52,31 @@ def main():
             torch.cuda.manual_seed(args.seed)
     else:
         device = 'cpu'
-    print(f"==> Using device: {device}")
     time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
     if args.msg is None:
         message = time_str
     else:
         message = "-"+args.msg
     args.checkpoint = 'checkpoints/' + args.model + message
+    if not os.path.isdir(args.checkpoint):
+        mkdir_p(args.checkpoint)
+
+    logger = logging.getLogger("Model")
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    file_handler = logging.FileHandler(os.path.join(args.checkpoint, "out.txt"))
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    def printf(str):
+        logger.info(str)
+        print(str)
+
 
 
     # Model
-    # print('==> Building model..')
+    printf(f"args: {args}")
+    printf('==> Building model..')
     net = models.__dict__[args.model]()
     criterion = cal_loss
     net = net.to(device)
@@ -82,15 +95,14 @@ def main():
     optimizer_dict = None
 
 
-    if not os.path.isdir(args.checkpoint):
-        mkdir_p(args.checkpoint)
+    if not os.path.isfile(os.path.join(args.checkpoint, "last_checkpoint.pth")):
         save_args(args)
         logger = Logger(os.path.join(args.checkpoint, 'log.txt'), title="ModelNet" + args.model)
         logger.set_names(["Epoch-Num", 'Learning-Rate',
                           'Train-Loss', 'Train-acc-B', 'Train-acc',
                           'Valid-Loss', 'Valid-acc-B', 'Valid-acc'])
     else:
-        print(f"Resuming last checkpoint from {args.checkpoint}")
+        printf(f"Resuming last checkpoint from {args.checkpoint}")
         checkpoint_path = os.path.join(args.checkpoint, "last_checkpoint.pth")
         checkpoint = torch.load(checkpoint_path)
         net.load_state_dict(checkpoint['net'])
@@ -104,11 +116,9 @@ def main():
         logger = Logger(os.path.join(args.checkpoint, 'log.txt'), title="ModelNet" + args.model, resume=True)
         optimizer_dict = checkpoint['optimizer']
 
-    orig_stdout = sys.stdout
-    screen = open(f"{args.checkpoint}/screen.txt", "a+")
-    sys.stdout = screen
 
-    print('==> Preparing data..')
+
+    printf('==> Preparing data..')
     train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=args.workers,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=args.workers,
@@ -121,7 +131,7 @@ def main():
 
 
     for epoch in range(start_epoch, args.epoch):
-        print('Epoch(%d/%s) Learning Rate %s:' % (epoch + 1, args.epoch, optimizer.param_groups[0]['lr']))
+        printf('Epoch(%d/%s) Learning Rate %s:' % (epoch + 1, args.epoch, optimizer.param_groups[0]['lr']))
         train_out = train(net, train_loader, optimizer, criterion, device)  # {"loss", "acc", "acc_avg", "time"}
         test_out = validate(net, test_loader, criterion, device)
         scheduler.step()
@@ -153,22 +163,21 @@ def main():
         logger.append([epoch, optimizer.param_groups[0]['lr'],
                        train_out["loss"], train_out["acc_avg"], train_out["acc"],
                        test_out["loss"], test_out["acc_avg"], test_out["acc"]])
-        print(
+        printf(
             f"Training loss:{train_out['loss']} acc_avg:{train_out['acc_avg']}% acc:{train_out['acc']}% time:{train_out['time']}s")
-        print(
+        printf(
             f"Testing loss:{test_out['loss']} acc_avg:{test_out['acc_avg']}% "
             f"acc:{test_out['acc']}% time:{test_out['time']}s [best test acc: {best_test_acc}%] \n\n")
     logger.close()
 
-    print(f"++++++++" * 2 + "Final results" + "++++++++" * 2)
-    print(f"++  Last Train time: {train_out['time']} | Last Test time: {test_out['time']}  ++")
-    print(f"++  Best Train loss: {best_train_loss} | Best Test loss: {best_test_loss}  ++")
-    print(f"++  Best Train acc_B: {best_train_acc_avg} | Best Test acc_B: {best_test_acc_avg}  ++")
-    print(f"++  Best Train acc: {best_train_acc} | Best Test acc: {best_test_acc}  ++")
-    print(f"++++++++" * 5)
+    printf(f"++++++++" * 2 + "Final results" + "++++++++" * 2)
+    printf(f"++  Last Train time: {train_out['time']} | Last Test time: {test_out['time']}  ++")
+    printf(f"++  Best Train loss: {best_train_loss} | Best Test loss: {best_test_loss}  ++")
+    printf(f"++  Best Train acc_B: {best_train_acc_avg} | Best Test acc_B: {best_test_acc_avg}  ++")
+    printf(f"++  Best Train acc: {best_train_acc} | Best Test acc: {best_test_acc}  ++")
+    printf(f"++++++++" * 5)
 
-    sys.stdout = orig_stdout
-    screen.close()
+
 
 
 def train(net, trainloader, optimizer, criterion, device):
