@@ -63,7 +63,7 @@ def main():
 
     screen_logger = logging.getLogger("Model")
     screen_logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    formatter = logging.Formatter('%(message)s')
     file_handler = logging.FileHandler(os.path.join(args.checkpoint, "out.txt"))
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
