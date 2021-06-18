@@ -17,7 +17,7 @@ def load_scanobjectnn_data(partition):
     all_label = []
 
     h5_name = BASE_DIR + '/data/h5_files/main_split/' + partition + '_objectdataset_augmentedrot_scale75.h5'
-    f = h5py.File(h5_name)
+    f = h5py.File(h5_name, mode="r")
     data = f['data'][:].astype('float32')
     label = f['label'][:].astype('int64')
     f.close()
