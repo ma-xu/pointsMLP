@@ -116,7 +116,7 @@ def main():
         optimizer_dict = checkpoint['optimizer']
 
     printf('==> Preparing data..')
-    train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points), num_workers=args.workers,
+    train_loader = DataLoader(ScanObjectNN(partition='training', num_points=args.num_points), num_workers=args.workers,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points), num_workers=args.workers,
                              batch_size=args.batch_size, shuffle=True, drop_last=False)
