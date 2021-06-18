@@ -59,4 +59,4 @@ if __name__ == '__main__':
     test = ScanObjectNN(1024, 'test')
     for data, label in train:
         print(data.shape)
-        print(label.shape)
+        print(label)
