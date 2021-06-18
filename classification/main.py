@@ -61,15 +61,15 @@ def main():
     if not os.path.isdir(args.checkpoint):
         mkdir_p(args.checkpoint)
 
-    logger = logging.getLogger("Model")
-    logger.setLevel(logging.INFO)
+    screen_logger = logging.getLogger("Model")
+    screen_logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     file_handler = logging.FileHandler(os.path.join(args.checkpoint, "out.txt"))
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    screen_logger.addHandler(file_handler)
     def printf(str):
-        logger.info(str)
+        screen_logger.info(str)
         print(str)
 
 
