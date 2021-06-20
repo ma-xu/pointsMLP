@@ -11,7 +11,7 @@ import torch.nn.parallel
 import torch.optim
 import torch.utils.data
 import torch.optim.lr_scheduler as lr_scheduler
-from tensorboardX import SummaryWriter
+# from tensorboardX import SummaryWriter
 
 from util import dataset, transform
 from util.s3dis import S3DIS
@@ -24,10 +24,10 @@ def worker_init_fn(worker_id):
 
 
 def init():
-    global args, logger, writer
+    global args, logger
     args = get_parser()
     logger = get_logger()
-    writer = SummaryWriter(args.save_path)
+    # writer = SummaryWriter(args.save_path)
     if args.train_gpu is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = ','.join(str(x) for x in args.train_gpu)
     if args.manual_seed is not None:
@@ -138,10 +138,10 @@ def main():
     for epoch in range(args.start_epoch, args.epochs):
         loss_train, mIoU_train, mAcc_train, allAcc_train = train(train_loader, model, criterion, optimizer, epoch, args.get('correlation_loss', False))
         epoch_log = epoch + 1
-        writer.add_scalar('loss_train', loss_train, epoch_log)
-        writer.add_scalar('mIoU_train', mIoU_train, epoch_log)
-        writer.add_scalar('mAcc_train', mAcc_train, epoch_log)
-        writer.add_scalar('allAcc_train', allAcc_train, epoch_log)
+        # writer.add_scalar('loss_train', loss_train, epoch_log)
+        # writer.add_scalar('mIoU_train', mIoU_train, epoch_log)
+        # writer.add_scalar('mAcc_train', mAcc_train, epoch_log)
+        # writer.add_scalar('allAcc_train', allAcc_train, epoch_log)
 
         if epoch_log % args.save_freq == 0:
             filename = args.save_path + '/train_epoch_' + str(epoch_log) + '.pth'
@@ -158,10 +158,10 @@ def main():
 
         if args.evaluate and epoch_log % args.get('eval_freq', 1) == 0:
             loss_val, mIoU_val, mAcc_val, allAcc_val = validate(val_loader, model, criterion)
-            writer.add_scalar('loss_val', loss_val, epoch_log)
-            writer.add_scalar('mIoU_val', mIoU_val, epoch_log)
-            writer.add_scalar('mAcc_val', mAcc_val, epoch_log)
-            writer.add_scalar('allAcc_val', allAcc_val, epoch_log)
+            # writer.add_scalar('loss_val', loss_val, epoch_log)
+            # writer.add_scalar('mIoU_val', mIoU_val, epoch_log)
+            # writer.add_scalar('mAcc_val', mAcc_val, epoch_log)
+            # writer.add_scalar('allAcc_val', allAcc_val, epoch_log)
             if mIoU_val > best_mIoU:
                 best_mIoU = mIoU_val
                 filename = args.save_path + '/best_train.pth'
@@ -247,12 +247,12 @@ def train(train_loader, model, criterion, optimizer, epoch, correlation_loss):
                                                           corr_loss_meter=corr_loss_meter,
                                                           accuracy=accuracy))
 
-        writer.add_scalar('loss_train_batch', loss_meter.val, current_iter)
-        writer.add_scalar('mIoU_train_batch', np.mean(intersection / (union + 1e-10)), current_iter)
-        writer.add_scalar('mAcc_train_batch', np.mean(intersection / (target + 1e-10)), current_iter)
-        writer.add_scalar('allAcc_train_batch', accuracy, current_iter)
+        # writer.add_scalar('loss_train_batch', loss_meter.val, current_iter)
+        # writer.add_scalar('mIoU_train_batch', np.mean(intersection / (union + 1e-10)), current_iter)
+        # writer.add_scalar('mAcc_train_batch', np.mean(intersection / (target + 1e-10)), current_iter)
+        # writer.add_scalar('allAcc_train_batch', accuracy, current_iter)
         print(f"input shape is: {input.shape}")
-        
+
     iou_class = intersection_meter.sum / (union_meter.sum + 1e-10)
     accuracy_class = intersection_meter.sum / (target_meter.sum + 1e-10)
     mIoU = np.mean(iou_class)
