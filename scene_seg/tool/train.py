@@ -219,7 +219,7 @@ def train(train_loader, model, criterion, optimizer, epoch, correlation_loss):
         accuracy = sum(intersection_meter.val) / (sum(target_meter.val) + 1e-10)
         loss_meter.update(loss.item(), input.size(0))
         main_loss_meter.update(main_loss.item(), input.size(0))
-        corr_loss_meter.update(corr_loss.item() * corr_loss_scale if correlation_loss else corr_loss, input.size(0))
+        corr_loss_meter.update(corr_loss * corr_loss_scale if correlation_loss else corr_loss, input.size(0))
         batch_time.update(time.time() - end)
         end = time.time()
 
