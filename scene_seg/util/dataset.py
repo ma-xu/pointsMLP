@@ -2,6 +2,7 @@ import os
 import h5py
 import numpy as np
 import torch
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 from torch.utils.data import Dataset
 
