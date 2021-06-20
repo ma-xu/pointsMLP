@@ -91,7 +91,7 @@ def main():
     if not os.path.isdir(args.checkpoint):
         mkdir_p(args.checkpoint)
 
-    screen = get_screen_logger()
+    screen = get_screen_logger(os.path.join(args.checkpoint, 'screen.out'))
     screen.info("where is my log")
     return 0
 
