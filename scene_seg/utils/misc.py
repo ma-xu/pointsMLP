@@ -8,6 +8,7 @@ import os
 import sys
 import time
 import math
+import logging
 import torch
 import shutil
 import numpy as np
@@ -19,7 +20,7 @@ import torch.nn as nn
 import torch.nn.init as init
 from torch.autograd import Variable
 
-__all__ = ['get_mean_and_std', 'init_params', 'mkdir_p', 'AverageMeter',
+__all__ = ['get_mean_and_std', 'init_params', 'mkdir_p', 'AverageMeter', "get_screen_logger",
            'progress_bar','save_model',"save_args","set_seed", "IOStream", "cal_loss"]
 
 
@@ -233,3 +234,20 @@ def cal_loss(pred, gold, smoothing=True):
         loss = F.cross_entropy(pred, gold, reduction='mean')
 
     return loss
+
+
+
+def get_screen_logger(file_path="screen_log.txt"):
+    logger_name = "main-logger"
+    screen_logger = logging.getLogger(logger_name)
+    screen_logger.setLevel(logging.INFO)
+
+    file_handler = logging.FileHandler(file_path)
+    stdout_handler = logging.StreamHandler(sys.stdout)
+
+    fmt = "[%(asctime)s] %(message)s"
+    file_handler.setFormatter(logging.Formatter(fmt))
+    stdout_handler.setFormatter(logging.Formatter(fmt))
+    screen_logger.addHandler(file_handler)
+    screen_logger.addHandler(stdout_handler)
+    return screen_logger

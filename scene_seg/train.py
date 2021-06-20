@@ -22,7 +22,7 @@ import torch.optim.lr_scheduler as lr_scheduler
 from util import dataset, transform
 from util.s3dis import S3DIS
 from util.util import AverageMeter, intersectionAndUnionGPU, get_logger, get_parser
-from utils import Logger, mkdir_p, progress_bar, save_model, save_args, cal_loss
+from utils import Logger, mkdir_p, progress_bar, save_model, save_args, cal_loss, get_screen_logger
 os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 
@@ -91,8 +91,8 @@ def main():
     if not os.path.isdir(args.checkpoint):
         mkdir_p(args.checkpoint)
 
-    logger = get_logger()
-    logger.info("where is my log")
+    screen = get_screen_logger()
+    screen.info("where is my log")
     return 0
 
 
