@@ -102,7 +102,7 @@ class S3DIS(Dataset):
 if __name__ == '__main__':
     import transform
     data_root = 'dataset/s3dis/trainval_fullarea'
-    num_point, test_area, block_size, sample_rate = 4096, 5, 1.0, 0.01
+    num_point, test_area, block_size, sample_rate = 4096, 5, 1.0, 1.0
 
     train_transform = transform.Compose([transform.RandomRotate(along_z=True),
                                          transform.RandomScale(scale_low=0.8, 
