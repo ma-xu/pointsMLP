@@ -37,7 +37,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=16, help='batch size in training')
     parser.add_argument('--num_classes', type=int, default=13, help='class_number')
     parser.add_argument('--model', default='MLP', help='model name [default: pointnet_cls]')
-    parser.add_argument('--epochs', default=100, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
     parser.add_argument('--num_point', type=int, default=4096, help='Point Number')
     parser.add_argument('--ignore_label', type=int, default=255, help='Point Number')
 
@@ -105,14 +105,14 @@ def main():
     if not os.path.isdir(args.checkpoint):
         mkdir_p(args.checkpoint)
     screen = get_screen_logger(os.path.join(args.checkpoint, 'screen.out'))
-    screen.info(f"==> Start! Current commit version is: {get_git_commit_id()}")
-    screen.info(f"==> args: {args}")
+    screen.info(f"==> Start! Current commit version is: {get_git_commit_id()}\n")
+    screen.info(f"==> args: {args}\n")
 
-    screen.info("==> Building model..")
+    screen.info("==> Building model..\n")
     net = models.__dict__[args.model](num_classes=args.num_classes)
     net = torch.nn.DataParallel(net.cuda())
 
-    screen.info("===> Preparing criterion, optimizer, scheduler ...")
+    screen.info("===> Preparing criterion, optimizer, scheduler ...\n")
     criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label).cuda()
     optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -121,14 +121,14 @@ def main():
     best_mIoU = 0.0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     if not os.path.isfile(os.path.join(args.checkpoint, "last_checkpoint.pth")):
-        screen.info(f"==> Start training from scratch ...")
+        screen.info(f"==> Start training from scratch ...\n")
         save_args(args)
         logger = Logger(os.path.join(args.checkpoint, 'log.txt'), title="S3DIS" + args.model)
         logger.set_names(["Epoch-Num", 'Learning-Rate',
                           'loss_train', 'mIoU_train', 'mAcc_train', 'allAcc_train',
                           'loss_val', 'mIoU_val', 'mAcc_val', 'allAcc_val'])
     else:
-        screen.info(f"==> Resuming last checkpoint from {args.checkpoint} ")
+        screen.info(f"==> Resuming last checkpoint from {args.checkpoint} \n")
         checkpoint_path = os.path.join(args.checkpoint, "last_checkpoint.pth")
         checkpoint = torch.load(checkpoint_path)
         net.load_state_dict(checkpoint['net'])
@@ -138,10 +138,10 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
-    screen.info("===> preparing datasets ...")
+    screen.info("===> preparing datasets ...\n")
     train_loader, val_loader = prepare_data()
 
-    for epoch in range(start_epoch, args.epochs):
+    for epoch in range(start_epoch, args.epoch):
         screen.info('Epoch(%d/%s) Learning Rate %s:' % (epoch + 1, args.epoch, optimizer.param_groups[0]['lr']))
         loss_train, mIoU_train, mAcc_train, allAcc_train = train(train_loader, net, criterion, optimizer, epoch)
         loss_val, mIoU_val, mAcc_val, allAcc_val = validate(val_loader, net, criterion)
@@ -159,7 +159,7 @@ def main():
                        loss_train, mIoU_train, mAcc_train, allAcc_train,
                        loss_val, mIoU_val, mAcc_val, allAcc_val])
 
-    screen.info(f"Done! best validation mIoU is {best_mIoU}")
+    screen.info(f"Done! best validation mIoU is {best_mIoU}\n")
 
 
 def train(train_loader, model, criterion, optimizer, epoch):
@@ -172,7 +172,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     model.train()
     end = time.time()
-    max_iter = args.epochs * len(train_loader)
+    max_iter = args.epoch * len(train_loader)
     for i, (input, target) in enumerate(train_loader):
         data_time.update(time.time() - end)
         input = input.cuda(non_blocking=True)
@@ -209,7 +209,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                         'Batch {batch_time.val:.3f} ({batch_time.avg:.3f}) '
                         'Remain {remain_time} '
                         'Loss {loss_meter.val:.4f} '
-                        'Accuracy {accuracy:.4f}.'.format(epoch + 1, args.epochs, i + 1, len(train_loader),
+                        'Accuracy {accuracy:.4f}.'.format(epoch + 1, args.epoch, i + 1, len(train_loader),
                                                           batch_time=batch_time, data_time=data_time,
                                                           remain_time=remain_time,
                                                           loss_meter=loss_meter,
@@ -221,7 +221,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
     mAcc = np.mean(accuracy_class)
     allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
     screen.info(
-        'Train result at epoch [{}/{}]: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'.format(epoch + 1, args.epochs, mIoU,
+        'Train result at epoch [{}/{}]: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'.format(epoch + 1, args.epoch, mIoU,
                                                                                        mAcc, allAcc))
     return loss_meter.avg, mIoU, mAcc, allAcc
 
