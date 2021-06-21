@@ -57,7 +57,7 @@ class S3DIS(Dataset):
             print(f"\t\t iteration point_idxs.size: {point_idxs.size}")
             if point_idxs.size > self.num_point / 4:
                 break
-        """
+
         if point_idxs.size >= self.num_point:
             selected_point_idxs = np.random.choice(point_idxs, self.num_point, replace=False)
         else:
@@ -98,7 +98,7 @@ class S3DIS(Dataset):
         current_labels = torch.LongTensor(current_labels)
  
         return current_points, current_labels
-        """
+        
 
     def __len__(self):
         return len(self.room_idxs)
