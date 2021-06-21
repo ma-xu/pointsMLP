@@ -47,6 +47,8 @@ class S3DIS(Dataset):
         N_points = points.shape[0]
         # print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
         center = points[np.random.choice(N_points)][:3]
+        block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
+        block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
         return 0, 1
         """
         while (True):
