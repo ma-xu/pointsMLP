@@ -49,6 +49,9 @@ class S3DIS(Dataset):
         center = points[np.random.choice(N_points)][:3]
         block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
         block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
+        point_idxs = np.where(
+            (points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (
+                    points[:, 1] <= block_max[1]))[0]
         return 0, 1
         """
         while (True):
