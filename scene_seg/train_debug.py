@@ -175,23 +175,23 @@ def train(train_loader, model, criterion, optimizer, epoch):
     max_iter = args.epoch * len(train_loader)
     for i, (input, target) in enumerate(train_loader):
         data_time.update(time.time() - end)
-        input = input.cuda(non_blocking=True)
-        target = target.cuda(non_blocking=True)
-        output = model(input)
-        if target.shape[-1] == 1:
-            target = target[:, 0]  # for cls
-        loss = criterion(output, target)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-
-        output = output.max(1)[1]
-        intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
-        intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
-        intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
-
-        accuracy = sum(intersection_meter.val) / (sum(target_meter.val) + 1e-10)
-        loss_meter.update(loss.item(), input.size(0))
+        # input = input.cuda(non_blocking=True)
+        # target = target.cuda(non_blocking=True)
+        # output = model(input)
+        # if target.shape[-1] == 1:
+        #     target = target[:, 0]  # for cls
+        # loss = criterion(output, target)
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
+        #
+        # output = output.max(1)[1]
+        # intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
+        # intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
+        # intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
+        #
+        # accuracy = sum(intersection_meter.val) / (sum(target_meter.val) + 1e-10)
+        # loss_meter.update(loss.item(), input.size(0))
         batch_time.update(time.time() - end)
         end = time.time()
 
@@ -204,6 +204,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         remain_time = '{:02d}:{:02d}:{:02d}'.format(int(t_h), int(t_m), int(t_s))
 
         if (i + 1) % args.print_freq == 0:
+            accuracy = 0.0
             screen.info('Epoch: [{}/{}][{}/{}] '
                         'Data {data_time.val:.3f} ({data_time.avg:.3f}) '
                         'Batch {batch_time.val:.3f} ({batch_time.avg:.3f}) '
