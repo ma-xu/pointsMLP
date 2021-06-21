@@ -45,6 +45,8 @@ class S3DIS(Dataset):
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
+        print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
+              f"z:[{min(points[:,2])}-{max(points[:,2])}]")
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
             center = points[np.random.choice(N_points)][:3]
@@ -113,10 +115,21 @@ if __name__ == '__main__':
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
+    point_data.__getitem__(1)
+    point_data.__getitem__(2)
+    point_data.__getitem__(3)
+    point_data.__getitem__(4)
+    point_data.__getitem__(5)
+    point_data.__getitem__(6)
+    point_data.__getitem__(7)
+    point_data.__getitem__(8)
+    point_data.__getitem__(9)
+    point_data.__getitem__(0)
+
+
+
     print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
-    print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
-    print('point label 2 shape:', point_data.__getitem__(2)[1].shape)
-    print('point label 3 shape:', point_data.__getitem__(3)[1].shape)
+
     quit(0)
     import torch, time, random
     manual_seed = 123
