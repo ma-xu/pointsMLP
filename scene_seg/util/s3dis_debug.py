@@ -42,10 +42,9 @@ class S3DIS(Dataset):
     def __getitem__(self, idx):
         room_idx = self.room_idxs[idx]
         points = self.room_points[room_idx]   # N * 6
-        print(points.shape)
-        """
         labels = self.room_labels[room_idx]   # N
-        
+        print(labels.shape)
+        """
         N_points = points.shape[0]
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
         print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
