@@ -116,13 +116,15 @@ if __name__ == '__main__':
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
+    import time
+    from tqdm import tqdm
 
-
+    end = time.time()
     for i in np.random.randint(low=0, high=47622, size=50):
         print("------"*5)
-        point_data.__getitem__(1)
+        point_data.__getitem__(i)
         print("\n\n")
-
+    print(f"cost time: {time.time() - end}")
 
 
 
