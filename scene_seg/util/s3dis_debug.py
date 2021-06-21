@@ -52,6 +52,11 @@ class S3DIS(Dataset):
         point_idxs = np.where(
             (points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (
                     points[:, 1] <= block_max[1]))[0]
+
+        print(f"center.shape: {center.shape}")
+        print(f"center: {center}")
+        print(f"point_idxs.shape: {point_idxs.shape}")
+        print(f"(points[:, 0] >= block_min[0]).shape: {(points[:, 0] >= block_min[0]).shape}")
         return 0, 1
         """
         while (True):
@@ -129,6 +134,9 @@ if __name__ == '__main__':
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area,
                        block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
+
+    point_data.__getitem__(0)
+    quit(0)
 
     # print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
     # print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
