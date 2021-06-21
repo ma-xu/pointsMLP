@@ -116,15 +116,15 @@ if __name__ == '__main__':
     print('point data size:', point_data.__len__())
 
     point_data.__getitem__(1)
-    point_data.__getitem__(2)
-    point_data.__getitem__(3)
-    point_data.__getitem__(4)
-    point_data.__getitem__(5)
-    point_data.__getitem__(6)
-    point_data.__getitem__(7)
-    point_data.__getitem__(8)
-    point_data.__getitem__(9)
-    point_data.__getitem__(0)
+    point_data.__getitem__(27620)
+    point_data.__getitem__(3000)
+    point_data.__getitem__(400)
+    point_data.__getitem__(47620)
+    point_data.__getitem__(40620)
+    point_data.__getitem__(700)
+    point_data.__getitem__(17620)
+    point_data.__getitem__(37620)
+    point_data.__getitem__(7620)
 
 
 
