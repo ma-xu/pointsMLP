@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     end = time.time()
     for i in np.random.randint(low=0, high=47622, size=50):
-        print("------"*2+{i}+"------"*2)
+        print("------"*5)
         point_data.__getitem__(i)
         print("\n\n")
     print(f"cost time: {time.time() - end}")
