@@ -133,7 +133,7 @@ if __name__ == '__main__':
         random.seed(manual_seed + worker_id)
 
 
-    train_loader = torch.utils.data.DataLoader(point_data, batch_size=16, shuffle=True, num_workers=1, pin_memory=True,
+    train_loader = torch.utils.data.DataLoader(point_data, batch_size=32, shuffle=True, num_workers=1, pin_memory=True,
                                                worker_init_fn=worker_init_fn)
     for idx in range(4):
         end = time.time()
