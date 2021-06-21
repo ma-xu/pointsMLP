@@ -63,12 +63,12 @@ def parse_args():
 
 
 def get_git_commit_id():
-    if not os.path.exists('.git'):
-        return '0000000'
-    cmd_out = subprocess.run(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
-    git_commit_id = cmd_out.stdout.decode('utf-8')[:7]
-    return git_commit_id
-
+    try:
+        cmd_out = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+        return cmd_out
+    except:
+        # indicating no git found.
+        return "0000000"
 
 def prepare_data():
     if args.no_transformation:
