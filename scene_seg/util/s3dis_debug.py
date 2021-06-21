@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
 
 
-    for i in np.random.randint(low=0, high=47622, size=10):
+    for i in np.random.randint(low=0, high=47622, size=50):
         print("------"*5)
         point_data.__getitem__(1)
         print("\n\n")
