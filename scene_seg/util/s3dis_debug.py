@@ -65,15 +65,15 @@ class S3DIS(Dataset):
             idx_dup = np.concatenate([np.arange(point_idxs.size), np.array(dup)], 0)
             selected_point_idxs = point_idxs[idx_dup]
 
-        selected_points = points[selected_point_idxs, :]  # num_point * 6
+        points = points[selected_point_idxs, :]  # num_point * 6
         # centered points
         centered_points = np.zeros((self.num_point, 3))
-        centered_points[:, :2] = selected_points[:, :2] - center[:2]
-        centered_points[:, 2] = selected_points[:, 2]
+        centered_points[:, :2] = points[:, :2] - center[:2]
+        centered_points[:, 2] = points[:, 2]
         # normalized colors
-        normalized_colors = selected_points[:, 3:6] / 255.0
+        normalized_colors = points[:, 3:6] / 255.0
         # normalized points
-        normalized_points = selected_points[:, :3] / self.room_coord_max[room_idx]
+        normalized_points = points[:, :3] / self.room_coord_max[room_idx]
 
         # transformation for centered points and normalized colors
         if self.transform is not None:
