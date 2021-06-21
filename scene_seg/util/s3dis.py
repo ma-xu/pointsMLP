@@ -115,7 +115,6 @@ if __name__ == '__main__':
 
     print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
     print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
-    quit(0)
     import torch, time, random
     manual_seed = 123
     random.seed(manual_seed)

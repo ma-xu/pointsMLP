@@ -54,7 +54,6 @@ class S3DIS(Dataset):
             block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
             block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
             point_idxs = np.where((points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (points[:, 1] <= block_max[1]))[0]
-            print(f"\t\t iteration point_idxs.size: {point_idxs.size}")
             if point_idxs.size > self.num_point / 4:
                 break
 
@@ -98,7 +97,7 @@ class S3DIS(Dataset):
         current_labels = torch.LongTensor(current_labels)
  
         return current_points, current_labels
-        
+
 
     def __len__(self):
         return len(self.room_idxs)
@@ -118,21 +117,21 @@ if __name__ == '__main__':
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
-    import time
-    from tqdm import tqdm
-
-    end = time.time()
-    for i in np.random.randint(low=0, high=47622, size=50):
-        print("------"*5)
-        point_data.__getitem__(i)
-        print("\n\n")
-    print(f"cost time: {time.time() - end}")
-
-
-
-    print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
-
-    quit(0)
+    # import time
+    # from tqdm import tqdm
+    #
+    # end = time.time()
+    # for i in np.random.randint(low=0, high=47622, size=50):
+    #     print("------"*5)
+    #     point_data.__getitem__(i)
+    #     print("\n\n")
+    # print(f"cost time: {time.time() - end}")
+    #
+    #
+    #
+    # print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
+    #
+    # quit(0)
     import torch, time, random
     manual_seed = 123
     random.seed(manual_seed)
