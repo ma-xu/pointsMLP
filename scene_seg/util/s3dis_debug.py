@@ -46,6 +46,8 @@ class S3DIS(Dataset):
         labels = self.room_labels[room_idx]  # N
         N_points = points.shape[0]
         # print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
+        return 0, 1
+        """
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
             center = points[np.random.choice(N_points)][:3]
@@ -56,8 +58,7 @@ class S3DIS(Dataset):
                             points[:, 1] <= block_max[1]))[0]
             if point_idxs.size > self.num_point / 4:
                 break
-        return 0, 1
-        """
+        
         
         if point_idxs.size >= self.num_point:
             selected_point_idxs = np.random.choice(point_idxs, self.num_point, replace=False)
