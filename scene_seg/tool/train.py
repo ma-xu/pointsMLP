@@ -191,6 +191,7 @@ def train(train_loader, model, criterion, optimizer, epoch, correlation_loss):
         input = input.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         output = model(input)
+        print(f"target shape: {target.shape} | output shape: {output.shape}")
         if target.shape[-1] == 1:
             target = target[:, 0]  # for cls
         main_loss = criterion(output, target)
