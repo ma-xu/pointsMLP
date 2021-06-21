@@ -53,6 +53,7 @@ class S3DIS(Dataset):
             block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
             block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
             point_idxs = np.where((points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (points[:, 1] <= block_max[1]))[0]
+            print(f"\t\t iteration point_idxs.size: {point_idxs.size}")
             if point_idxs.size > self.num_point / 4:
                 break
 
@@ -115,16 +116,13 @@ if __name__ == '__main__':
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
-    point_data.__getitem__(1)
-    point_data.__getitem__(27620)
-    point_data.__getitem__(3000)
-    point_data.__getitem__(400)
-    point_data.__getitem__(47620)
-    point_data.__getitem__(40620)
-    point_data.__getitem__(700)
-    point_data.__getitem__(17620)
-    point_data.__getitem__(37620)
-    point_data.__getitem__(7620)
+
+
+    for i in np.random.randint(low=0, high=47622, size=10):
+        print("------"*5)
+        point_data.__getitem__(1)
+        print("\n\n")
+
 
 
 
