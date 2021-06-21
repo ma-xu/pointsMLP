@@ -115,7 +115,7 @@ if __name__ == '__main__':
                                                                 clip=0.05),
                                          transform.RandomDropColor(p=0.8, color_augment=0.0)])
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area,
-                       block_size=block_size, sample_rate=sample_rate, transform=train_transform)
+                       block_size=block_size, sample_rate=sample_rate, transform=None)
     print('point data size:', point_data.__len__())
 
     print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
