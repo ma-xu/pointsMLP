@@ -41,8 +41,8 @@ class S3DIS(Dataset):
 
     def __getitem__(self, idx):
         room_idx = self.room_idxs[idx]
-        """
         points = self.room_points[room_idx]   # N * 6
+        """
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
