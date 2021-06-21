@@ -47,6 +47,7 @@ class S3DIS(Dataset):
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
         print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
               f"z:[{min(points[:,2])}-{max(points[:,2])}]")
+        """
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
             center = points[np.random.choice(N_points)][:3]
@@ -97,6 +98,7 @@ class S3DIS(Dataset):
         current_labels = torch.LongTensor(current_labels)
  
         return current_points, current_labels
+        """
 
     def __len__(self):
         return len(self.room_idxs)
