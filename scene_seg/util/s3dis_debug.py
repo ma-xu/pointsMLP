@@ -45,8 +45,8 @@ class S3DIS(Dataset):
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
-        # print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
-        #       f"z:[{min(points[:,2])}-{max(points[:,2])}]")
+        print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
+              f"z:[{min(points[:,2])}-{max(points[:,2])}]")
         """
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
