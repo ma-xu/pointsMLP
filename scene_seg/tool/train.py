@@ -191,7 +191,6 @@ def train(train_loader, model, criterion, optimizer, epoch, correlation_loss):
         input = input.cuda(non_blocking=True)
         target = target.cuda(non_blocking=True)
         output = model(input)
-        print(f"target shape: {target.shape} | output shape: {output.shape}")
         if target.shape[-1] == 1:
             target = target[:, 0]  # for cls
         main_loss = criterion(output, target)
@@ -252,7 +251,6 @@ def train(train_loader, model, criterion, optimizer, epoch, correlation_loss):
         # writer.add_scalar('mIoU_train_batch', np.mean(intersection / (union + 1e-10)), current_iter)
         # writer.add_scalar('mAcc_train_batch', np.mean(intersection / (target + 1e-10)), current_iter)
         # writer.add_scalar('allAcc_train_batch', accuracy, current_iter)
-        print(f"input shape is: {input.shape}")
 
     iou_class = intersection_meter.sum / (union_meter.sum + 1e-10)
     accuracy_class = intersection_meter.sum / (target_meter.sum + 1e-10)

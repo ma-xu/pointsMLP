@@ -34,7 +34,7 @@ class MLP(nn.Module):
 
     def forward(self, x):
 
-        return self.net(x)
+        return self.net(x).permute(0,2,1)
 
 if __name__ == '__main__':
     x= torch.rand(32,4096,9)
