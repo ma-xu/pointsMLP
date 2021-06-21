@@ -52,7 +52,7 @@ def parse_args():
 
     parser.add_argument('--val_list', type=str, default='dataset/s3dis/list/val5.txt')
 
-    parser.add_argument('--print_freq', default=500, type=int, help='print frequency')
+    parser.add_argument('--print_freq', default=100, type=int, help='print frequency')
     parser.add_argument('--learning_rate', default=0.05, type=float, help='learning rate in training')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
     parser.add_argument('--momentum', type=float, default=0.9, help='decay rate')
