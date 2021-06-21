@@ -112,7 +112,7 @@ def main():
     net = models.__dict__[args.model](num_classes=args.num_classes)
     net = torch.nn.DataParallel(net.cuda())
 
-    screen.info("===> Preparing criterion, optimizer, scheduler ...\n")
+    screen.info("==> Preparing criterion, optimizer, scheduler ...\n")
     criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label).cuda()
     optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -138,7 +138,7 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
         scheduler.load_state_dict(checkpoint['scheduler'])
 
-    screen.info("===> preparing datasets ...\n")
+    screen.info("==> preparing datasets ...\n")
     train_loader, val_loader = prepare_data()
 
     for epoch in range(start_epoch, args.epoch):
@@ -186,7 +186,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         optimizer.step()
 
         output = output.max(1)[1]
-        intersection, union, target = intersectionAndUnionGPU(output, target, args.classes, args.ignore_label)
+        intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
         intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
         intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
 
@@ -247,7 +247,7 @@ def validate(val_loader, model, criterion):
         loss = criterion(output, target)
 
         output = output.max(1)[1]
-        intersection, union, target = intersectionAndUnionGPU(output, target, args.classes, args.ignore_label)
+        intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
         intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
         intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
 
@@ -273,7 +273,7 @@ def validate(val_loader, model, criterion):
     allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
 
     screen.info('Val result: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'.format(mIoU, mAcc, allAcc))
-    for i in range(args.classes):
+    for i in range(args.num_classes):
         screen.info('Class_{} Result: iou/accuracy {:.4f}/{:.4f}.'.format(i, iou_class[i], accuracy_class[i]))
     screen.info('<<<<<<<<<<<<<<<<< End Evaluation <<<<<<<<<<<<<<<<<')
     return loss_meter.avg, mIoU, mAcc, allAcc
