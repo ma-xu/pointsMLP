@@ -41,13 +41,14 @@ class S3DIS(Dataset):
 
     def __getitem__(self, idx):
         room_idx = self.room_idxs[idx]
+        """
         points = self.room_points[room_idx]   # N * 6
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
         print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
         print(f"Range: x:[{min(points[:,0])}-{max(points[:,0])}] | y:[{min(points[:,1])}-{max(points[:,1])}] | "
               f"z:[{min(points[:,2])}-{max(points[:,2])}]")
-        """
+        
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
             center = points[np.random.choice(N_points)][:3]
@@ -123,7 +124,7 @@ if __name__ == '__main__':
 
     end = time.time()
     for i in np.random.randint(low=0, high=47622, size=50):
-        print("------"*5)
+        print("------"*2+{i}+"------"*2)
         point_data.__getitem__(i)
         print("\n\n")
     print(f"cost time: {time.time() - end}")
