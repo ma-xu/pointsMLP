@@ -65,7 +65,7 @@ class S3DIS(Dataset):
             idx_dup = np.concatenate([np.arange(point_idxs.size), np.array(dup)], 0)
             selected_point_idxs = point_idxs[idx_dup]
 
-        return selected_point_idxs.shape, labels.shape
+        return 0, 1
         """
         points = points[selected_point_idxs, :]  # num_point * 6
         # centered points
