@@ -56,7 +56,9 @@ class S3DIS(Dataset):
                             points[:, 1] <= block_max[1]))[0]
             if point_idxs.size > self.num_point / 4:
                 break
-
+        return 0, 1
+        """
+        
         if point_idxs.size >= self.num_point:
             selected_point_idxs = np.random.choice(point_idxs, self.num_point, replace=False)
         else:
@@ -65,8 +67,8 @@ class S3DIS(Dataset):
             idx_dup = np.concatenate([np.arange(point_idxs.size), np.array(dup)], 0)
             selected_point_idxs = point_idxs[idx_dup]
 
-        return 0, 1
-        """
+
+        
         points = points[selected_point_idxs, :]  # num_point * 6
         # centered points
         centered_points = np.zeros((self.num_point, 3))
