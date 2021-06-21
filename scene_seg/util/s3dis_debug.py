@@ -65,6 +65,8 @@ class S3DIS(Dataset):
             idx_dup = np.concatenate([np.arange(point_idxs.size), np.array(dup)], 0)
             selected_point_idxs = point_idxs[idx_dup]
 
+        return selected_point_idxs, labels
+        """
         points = points[selected_point_idxs, :]  # num_point * 6
         # centered points
         centered_points = np.zeros((self.num_point, 3))
@@ -97,6 +99,7 @@ class S3DIS(Dataset):
         current_labels = torch.LongTensor(current_labels)
 
         return current_points, current_labels
+        """
 
     def __len__(self):
         return len(self.room_idxs)
