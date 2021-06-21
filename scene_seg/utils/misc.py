@@ -165,11 +165,10 @@ def format_time(seconds):
     return f
 
 
-def save_model(net, epoch, path, acc, is_best, **kwargs):
+def save_model(net, epoch, path, is_best, **kwargs):
     state = {
         'net': net.state_dict(),
-        'epoch': epoch,
-        'acc': acc
+        'epoch': epoch
     }
     for key, value in kwargs.items():
         state[key] = value
