@@ -121,8 +121,8 @@ if __name__ == '__main__':
                        block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
-    print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
-    print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
+    # print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
+    # print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
     import torch, time, random
 
     manual_seed = 123
