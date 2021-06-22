@@ -45,20 +45,7 @@ class S3DIS(Dataset):
         points = self.room_points[room_idx]  # N * 6
         labels = self.room_labels[room_idx]  # N
         N_points = points.shape[0]
-        # print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
-        center = points[np.random.choice(N_points)][:3]
-        block_min = center - [self.block_size / 2.0, self.block_size / 2.0, 0]
-        block_max = center + [self.block_size / 2.0, self.block_size / 2.0, 0]
-        point_idxs = np.where(
-            (points[:, 0] >= block_min[0]) & (points[:, 0] <= block_max[0]) & (points[:, 1] >= block_min[1]) & (
-                    points[:, 1] <= block_max[1]))[0]
-
-        print(f"center.shape: {center.shape}")
-        print(f"center: {center}")
-        print(f"point_idxs.shape: {point_idxs.shape}")
-        print(f"(points[:, 0] >= block_min[0]).shape: {(points[:, 0] >= block_min[0]).shape}")
-        return 0, 1
-        """
+        print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
         while (True):
             # to select center points that at least 1024 points are covered in a block size 1m*1m
             center = points[np.random.choice(N_points)][:3]
@@ -69,8 +56,7 @@ class S3DIS(Dataset):
                             points[:, 1] <= block_max[1]))[0]
             if point_idxs.size > self.num_point / 4:
                 break
-        
-        
+
         if point_idxs.size >= self.num_point:
             selected_point_idxs = np.random.choice(point_idxs, self.num_point, replace=False)
         else:
@@ -79,17 +65,15 @@ class S3DIS(Dataset):
             idx_dup = np.concatenate([np.arange(point_idxs.size), np.array(dup)], 0)
             selected_point_idxs = point_idxs[idx_dup]
 
-
-        
-        points = points[selected_point_idxs, :]  # num_point * 6
+        selected_points = points[selected_point_idxs, :]  # num_point * 6
         # centered points
         centered_points = np.zeros((self.num_point, 3))
-        centered_points[:, :2] = points[:, :2] - center[:2]
-        centered_points[:, 2] = points[:, 2]
+        centered_points[:, :2] = selected_points[:, :2] - center[:2]
+        centered_points[:, 2] = selected_points[:, 2]
         # normalized colors
-        normalized_colors = points[:, 3:6] / 255.0
+        normalized_colors = selected_points[:, 3:6] / 255.0
         # normalized points
-        normalized_points = points[:, :3] / self.room_coord_max[room_idx]
+        normalized_points = selected_points[:, :3] / self.room_coord_max[room_idx]
 
         # transformation for centered points and normalized colors
         if self.transform is not None:
@@ -113,7 +97,6 @@ class S3DIS(Dataset):
         current_labels = torch.LongTensor(current_labels)
 
         return current_points, current_labels
-        """
 
     def __len__(self):
         return len(self.room_idxs)
@@ -135,11 +118,9 @@ if __name__ == '__main__':
                        block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
 
-    # point_data.__getitem__(0)
-    # quit(0)
-
-    # print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
-    # print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
+    print('point data 0 shape:', point_data.__getitem__(0)[0].shape)
+    print('point label 10000 shape:', point_data.__getitem__(1000)[1].shape)
+    quit(0)
     import torch, time, random
 
     manual_seed = 123
@@ -153,7 +134,7 @@ if __name__ == '__main__':
         random.seed(manual_seed + worker_id)
 
 
-    train_loader = torch.utils.data.DataLoader(point_data, batch_size=32, shuffle=True, num_workers=1, pin_memory=True,
+    train_loader = torch.utils.data.DataLoader(point_data, batch_size=16, shuffle=True, num_workers=1, pin_memory=True,
                                                worker_init_fn=worker_init_fn)
     for idx in range(4):
         end = time.time()
