@@ -105,14 +105,12 @@ if __name__ == '__main__':
                                                pin_memory=True)
     max_points = 0
     min_points = 9999999999
+    tem = torch.rand([3,4])
     from tqdm import tqdm
-    for i, (n_points) in tqdm(enumerate(train_loader)):
-        if n_points > max_points:
-            max_points = n_points
-        if n_points < min_points:
-            min_points = n_points
+    for i, (input, target) in tqdm(enumerate(train_loader)):
+        tem = input
 
-    print(f"max_points: {max_points} | min_points: {min_points}")
+    print(f"tem shape: {tem.shape}")
     quit(0)
 
 
