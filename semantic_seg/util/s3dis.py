@@ -107,11 +107,14 @@ if __name__ == '__main__':
     max_points = 0
     min_points = 9999999999
     tem = torch.rand([3,4])
-    from tqdm import tqdm
-    for i, (input, target) in tqdm(enumerate(train_loader)):
-        tem = input
+    import time
 
-    print(f"tem shape: {tem.shape}")
+    end = time.time()
+    for i, (input, target) in enumerate(train_loader):
+        print('time: {}/{}--{}'.format(i + 1, len(train_loader), time.time() - end))
+        end = time.time()
+
+   
     quit(0)
 
 
