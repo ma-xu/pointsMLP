@@ -98,11 +98,11 @@ if __name__ == '__main__':
                                          transform.RandomJitter(sigma=0.01,
                                                                 clip=0.05),
                                          transform.RandomDropColor(p=0.8, color_augment=0.0)])
-    point_data = S3DIS(split='train', data_root=data_root, num_point=num_point,
+    point_data = S3DIS(split='train', data_root=data_root, num_point=None,
                        test_area=test_area, transform=None)
     print('point data size:', point_data.__len__())
 
-    train_loader = torch.utils.data.DataLoader(point_data, batch_size=32, shuffle=True, num_workers=1,
+    train_loader = torch.utils.data.DataLoader(point_data, batch_size=1, shuffle=True, num_workers=1,
                                                pin_memory=True)
     max_points = 0
     min_points = 9999999999
