@@ -6,15 +6,13 @@ from torch.utils.data import Dataset
 # max_points: tensor([9,273,742]) | min_points: tensor([85,855])
 
 class S3DIS(Dataset):
-    def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area=5,
-                 block_size=1.0, sample_rate=1.0, transform=None, fea_dim=6, shuffle_idx=False):
+    def __init__(self, split='train', data_root='trainval_fullarea', num_point=None, test_area=5,
+                 sample_rate=1.0, transform=None, shuffle_idx=False):
 
         super().__init__()
         self.split = split
         self.num_point = num_point
-        self.block_size = block_size
         self.transform = transform
-        self.fea_dim = fea_dim
         self.shuffle_idx = shuffle_idx
         rooms = sorted(os.listdir(data_root))
         rooms = [room for room in rooms if 'Area_' in room]
@@ -47,9 +45,20 @@ class S3DIS(Dataset):
         labels = self.room_labels[room_idx]   # N
         N_points = points.shape[0]
         # print(f"room_idx: {room_idx}| points shape:{ points.shape} | labels shape:{labels.shape}")
-        return N_points
-        """
-        selected_points = points[selected_point_idxs, :]  # num_point * 6
+
+        if self.num_point is not None:
+            if N_points < self.num_point:
+                # simply copy some points
+                append_index = np.random.choice(range(N_points), self.num_point-N_points, replace=False)
+                selected_points = np.concatenate((points,points[append_index]),axis=0)
+                selected_lables = np.concatenate((labels,labels[append_index]),axis=0)
+            else:
+                selected_index = np.random.choice(range(N_points), self.num_point, replace=False)
+                selected_points = points[selected_index,:]
+                selected_lables = labels[selected_index]
+        else:
+            selected_points = points
+            selected_lables = labels
 
         # normalized colors
         normalized_colors = selected_points[:, 3:6] / 255.0
@@ -58,27 +67,21 @@ class S3DIS(Dataset):
 
         # transformation for centered points and normalized colors
         if self.transform is not None:
-            centered_points, normalized_colors = self.transform(centered_points, normalized_colors)
+            normalized_points, normalized_colors = self.transform(normalized_points, normalized_colors)
 
-        # current points and current labels
-        if self.fea_dim == 3:
-            current_points = np.concatenate((centered_points, normalized_points), axis=-1)
-        elif self.fea_dim == 6:
-            current_points = np.concatenate((centered_points, normalized_colors, normalized_points), axis=-1)
-        else:
-            raise ValueError('Feature dim {} not supported.'.format(self.fea_dim))
-        current_labels = labels[selected_point_idxs]
+
+        selected_points = np.concatenate((normalized_points, normalized_colors), axis=-1)
 
         if self.shuffle_idx:
-            shuffle_idx = np.random.permutation(np.arange(current_points.shape[0]))
-            current_points, current_labels = current_points[shuffle_idx], current_labels[shuffle_idx]
-        
+            shuffle_idx = np.random.permutation(np.arange(selected_points.shape[0]))
+            current_points, current_labels = selected_points[shuffle_idx], selected_lables[shuffle_idx]
+
         # to Tensor
-        current_points = torch.FloatTensor(current_points)
-        current_labels = torch.LongTensor(current_labels)
- 
-        return current_points, current_labels
-        """
+        selected_points = torch.FloatTensor(selected_points)
+        selected_lables = torch.LongTensor(selected_lables)
+
+        return selected_points, selected_lables
+
 
     def __len__(self):
         return len(self.room_idxs)
@@ -87,7 +90,7 @@ class S3DIS(Dataset):
 if __name__ == '__main__':
     import transform
     data_root = 'dataset/s3dis/trainval_fullarea'
-    num_point, test_area, block_size, sample_rate = 4096, 5, 1.0, 1.0
+    num_point, test_area = 51200, 5
 
     train_transform = transform.Compose([transform.RandomRotate(along_z=True),
                                          transform.RandomScale(scale_low=0.8, 
@@ -95,12 +98,10 @@ if __name__ == '__main__':
                                          transform.RandomJitter(sigma=0.01,
                                                                 clip=0.05),
                                          transform.RandomDropColor(p=0.8, color_augment=0.0)])
-    point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
+    point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, transform=train_transform)
     print('point data size:', point_data.__len__())
-    print(f"room points: {max(point_data.room_points)}-{min(point_data.room_points)}")
-    print(f"room ranges: {point_data.room_coord_min}-{point_data.room_coord_max}")
 
-    train_loader = torch.utils.data.DataLoader(point_data, batch_size=1, shuffle=True, num_workers=1,
+    train_loader = torch.utils.data.DataLoader(point_data, batch_size=32, shuffle=True, num_workers=1,
                                                pin_memory=True)
     max_points = 0
     min_points = 9999999999
