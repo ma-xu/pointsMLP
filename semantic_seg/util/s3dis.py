@@ -111,10 +111,11 @@ if __name__ == '__main__':
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
+        print(input.shape)
         print('time: {}/{}--{}'.format(i + 1, len(train_loader), time.time() - end))
         end = time.time()
 
-   
+
     quit(0)
 
 
