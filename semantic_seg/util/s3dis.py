@@ -3,6 +3,7 @@ import numpy as np
 
 import torch
 from torch.utils.data import Dataset
+# max_points: tensor([9,273,742]) | min_points: tensor([85,855])
 
 class S3DIS(Dataset):
     def __init__(self, split='train', data_root='trainval_fullarea', num_point=4096, test_area=5,
@@ -96,6 +97,8 @@ if __name__ == '__main__':
                                          transform.RandomDropColor(p=0.8, color_augment=0.0)])
     point_data = S3DIS(split='train', data_root=data_root, num_point=num_point, test_area=test_area, block_size=block_size, sample_rate=sample_rate, transform=train_transform)
     print('point data size:', point_data.__len__())
+    print(f"room points: {max(point_data.room_points)}-{min(point_data.room_points)}")
+    print(f"room ranges: {point_data.room_coord_min}-{point_data.room_coord_max}")
 
     train_loader = torch.utils.data.DataLoader(point_data, batch_size=1, shuffle=True, num_workers=1,
                                                pin_memory=True)
