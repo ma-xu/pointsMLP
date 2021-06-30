@@ -27,7 +27,7 @@ print(f"The CPU runnning time of logsumexp is: {time.time()-current}")
 
 current = time.time()
 for _ in range(iterations):
-    _,out = torch.amax(a,dim=-1)
+    out = torch.amax(a,dim=-1)
 print(f"The CPU runnning time of max is: {time.time()-current}")
 
 current = time.time()
