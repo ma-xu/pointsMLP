@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
     parser.add_argument('--smoothing', action='store_true', default=False, help='loss smoothing')
     parser.add_argument('--seed', type=int, help='random seed')
-    parser.add_argument('--workers', default=8, type=int, help='workers')
+    parser.add_argument('--workers', default=4, type=int, help='workers')
     return parser.parse_args()
 
 
