@@ -69,3 +69,13 @@ for _ in range(iterations):
     out = torch.norm(a,dim=-1)
 print(f"The GPU runnning time of norm is: {time.time()-current}")
 
+"""
+The CPU runnning time of logsumexp is: 5.057518243789673
+The CPU runnning time of max is: 0.09893107414245605
+The CPU runnning time of mean is: 0.1019439697265625
+The CPU runnning time of norm is: 3.853361129760742
+The GPU runnning time of logsumexp is: 0.0012063980102539062
+The GPU runnning time of max is: 0.00022935867309570312
+The GPU runnning time of mean is: 0.00020766258239746094
+The GPU runnning time of norm is: 0.0006072521209716797
+"""

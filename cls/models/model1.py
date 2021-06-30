@@ -111,140 +111,16 @@ def knn_point(nsample, xyz, new_xyz):
     return group_idx
 
 
-class FCBNReLU1D(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=1, bias=False):
-        super(FCBNReLU1D, self).__init__()
-        self.net = nn.Sequential(
-            nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, bias=bias),
-            nn.BatchNorm1d(out_channels),
-            nn.GELU()
-        )
-
-    def forward(self, x):
-        return self.net(x)
-
-
-class FCBNReLU1DRes(nn.Module):
-    def __init__(self, channel, kernel_size=1, bias=False):
-        super(FCBNReLU1DRes, self).__init__()
-        self.net = nn.Sequential(
-            nn.Conv1d(in_channels=channel, out_channels=channel, kernel_size=kernel_size, bias=bias),
-            nn.BatchNorm1d(channel),
-            nn.GELU(),
-            nn.Conv1d(in_channels=channel, out_channels=channel, kernel_size=kernel_size, bias=bias),
-            nn.BatchNorm1d(channel)
-        )
-
-    def forward(self, x):
-        return F.gelu(self.net(x) + x)
-
-
-class Attention(nn.Module):
-    def __init__(self, dim, heads=8, dim_head=32, dropout=0.):
-        super().__init__()
-        inner_dim = dim_head * heads
-        # project_out = not (heads == 1 and dim_head == dim)
-        self.heads = heads
-        self.scale = dim_head ** -0.5
-
-        self.attend = nn.Softmax(dim=-1)
-        self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
-
-        self.to_out = nn.Sequential(
-            nn.Conv1d(inner_dim, dim, 1),
-            nn.BatchNorm1d(dim)
-        )
-
-    def forward(self, x):
-        x = x.permute(0, 2, 1)
-        b, n, _, h = *x.shape, self.heads
-        qkv = self.to_qkv(x).chunk(3, dim=-1)
-        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), qkv)
-
-        dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
-
-        attn = self.attend(dots)
-
-        out = einsum('b h i j, b h j d -> b h i d', attn, v)
-        out = rearrange(out, 'b h n d -> b (h d) n')
-
-        return self.to_out(out)
-
-
-class TransformerBlock(nn.Module):
-    def __init__(self, dim, heads=8, dim_head=32, **kwargs):
-        """
-        [b batch, d dimension, k points]
-        :param dim: input data dimension
-        :param heads: heads number
-        :param dim_head: dimension in each head
-        :param kwargs:
-        """
-        super(TransformerBlock, self).__init__()
-        self.attention = Attention(dim=dim, heads=heads, dim_head=dim_head)
-        self.ffn = nn.Sequential(
-            nn.Conv1d(dim, dim, 1, bias=False),
-            nn.BatchNorm1d(dim)
-        )
-
-    def forward(self, x):
-        """
-        :input x: [b batch, d dimension, p points,]
-        :return: [b batch,  d dimension, p points,]
-        """
-        att = self.attention(x)
-        att = F.gelu(att + x)
-        out = self.ffn(att)
-        out = F.gelu(att + out)
-        return out
-
-
-class PreExtraction(nn.Module):
-    def __init__(self, channels, blocks=1):
-        """
-        input: [b,g,k,d]: output:[b,d,g]
-        :param channels:
-        :param blocks:
-        """
-        super(PreExtraction, self).__init__()
-        operation = []
-        for _ in range(blocks):
-            operation.append(
-                FCBNReLU1DRes(channels)
-            )
-        self.operation = nn.Sequential(*operation)
-        self.transformer = TransformerBlock(channels, heads=4)
-
-    def forward(self, x):
-        b, n, s, d = x.size()  # torch.Size([32, 512, 32, 6])
-        x = x.permute(0, 1, 3, 2)
-        x = x.reshape(-1, d, s)
-        batch_size, _, N = x.size()
-        x = self.operation(x)  # [b, d, k]
-        x = self.transformer(x)
-        x = F.adaptive_max_pool1d(x, 1).view(batch_size, -1)
-        x = x.reshape(b, n, -1).permute(0, 2, 1)
-        return x
-
-
-class PosExtraction(nn.Module):
-    def __init__(self, channels, blocks=1):
-        """
-        input[b,d,g]; output[b,d,g]
-        :param channels:
-        :param blocks:
-        """
-        super(PosExtraction, self).__init__()
-        operation = []
-        for _ in range(blocks):
-            operation.append(
-                FCBNReLU1DRes(channels)
-            )
-        self.operation = nn.Sequential(*operation)
-        self.transformer = TransformerBlock(channels, heads=4)
-
-    def forward(self, x):  # [b, d, k]
-        return self.transformer(self.operation(x))
+def get_pool_func(pool="max"):
+    if pool == "max":
+        pool_func = torch.amax
+    elif pool == "mean":
+        pool_func = torch.mean
+    elif pool == "logsumexp":
+        pool_func = torch.logsumexp
+    elif pool == "norm":
+        pool_func = torch.norm
+    return pool_func
 
 
 class LocalGrouper(nn.Module):
@@ -260,8 +136,6 @@ class LocalGrouper(nn.Module):
         self.kneighbors = kneighbors
 
     def forward(self, xyz, points):
-        B, N, C = xyz.shape
-        S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
         fps_idx = farthest_point_sample(xyz, self.groups).long()
@@ -297,15 +171,34 @@ class PositionalEmbedding(nn.Module):
         return postion_
 
 
+class SimplePositionalEmbedding(nn.Module):
+    def __init__(self, channel):
+        super(SimplePositionalEmbedding, self).__init__()
+        self.channel = channel
+        self.embedding = nn.Sequential(
+            nn.Linear(9, max(self.channel // 8, 16)),
+            nn.LeakyReLU(inplace=True),
+            nn.Linear(max(self.channel // 8, 16), self.channel)
+        )
+
+    def forward(self, xyz):  # [b,p,3]
+        std_, mean_ = torch.std_mean(xyz, dim=1, keepdim=True)
+        postion_ = torch.cat([xyz, std_.expand_as(xyz), mean_.expand_as(xyz)], dim=-1)
+        postion_ = self.embedding(postion_)  # [b, p, d]
+        return postion_
+
+
 class ContextAttention(nn.Module):
-    def __init__(self, dim, inner_dim, group=1):
+    def __init__(self, dim, inner_dim, group=1, pool="max"):
         super().__init__()
         self.to_q = nn.Conv2d(dim, inner_dim, 1, groups=group, bias=False)
         self.to_k = nn.Conv2d(dim, inner_dim, 1, groups=group, bias=False)
         self.to_v = nn.Conv2d(dim, inner_dim, 1, groups=group, bias=False)
         self.to_out = nn.Conv2d(inner_dim, dim, 1, groups=group, bias=False)
+        self.pool_func = get_pool_func(pool)
 
-    def forward(self, context, points):  # [b,p,1,d] [b,p,k,d]
+    def forward(self, points):  # [b,p,k,d]
+        context = self.pool_func(points, dim=-2, keepdim=True)  # [b,p,1,d]
         context = context.permute(0, 3, 1, 2)
         points = points.permute(0, 3, 1, 2)  # [b,d,p,k]
         key = self.to_k(context)
@@ -316,11 +209,12 @@ class ContextAttention(nn.Module):
         out = self.to_out(out).permute(0, 2, 3, 1)  # [0,2,3,1]
         return out
 
+
 class Transformer(nn.Module):
-    def __init__(self, dim, inner_dim,  group=1, **kwargs):
+    def __init__(self, dim, inner_dim, group=1, pool="max", **kwargs):
         super(Transformer, self).__init__()
         self.norm = nn.LayerNorm(dim)
-        self.attention = ContextAttention(dim=dim, inner_dim=inner_dim, group=group)
+        self.attention = ContextAttention(dim=dim, inner_dim=inner_dim, group=group, pool=pool)
         self.ffn = nn.Sequential(
             nn.LayerNorm(dim),
             nn.Linear(dim, dim),
@@ -328,8 +222,8 @@ class Transformer(nn.Module):
             nn.Linear(dim, dim)
         )
 
-    def forward(self, context, points):  # [b,p,1,d] [b,p,k,d]
-        att = self.attention(context, points)  # [b,p,k,d]
+    def forward(self, points):  # [b,p,k,d]
+        att = self.attention(points)  # [b,p,k,d]
         points = att + points
         out = self.ffn(points)
         out = out + points
@@ -337,118 +231,176 @@ class Transformer(nn.Module):
 
 
 class LocalExtraction(nn.Module):
-    def __init__(self, channels, blocks=1):
-        """
-        input[b,d,g]; output[b,d,g]
-        :param channels:
-        :param blocks:
-        """
-        super(PosExtraction, self).__init__()
+    def __init__(self, dim, inner_dim, group=1, pool="max", blocks=3, **kwargs):
+        super(LocalExtraction, self).__init__()
         operation = []
         for _ in range(blocks):
             operation.append(
-                FCBNReLU1DRes(channels)
+                Transformer(dim, inner_dim, group, pool)
             )
         self.operation = nn.Sequential(*operation)
-        self.transformer = TransformerBlock(channels, heads=4)
+        self.pool_func = get_pool_func(pool)
+        self.up = nn.Sequential(
+            nn.LayerNorm(dim),
+            nn.Linear(dim, dim * 2),
+            nn.LeakyReLU(inplace=True)
+        )
 
-    def forward(self, x):  # [b, d, k]
-        return self.transformer(self.operation(x))
+    def forward(self, x):  # [b,p,k,d]
+        out = self.operation(x)  # [b,p,k,d]
+        out = self.pool_func(out, dim=-2, keepdim=False)  # [b,p,d]
+        out = self.up(out)
+        return out
 
 
-class Model21(nn.Module):
-    def __init__(self, points=1024, class_num=40, embed_dim=64, context="max",
+class Attention(nn.Module):
+    def __init__(self, dim, heads=8, down=4):
+        super().__init__()
+        inner_dim = dim // down
+        self.heads = heads
+        self.scale = (inner_dim // heads) ** -0.5
+
+        self.attend = nn.Softmax(dim=-1)
+        self.to_qkv = nn.Linear(dim, inner_dim * 3, bias=False)
+
+        self.to_out = nn.Sequential(
+            nn.Linear(inner_dim, dim, 1)
+        )
+
+    def forward(self, x):
+        b, n, _, h = *x.shape, self.heads
+        qkv = self.to_qkv(x).chunk(3, dim=-1)
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=h), qkv)
+        dots = einsum('b h i d, b h j d -> b h i j', q, k) * self.scale
+        attn = self.attend(dots)
+        out = einsum('b h i j, b h j d -> b h i d', attn, v)
+        out = rearrange(out, 'b h n d -> b n (h d)')
+        return self.to_out(out)
+
+
+class TransformerGlobal(nn.Module):
+    def __init__(self, dim, heads=8, down=2, **kwargs):
+        super(TransformerGlobal, self).__init__()
+        self.norm = nn.LayerNorm(dim)
+        self.attention = Attention(dim, heads, down)
+        self.ffn = nn.Sequential(
+            nn.LayerNorm(dim),
+            nn.Linear(dim, dim),
+            nn.LeakyReLU(inplace=True),
+            nn.Linear(dim, dim)
+        )
+
+    def forward(self, points):  # [b,p,d]
+        att = self.attention(points)  # [b,p,d]
+        points = att + points
+        out = self.ffn(points)
+        out = out + points
+        return out
+
+
+class Model1(nn.Module):
+    def __init__(self, points=1024, class_num=40, embed_dim=64, pool="max",
                  k_neighbors=[32, 32, 32, 32], expansion=2, groups=8,
-                 local_blocks=[2,2,2],
-                 pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 local_blocks=[2, 2, 2, 2], global_blocks=3,
                  reducers=[2, 2, 2, 2], **kwargs):
-        super(Model21, self).__init__()
-        assert context in ["max", 'mean', "logsumexp", "norm"], "Key context must be in ['max', 'mean','logsumexp','norm']"
-        self.expansion = expansion
-        self.context = context
+        super(Model1, self).__init__()
+        assert pool in ["max", 'mean', "logsumexp", "norm"], "Key context must be in ['max', 'mean','logsumexp','norm']"
+        self.pool = pool
         self.groups = groups
-
-
-        self.stages = len(pre_blocks)
+        self.expansion = expansion
+        self.stages = len(local_blocks)
         self.class_num = class_num
         self.points = points
         self.embedding = nn.Linear(3, embed_dim)
-        assert len(pre_blocks) == len(k_neighbors) == len(reducers) == len(pos_blocks), \
-            "Please check stage number consistent for pre_blocks, pos_blocks k_neighbors, reducers."
+        assert len(local_blocks) == len(reducers) == len(k_neighbors), \
+            "Please check stage number consistent for local_blocks, k_neighbors, reducers."
         self.local_grouper_list = nn.ModuleList()
         self.positional_embedding_list = nn.ModuleList()
-        self.transformer_blocks_list = nn.ModuleList()
-
-
-        self.pre_blocks_list = nn.ModuleList()
-        self.pos_blocks_list = nn.ModuleList()
+        self.local_blocks_list = nn.ModuleList()
         last_channel = embed_dim
         anchor_points = self.points
         for i in range(len(local_blocks)):
-            out_channel = last_channel * 2
-            pre_block_num = pre_blocks[i]
-            pos_block_num = pos_blocks[i]
+            local_block_num = local_blocks[i]
             kneighbor = k_neighbors[i]
             reduce = reducers[i]
             anchor_points = anchor_points // reduce
-
             # append local_grouper_list
             local_grouper = LocalGrouper(anchor_points, kneighbor)  # [b,g,k,d]
             self.local_grouper_list.append(local_grouper)
             # append positional_embedding_list
-            positional_embedding = PositionalEmbedding(channel=out_channel)
+            positional_embedding = PositionalEmbedding(channel=last_channel)
             self.positional_embedding_list.append(positional_embedding)
-            # append transformer_blocks_list
-            transformer_block = Transformer(out_channel, out_channel*self.expansion, group=self.groups)
-            self.transformer_blocks_list.append(transformer_block)
+            # append local_blocks_list
+            Local_extraction = LocalExtraction(last_channel, last_channel * self.expansion,
+                                               self.groups, self.pool, local_block_num)
+            self.local_blocks_list.append(Local_extraction)
+            last_channel = last_channel * 2
 
-            # append pre_block_list
-            pre_block_module = PreExtraction(out_channel, pre_block_num)
-            self.pre_blocks_list.append(pre_block_module)
-            # append pos_block_list
-            pos_block_module = PosExtraction(out_channel, pos_block_num)
-            self.pos_blocks_list.append(pos_block_module)
-
-            last_channel = out_channel
-
+        global_blocks_list = []
+        for _ in range(global_blocks):
+            transformer_global = TransformerGlobal(last_channel, self.groups, down=2)
+            global_blocks_list.append(transformer_global)
+        self.global_transformers = nn.Sequential(*global_blocks_list)
+        self.global_positional_embedding = SimplePositionalEmbedding(last_channel)
+        self.poolfunc = get_pool_func(pool)
         self.classifier = nn.Sequential(
-            nn.Linear(last_channel * 2, 512),
-            nn.BatchNorm1d(512),
-            nn.GELU(),
+            nn.Linear(last_channel, last_channel // 4),
             nn.Dropout(0.5),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.GELU(),
-            nn.Dropout(0.5),
-            nn.Linear(256, self.class_num)
+            nn.Linear(last_channel // 4, self.class_num)
         )
 
     def forward(self, x):  # [b,3,n]
         xyz = x.permute(0, 2, 1)
         points = self.embedding(xyz)  # [b,n,d]
+        # hierarchical local-feature extraction
         for i in range(self.stages):
             # [b,p,3] [b, p, d] [b,p,k,3] [b,p,k,d]
-            new_xyz, new_points, grouped_xyz, grouped_points = self.local_grouper_list[i](xyz, points)
-            position = self.positional_embedding_list[i](new_xyz, grouped_xyz)  # [b,p,k,d]
-            if self.context == "max":
-                context = grouped_points.max(dim=-2, keepdim=False)[0]
-            elif self.context == "average":
-                context = grouped_points.mean(dim=-2, keepdim=False)
-            else:
-                context = new_points
-            context = context.unsqueeze(dim=-2)  # [b,p,1,d]
-
-
-
-            x = self.pre_blocks_list[i](grouped_points)  # [b,d,g]
-            x = self.pos_blocks_list[i](x)  # [b,d,g]
-
-        x_max = F.adaptive_max_pool1d(x, 1).squeeze(dim=-1)
-        x_mean = x.mean(dim=-1, keepdim=False)
-        x = torch.cat([x_max, x_mean], dim=-1)
-        x = self.classifier(x)
+            xyz, _, grouped_xyz, grouped_points = self.local_grouper_list[i](xyz, points)
+            position = self.positional_embedding_list[i](xyz, grouped_xyz)  # [b,p,k,d]
+            points = self.local_blocks_list[i](grouped_points + position)  # [b,p,d]
+        # global-feature extraction
+        global_position = self.global_positional_embedding(xyz)
+        points = self.global_transformers(points + global_position)
+        out = self.poolfunc(points, dim=-2, keepdim=False)
+        x = self.classifier(out)
         return x
 
+
+def model1A(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="max",
+                 k_neighbors=[32, 32], expansion=2, groups=8,
+                 local_blocks=[2, 2], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
+
+def model1B(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="mean",
+                 k_neighbors=[32, 32], expansion=2, groups=8,
+                 local_blocks=[2, 2], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
+
+def model1C(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="logsumexp",
+                 k_neighbors=[32, 32], expansion=2, groups=8,
+                 local_blocks=[2, 2], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
+
+def model1D(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
+                 k_neighbors=[32, 32], expansion=2, groups=8,
+                 local_blocks=[2, 2], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
+
+def model1E(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
+                 k_neighbors=[64, 64], expansion=2, groups=8,
+                 local_blocks=[2, 2], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
+
+def model1F(num_classes=40, **kwargs) -> Model1:
+    return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
+                 k_neighbors=[32, 32], expansion=2, groups=8,
+                 local_blocks=[4, 4], global_blocks=3,
+                 reducers=[4, 4], **kwargs)
 
 if __name__ == '__main__':
     # test positional encoding
@@ -457,31 +409,70 @@ if __name__ == '__main__':
     grouped_xyz = torch.rand(2, 16, 32, 3)
     out = positional_embedding(new_xyz, grouped_xyz)
 
-    # test context attention  [b,p,1,d] [b,p,k,d]
-    attention = ContextAttention(dim=64, inner_dim=256, group=8)
-    context = torch.rand(2, 3, 1, 64)
+    # test Transformer  [b,p,1,d] [b,p,k,d]
+    transformer = Transformer(dim=64, inner_dim=256, group=8, pool="norm")
+    # context = torch.rand(2, 3, 1, 64)
     grouped_points = torch.rand(2, 3, 16, 64)
-    out = attention(context, grouped_points)
+    out = transformer(grouped_points)
     print(out.shape)
 
-    data = torch.rand(2, 128, 10)
+    # test context attention  [b,p,1,d] [b,p,k,d]
+    attention = ContextAttention(dim=64, inner_dim=256, group=8, pool="norm")
+    # context = torch.rand(2, 3, 1, 64)
+    grouped_points = torch.rand(2, 3, 16, 64)
+    out = attention(grouped_points)
+    print(out.shape)
+
+    # test LocalExtraction
+    local_extraction = LocalExtraction(dim=64, inner_dim=256, group=8, pool="max", blocks=2)
+    # context = torch.rand(2, 3, 1, 64)
+    grouped_points = torch.rand(2, 3, 16, 64)
+    out = local_extraction(grouped_points)
+    print(out.shape)
+
+    # test attention  (global) [b,p,d]
+    attention = Attention(dim=256, heads=8, down=2)
+    points = torch.rand(2, 3, 256)
+    out = attention(points)
+    print(out.shape)
+
+    data = torch.rand(2, 10, 128)
     att = Attention(128)
     out = att(data)
     print(out.shape)
 
-    batch, groups, neighbors, dim = 2, 512, 32, 16
-    x = torch.rand(batch, groups, neighbors, dim)
-    pre_extractor = PreExtraction(dim, 3)
-    out = pre_extractor(x)
-    print(out.shape)
-
-    x = torch.rand(batch, dim, groups)
-    pos_extractor = PosExtraction(dim, 3)
-    out = pos_extractor(x)
-    print(out.shape)
-
     data = torch.rand(2, 3, 1024)
     print("===> testing model ...")
-    model = Model21()
+    model = Model1()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelA ...")
+    model = model1A()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelB ...")
+    model = model1B()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelC ...")
+    model = model1C()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelD ...")
+    model = model1D()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelE ...")
+    model = model1E()
+    out = model(data)
+    print(out.shape)
+
+    print("===> testing modelF ...")
+    model = model1F()
     out = model(data)
     print(out.shape)
