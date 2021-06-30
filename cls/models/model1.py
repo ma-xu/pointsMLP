@@ -363,7 +363,7 @@ class Model21(nn.Module):
                  pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  reducers=[2, 2, 2, 2], **kwargs):
         super(Model21, self).__init__()
-        assert context in ["max", 'mean', "logsumexp"], "Key context must be in ['max', 'mean','logsumexp']"
+        assert context in ["max", 'mean', "logsumexp", "norm"], "Key context must be in ['max', 'mean','logsumexp','norm']"
         self.expansion = expansion
         self.context = context
         self.groups = groups

@@ -27,7 +27,7 @@ print(f"The CPU runnning time of logsumexp is: {time.time()-current}")
 
 current = time.time()
 for _ in range(iterations):
-    _,out = torch.max(a,dim=-1)
+    _,out = torch.amax(a,dim=-1)
 print(f"The CPU runnning time of max is: {time.time()-current}")
 
 current = time.time()
@@ -35,7 +35,10 @@ for _ in range(iterations):
     out = torch.mean(a,dim=-1)
 print(f"The CPU runnning time of mean is: {time.time()-current}")
 
-
+current = time.time()
+for _ in range(iterations):
+    out = torch.norm(a,dim=-1)
+print(f"The CPU runnning time of norm is: {time.time()-current}")
 
 
 
@@ -53,11 +56,16 @@ print(f"The GPU runnning time of logsumexp is: {time.time()-current}")
 
 current = time.time()
 for _ in range(iterations):
-    _,out = torch.max(a,dim=-1)
+    out = torch.amax(a,dim=-1)
 print(f"The GPU runnning time of max is: {time.time()-current}")
 
 current = time.time()
 for _ in range(iterations):
     out = torch.mean(a,dim=-1)
 print(f"The GPU runnning time of mean is: {time.time()-current}")
+
+current = time.time()
+for _ in range(iterations):
+    out = torch.norm(a,dim=-1)
+print(f"The GPU runnning time of norm is: {time.time()-current}")
 
