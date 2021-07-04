@@ -374,55 +374,55 @@ class Model3(nn.Module):
         return x
 
 
-def model3A1(num_classes=40, **kwargs) -> Model3:
+def model3A1(num_classes=40, **kwargs) -> Model3:  # 77.307 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
-def model3A2(num_classes=40, **kwargs) -> Model3:
+def model3A2(num_classes=40, **kwargs) -> Model3:  # 74.566 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.2,
                  reducers=[4, 4], **kwargs)
 
 
-def model3A3(num_classes=40, **kwargs) -> Model3:
+def model3A3(num_classes=40, **kwargs) -> Model3:  # 77.169 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=1,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model3A4(num_classes=40, **kwargs) -> Model3:
+def model3A4(num_classes=40, **kwargs) -> Model3:  # 75.677  neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=16,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model3A5(num_classes=40, **kwargs) -> Model3:
+def model3A5(num_classes=40, **kwargs) -> Model3:  # 75.815 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=4, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model3A6(num_classes=40, **kwargs) -> Model3:
+def model3A6(num_classes=40, **kwargs) -> Model3:  # 76.093  neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[8, 4], **kwargs)
 
 
-def model3A7(num_classes=40, **kwargs) -> Model3:
+def model3A7(num_classes=40, **kwargs) -> Model3:  # 76.301 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[3, 3], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model3A8(num_classes=40, **kwargs) -> Model3:
+def model3A8(num_classes=40, **kwargs) -> Model3:  # 76.579 neu
     return Model3(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=2, dropout=0.1,

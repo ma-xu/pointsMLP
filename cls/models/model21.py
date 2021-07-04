@@ -393,6 +393,7 @@ def model21G(num_classes=40, **kwargs) -> Model21:
                    reducers=[4, 4], **kwargs)
 
 
+# demo1 81.783, demo2 81.61, demo3 82.061, demo4 81.714, 20210628213252 81.679, neu
 def model21H(num_classes=40, **kwargs) -> Model21:
     return Model21(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],

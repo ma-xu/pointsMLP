@@ -364,37 +364,37 @@ class Model1(nn.Module):
         return x
 
 
-def model1A(num_classes=40, **kwargs) -> Model1:
+def model1A(num_classes=40, **kwargs) -> Model1:   # 78.973 neu
     return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3,
                  reducers=[4, 4], **kwargs)
 
-def model1B(num_classes=40, **kwargs) -> Model1:
+def model1B(num_classes=40, **kwargs) -> Model1:  # 72.935 neu
     return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="mean",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3,
                  reducers=[4, 4], **kwargs)
 
-def model1C(num_classes=40, **kwargs) -> Model1:
+def model1C(num_classes=40, **kwargs) -> Model1:  # 73.04 neu
     return Model1(points=1024, class_num=num_classes, embed_dim=64, pool="logsumexp",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3,
                  reducers=[4, 4], **kwargs)
 
-def model1D(num_classes=40, **kwargs) -> Model1:
+def model1D(num_classes=40, **kwargs) -> Model1:  # 77.481% neu, not finished epoch125
     return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3,
                  reducers=[4, 4], **kwargs)
 
-def model1E(num_classes=40, **kwargs) -> Model1:
+def model1E(num_classes=40, **kwargs) -> Model1:  # 78.522% neu, not finished, epoch 49
     return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
                  k_neighbors=[64, 64], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3,
                  reducers=[4, 4], **kwargs)
 
-def model1F(num_classes=40, **kwargs) -> Model1:
+def model1F(num_classes=40, **kwargs) -> Model1:  # 74.601% neu, not finished, epoch63
     return Model1(points=1024, class_num=num_classes, embed_dim=128, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[4, 4], global_blocks=3,

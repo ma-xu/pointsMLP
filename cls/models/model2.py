@@ -373,82 +373,82 @@ class Model2(nn.Module):
         return x
 
 
-def model2A1(num_classes=40, **kwargs) -> Model2:
+def model2A1(num_classes=40, **kwargs) -> Model2:  # 77.307 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
-def model2A2(num_classes=40, **kwargs) -> Model2:
+def model2A2(num_classes=40, **kwargs) -> Model2:  # 75.434 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.2,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A3(num_classes=40, **kwargs) -> Model2:
+def model2A3(num_classes=40, **kwargs) -> Model2:  # 77.307  neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=1,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A4(num_classes=40, **kwargs) -> Model2:
+def model2A4(num_classes=40, **kwargs) -> Model2:  # 77.273 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=16,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A5(num_classes=40, **kwargs) -> Model2:
+def model2A5(num_classes=40, **kwargs) -> Model2:  # 75.503 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=4, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A6(num_classes=40, **kwargs) -> Model2:
+def model2A6(num_classes=40, **kwargs) -> Model2:  # 76.475 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[8, 4], **kwargs)
 
 
-def model2A7(num_classes=40, **kwargs) -> Model2:
+def model2A7(num_classes=40, **kwargs) -> Model2:  # 76.856 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[3, 3], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A8(num_classes=40, **kwargs) -> Model2:
+def model2A8(num_classes=40, **kwargs) -> Model2:  # 77.03 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=2, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
-def model2A9(num_classes=40, **kwargs) -> Model2:
+def model2A9(num_classes=40, **kwargs) -> Model2:  # 75.33% neu, not finished, epoch107
     return Model2(points=1024, class_num=num_classes, embed_dim=128, pool="max",
                  k_neighbors=[32, 32], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A10(num_classes=40, **kwargs) -> Model2:
+def model2A10(num_classes=40, **kwargs) -> Model2:  # 77.065, neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[32, 16], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[8, 4], **kwargs)
 
 
-def model2A11(num_classes=40, **kwargs) -> Model2:
+def model2A11(num_classes=40, **kwargs) -> Model2:  # 74.219  neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[16, 16], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,
                  reducers=[4, 4], **kwargs)
 
 
-def model2A12(num_classes=40, **kwargs) -> Model2:
+def model2A12(num_classes=40, **kwargs) -> Model2:  # 75.954 neu
     return Model2(points=1024, class_num=num_classes, embed_dim=64, pool="max",
                  k_neighbors=[24, 24], expansion=2, groups=8,
                  local_blocks=[2, 2], global_blocks=3, dropout=0.1,

@@ -395,7 +395,7 @@ def model22G(num_classes=40, **kwargs) -> Model22:
                    pre_blocks=[4, 4], pos_blocks=[2, 2], k_neighbors=[32, 32],
                    reducers=[4, 4], **kwargs)
 
-
+# demo1 82.13, demo2 81.194, unt hpc
 def model22H(num_classes=40, **kwargs) -> Model22:
     return Model22(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],
