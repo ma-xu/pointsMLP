@@ -6,3 +6,4 @@ from .model2 import model2A1,model2A2, model2A3, model2A4, model2A5, model2A6, \
     model2A7, model2A8, model2A9, model2A10, model2A11, model2A12
 from .model3 import model3A1, model3A2, model3A3, model3A4, model3A5, model3A6, \
     model3A7, model3A8, model3A9, model3A10, model3A11, model3A12
+from .model4 import model4A1, model4A2, model4A3, model4A4, model4A5, model4A6, model4A7, model4A8
