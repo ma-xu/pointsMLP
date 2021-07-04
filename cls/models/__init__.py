@@ -9,3 +9,4 @@ from .model3 import model3A1, model3A2, model3A3, model3A4, model3A5, model3A6, 
 from .model4 import model4A1, model4A2, model4A3, model4A4, model4A5, model4A6, model4A7, model4A8
 from .model22 import model22H
 from .model23 import model23H
+from .model24 import model24H
