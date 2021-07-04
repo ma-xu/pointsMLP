@@ -16,11 +16,12 @@ def parse_args():
 
 def measure_time(args):
     data = torch.rand(1,args.num_points, args.dim).to(args.device)
-    warm_up=50
+    warm_up=10
     for _ in range(warm_up):
         idx = torch.multinomial(torch.linspace(0, args.num_points - 1, steps=args.num_points).to(args.device),
                           num_samples=args.sam_points, replacement=False).long()
         idx = pointnet2_utils.furthest_point_sample(data, args.sam_points).long()
+    print("Finishing warm up devices")
     time_cost_rand = datetime.datetime.now()
     for _ in range(args.iterations):
         idx = torch.multinomial(torch.linspace(0, args.num_points - 1, steps=args.num_points).to(args.device),
