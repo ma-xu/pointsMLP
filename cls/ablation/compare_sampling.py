@@ -1,5 +1,6 @@
 import argparse
 import torch
+import numpy as np
 import datetime
 from pointnet2_ops import pointnet2_utils
 
@@ -18,14 +19,12 @@ def measure_time(args):
     data = torch.rand(1,args.num_points, args.dim).to(args.device)
     warm_up=10
     for _ in range(warm_up):
-        idx = torch.multinomial(torch.linspace(0, args.num_points - 1, steps=args.num_points).to(args.device),
-                          num_samples=args.sam_points, replacement=False).long()
+        idx = torch.Tensor(np.random.choice(args.num_points,size=args.num_points, replace=False)).to(args.device).long()
         idx = pointnet2_utils.furthest_point_sample(data, args.sam_points).long()
     print("Finishing warm up devices")
     time_cost_rand = datetime.datetime.now()
     for _ in range(args.iterations):
-        idx = torch.multinomial(torch.linspace(0, args.num_points - 1, steps=args.num_points).to(args.device),
-                                num_samples=args.sam_points, replacement=False).long()
+        idx = torch.Tensor(np.random.choice(args.num_points,size=args.num_points, replace=False)).to(args.device).long()
     time_cost_rand = (datetime.datetime.now() - time_cost_rand).total_seconds()
 
     time_cost_fps = datetime.datetime.now()
