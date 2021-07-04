@@ -25,12 +25,12 @@ def measure_time(args):
     for _ in range(args.iterations):
         idx = torch.multinomial(torch.linspace(0, args.num_points - 1, steps=args.num_points).to(args.device),
                                 num_samples=args.sam_points, replacement=False).long()
-    time_cost_rand = int((datetime.datetime.now() - time_cost_rand).total_seconds())
+    time_cost_rand = (datetime.datetime.now() - time_cost_rand).total_seconds()
 
     time_cost_fps = datetime.datetime.now()
     for _ in range(args.iterations):
         idx = pointnet2_utils.furthest_point_sample(data, args.sam_points).long()
-    time_cost_fps = int((datetime.datetime.now() - time_cost_fps).total_seconds())
+    time_cost_fps = (datetime.datetime.now() - time_cost_fps).total_seconds()
     print(f'[points:{args.num_points}, sampling:{args.sam_points}, iterations:{args.iterations}, device:{args.device}]')
     print(f"FPS time: {time_cost_fps} | RAND time: {time_cost_rand}")
 
