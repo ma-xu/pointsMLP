@@ -31,8 +31,8 @@ def measure_time(args):
     for _ in range(args.iterations):
         idx = pointnet2_utils.furthest_point_sample(data, args.sam_points).long()
     time_cost_fps = (datetime.datetime.now() - time_cost_fps).total_seconds()
-    print(f'[points:{args.num_points}, sampling:{args.sam_points}, iterations:{args.iterations}, device:{args.device}]')
-    print(f"FPS time: {time_cost_fps} | RAND time: {time_cost_rand}")
+    print(f'\t[points:{args.num_points}, sampling:{args.sam_points}, iterations:{args.iterations}, device:{args.device}]'
+          f'  FPS time: {time_cost_fps} | RAND time: {time_cost_rand}')
 
 
 if __name__ == '__main__':
