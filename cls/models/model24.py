@@ -370,7 +370,8 @@ def model24G(num_classes=40, **kwargs) -> Model24:
                    pre_blocks=[4, 4], pos_blocks=[2, 2], k_neighbors=[32, 32],
                    reducers=[4, 4], **kwargs)
 
-# demo1 82.13, demo2 81.194, unt hpc
+# model24H_compare1 neu: ++  Best Train acc: 99.877 | Best Test acc: 82.061  ++
+# model24H_compare2 neu: ++  Best Train acc: 99.86 | Best Test acc: 82.547  ++
 def model24H(num_classes=40, **kwargs) -> Model24:
     return Model24(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],

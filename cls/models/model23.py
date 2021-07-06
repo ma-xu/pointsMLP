@@ -374,7 +374,10 @@ def model23G(num_classes=40, **kwargs) -> Model23:
                    pre_blocks=[4, 4], pos_blocks=[2, 2], k_neighbors=[32, 32],
                    reducers=[4, 4], **kwargs)
 
-# demo1 82.13, demo2 81.194, unt hpc
+# model23H_demo1 80.187 unt hpc,  train acc is low, 95.295; model22H is around 99.
+# model23H_compare1 neu: ++  Best Train acc: 94.637 | Best Test acc: 79.598  ++
+# model23H_compare2 neu: ++  Best Train acc: 95.032 | Best Test acc: 79.667  ++
+
 def model23H(num_classes=40, **kwargs) -> Model23:
     return Model23(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],
