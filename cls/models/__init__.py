@@ -11,3 +11,4 @@ from .model22 import model22H
 from .model23 import model23H
 from .model24 import model24H
 from .model25 import model25A, model25B, model25C, model25D, model25E, model25F, model25G, model25H, model25I, model25J
+from .model26 import model26H, model26G
