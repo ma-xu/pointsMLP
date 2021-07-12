@@ -282,25 +282,21 @@ class encoder_stage(nn.Module):
         return xyz, x
 
 class PointNetFeaturePropagation(nn.Module):
-    def __init__(self, in_channel, mlp):
+    def __init__(self, in_channel, out_channel, blocks=1):
         super(PointNetFeaturePropagation, self).__init__()
-        self.mlp_convs = nn.ModuleList()
-        self.mlp_bns = nn.ModuleList()
-        last_channel = in_channel
-        for out_channel in mlp:
-            self.mlp_convs.append(nn.Conv1d(last_channel, out_channel, 1))
-            self.mlp_bns.append(nn.BatchNorm1d(out_channel))
-            last_channel = out_channel
+        self.fuse = nn.Conv1d(in_channel, out_channel,1,bias=False)
+        self.extraction = PosExtraction(out_channel, blocks)
+
 
     def forward(self, xyz1, xyz2, points1, points2):
         """
         Input:
-            xyz1: input points position data, [B, C, N]
-            xyz2: sampled input points position data, [B, C, S]
+            xyz1: input points position data, [B, N, 3]
+            xyz2: sampled input points position data, [B, S, 3]
             points1: input points data, [B, D, N]
             points2: input points data, [B, D, S]
         Return:
-            new_points: upsampled points data, [B, D', N]
+            new_points: upsampled points data, [B, D', N] D'=D+D
         """
         # xyz1 = xyz1.permute(0, 2, 1)
         # xyz2 = xyz2.permute(0, 2, 1)
@@ -328,10 +324,8 @@ class PointNetFeaturePropagation(nn.Module):
             new_points = interpolated_points
 
         new_points = new_points.permute(0, 2, 1)
-
-        for i, conv in enumerate(self.mlp_convs):
-            bn = self.mlp_bns[i]
-            new_points = F.gelu(bn(conv(new_points)))
+        new_points = self.fuse(new_points)
+        new_points = self.extraction(new_points)
         return new_points
 
 
@@ -360,10 +354,10 @@ class get_model(nn.Module):
         self.encoder_stage4 = encoder_stage(anchor_points=points // 32, channel=512, reduce=True,
                                             pre_blocks=3, pos_blocks=3, k_neighbor=32)
 
-        self.fp4 = PointNetFeaturePropagation(in_channel=(512+512), mlp=[512,256,256])
-        self.fp3 = PointNetFeaturePropagation(in_channel=256+256, mlp=[512, 256, 256])
-        self.fp2 = PointNetFeaturePropagation(in_channel=256 + 256, mlp=[256, 256])
-        self.fp1 = PointNetFeaturePropagation(in_channel=256+128+128, mlp=[256, 256])
+        self.fp4 = PointNetFeaturePropagation(in_channel=(512+512),out_channel=256, blocks=4)
+        self.fp3 = PointNetFeaturePropagation(in_channel=256+256, out_channel=256, blocks=4)
+        self.fp2 = PointNetFeaturePropagation(in_channel=256 + 256, out_channel=256, blocks=4 )
+        self.fp1 = PointNetFeaturePropagation(in_channel=256+128+128, out_channel=256, blocks=4 )
 
         self.info_encoder = nn.Sequential(
             FCBNReLU1D(16+3+input_channel, 128),
@@ -438,9 +432,9 @@ if __name__ == '__main__':
     print(out.shape)
 
 
-    data = torch.rand(2, 6, 2048)
+    data = torch.rand(2, 6, 1024)
     cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = get_model(points=2048)
+    model = get_model(points=1024)
     out,_ = model(data, cls_label)
     print(out.shape)
