@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from util.data_util import PartNormalDataset
 import torch.nn.functional as F
 import torch.nn as nn
-from model.GDANet_ptseg import GDANet
+import models as models
 import numpy as np
 from torch.utils.data import DataLoader
 from util.util import to_categorical, compute_overall_iou, IOStream
@@ -28,9 +28,6 @@ def _init_():
 
     if not args.eval:  # backup the running files
         os.system('cp main_cls.py checkpoints' + '/' + args.exp_name + '/' + 'main.py.backup')
-        os.system('cp model/GDANet_ptseg.py checkpoints' + '/' + args.exp_name + '/' + 'GDANet_ptseg.py.backup')
-        os.system('cp util.GDANet_util.py checkpoints' + '/' + args.exp_name + '/' + 'GDANet_util.py.backup')
-        os.system('cp util.data_util.py checkpoints' + '/' + args.exp_name + '/' + 'data_util.py.backup')
 
 
 def weight_init(m):
@@ -60,7 +57,7 @@ def train(args, io):
     num_part = 50
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    model = GDANet(num_part).to(device)
+    model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
 
     model.apply(weight_init)
@@ -314,7 +311,7 @@ def test(args, io):
     num_part = 50
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    model = GDANet(num_part).to(device)
+    model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
 
     from collections import OrderedDict
@@ -383,7 +380,9 @@ def test(args, io):
 if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
-    parser.add_argument('--exp_name', type=str, default='GDANet', metavar='N',
+    parser.add_argument('--model', type=str, default='PointMLP1', metavar='N',
+                        help='Name of the experiment')
+    parser.add_argument('--exp_name', type=str, default='demo1', metavar='N',
                         help='Name of the experiment')
     parser.add_argument('--batch_size', type=int, default=64, metavar='batch_size',
                         help='Size of batch)')
@@ -415,13 +414,14 @@ if __name__ == "__main__":
                         help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')
 
     args = parser.parse_args()
+    args.exp_name = args.model+"_"+args.exp_name
 
     _init_()
 
     if not args.eval:
-        io = IOStream('checkpoints/' + args.exp_name + '/%s_train.log' % (args.exp_name))
+        io = IOStream('checkpoints/' + args.exp_name + '/%s_train.log' % (args.model))
     else:
-        io = IOStream('checkpoints/' + args.exp_name + '/%s_test.log' % (args.exp_name))
+        io = IOStream('checkpoints/' + args.exp_name + '/%s_test.log' % (args.model))
     io.cprint(str(args))
 
     if args.manual_seed is not None:
