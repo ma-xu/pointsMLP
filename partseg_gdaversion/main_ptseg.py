@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from util.data_util import PartNormalDataset
 import torch.nn.functional as F
 import torch.nn as nn
-import models as models
+import model as models
 import numpy as np
 from torch.utils.data import DataLoader
 from util.util import to_categorical, compute_overall_iou, IOStream
