@@ -375,7 +375,8 @@ def test(args, io):
 if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
-    parser.add_argument('--exp_name', type=str, default='GDANet', metavar='N',
+    parser.add_argument('--model', type=str, default='PointMLP1')
+    parser.add_argument('--exp_name', type=str, default='demo1', metavar='N',
                         help='Name of the experiment')
     parser.add_argument('--batch_size', type=int, default=32, metavar='batch_size',
                         help='Size of batch)')
@@ -407,6 +408,7 @@ if __name__ == "__main__":
                         help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')
 
     args = parser.parse_args()
+    args.exp_name = args.model+"_"+args.exp_name
 
     _init_()
 
