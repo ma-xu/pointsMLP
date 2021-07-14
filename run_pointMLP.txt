@@ -1,0 +1,114 @@
+cd /scratch/ma.xu1/pointsMLP/cls/
+tmux new-session -d -s point1
+tmux attach -t point1
+salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:4 --cpus-per-task=6 --mem=128Gb  --time=1-00:00:00
+conda activate point
+
+nohup python main.py --model model1F --msg demo  > model1F_demo.out &
+scp /Users/melody/Downloads/emoji_u1f632.png ma.xu1@login-01.discovery.neu.edu:/scratch/ma.xu1/Pixel-Art/testcases/
+
+nohup python main.py --model model23H --msg demo1  > nohup/model23H_demo1.out &
+
+nohup python main.py --model model2A1 --msg parallel  > nohup/model2A1_parallel.out &
+nohup python main.py --model model2A2 --msg parallel  > nohup/model2A2_parallel.out &
+
+nohup python main.py --model model2A3 --msg parallel  > nohup/model2A3_parallel.out &
+nohup python main.py --model model2A4 --msg parallel  > nohup/model2A4_parallel.out &
+
+nohup python main.py --model model2A5 --msg parallel  > nohup/model2A5_parallel.out &
+nohup python main.py --model model2A6 --msg parallel  > nohup/model2A6_parallel.out &
+
+
+nohup python main.py --model model2A7 --msg parallel  > nohup/model2A7_parallel.out &
+nohup python main.py --model model2A8 --msg parallel  > nohup/model2A8_parallel.out &
+
+
+nohup python main.py --model model2A9 --msg parallel  > nohup/model2A9_parallel.out &
+nohup python main.py --model model2A10 --msg parallel  > nohup/model2A10_parallel.out &
+
+
+nohup python main.py --model model2A11 --msg parallel  > nohup/model2A11_parallel.out &
+nohup python main.py --model model2A12 --msg parallel  > nohup/model2A12_parallel.out &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model21H --msg demo1  > nohup/model21H_demo1.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model21H --msg demo2  > nohup/model21H_demo2.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model21H --msg demo3  > nohup/model21H_demo3.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model21H --msg demo4  > nohup/model21H_demo4.out &
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model22H --msg demo1  > nohup/model22H_demo1.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model22H --msg demo2  > nohup/model22H_demo2.out &
+
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model4A1 --msg parallel  > nohup/model4A1_parallel.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model4A2 --msg parallel  > nohup/model4A2_parallel.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model4A3 --msg parallel  > nohup/model4A3_parallel.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model4A4 --msg parallel  > nohup/model4A4_parallel.out &
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model26H --msg demo1  > nohup/model26H_demo1.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model26H --msg demo2  > nohup/model26H_demo2.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model26H --msg demo3  > nohup/model26H_demo3.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model26H --msg demo4  > nohup/model26H_demo4.out &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model26G --msg demo1  > nohup/model26G_demo1.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model26G --msg demo2  > nohup/model26G_demo2.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model26G --msg demo3  > nohup/model26G_demo3.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model26G --msg demo4  > nohup/model26G_demo4.out &
+
+
+nohup python main.py --model model2A9 --msg parallel  > nohup/model2A9_parallel.out &
+nohup python main.py --model model2A10 --msg parallel  > nohup/model2A10_parallel.out &
+nohup python main.py --model model2A11 --msg parallel  > nohup/model2A11_parallel.out &
+nohup python main.py --model model2A12 --msg parallel  > nohup/model2A12_parallel.out &
+
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model23H --msg compare1  > nohup/model23H_compare1.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model23H --msg compare2  > nohup/model23H_compare2.out &
+
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model24H --msg compare1  > nohup/model24H_compare1.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model24H --msg compare2  > nohup/model24H_compare2.out &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup sh running_model25_1.sh > nohup/running_model25_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_model25_2.sh > nohup/running_model25_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_model25_3.sh > nohup/running_model25_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_model25_4.sh > nohup/running_model25_4.log &
+
+
+
+nohup python train.py --model pointMLP1 --normal --log_dir pointMLP1_demo1 --batch_size 64 > nohup/pointMLP1_demo1.out &
+
+nohup python train.py --model pointMLP1 --normal --log_dir pointMLP1_demo2 --batch_size 64 > nohup/pointMLP1_demo2.out &
+
+nohup python train.py --model pointMLP1 --normal --log_dir pointMLP1_demo3 --batch_size 64 > nohup/pointMLP1_demo3.out &
+
+nohup python train.py --model pointMLP2 --normal --log_dir pointMLP2_demo1 --batch_size 32 > nohup/pointMLP2_demo1.out &
+
+nohup python train.py --model pointMLP2 --normal --log_dir pointMLP2_demo2 --batch_size 64 > nohup/pointMLP2_demo2.out &
+
+
+
+nohup python train.py --model pointMLP3 --normal --log_dir pointMLP3_demo1 --batch_size 32 > nohup/pointMLP3_demo1.out &
+
+nohup python train.py --model pointMLP3 --normal --log_dir pointMLP3_demo2 --batch_size 64 > nohup/pointMLP3_demo2.out &
+
+
+
+
+
+nohup python main_ptseg.py --exp_name GDANet_demo1 --batch_size 32 > nohup/GDANet_demo1.out &
+
+nohup python main_ptseg.py --exp_name GDANet_demo2 --batch_size 32 > nohup/GDANet_demo2.out &
+
+nohup python main_ptseg.py --exp_name GDANet_demo3 --batch_size 64 > nohup/GDANet_demo3.out &
+
+nohup python main_ptseg.py --exp_name GDANet_demo4 --batch_size 64 > nohup/GDANet_demo4.out &
+
+
+
+CUDA_VISIBLE_DEVICES=0 nohup sh train1.sh > nohup/train_model25H.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh train2.sh > nohup/train_model26H.log &
+
