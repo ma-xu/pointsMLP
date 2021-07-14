@@ -4,6 +4,7 @@ import numpy as np
 from torch.utils.data import Dataset
 import os
 import json
+os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
 
 def load_data(partition):
@@ -156,8 +157,8 @@ class PartNormalDataset(Dataset):
 
 
 if __name__ == '__main__':
-    train = ModelNet40(1024)
-    test = ModelNet40(1024, 'test')
-    for data, label in train:
+    train = PartNormalDataset(npoints=2048, split='trainval', normalize=False)
+    test = PartNormalDataset(npoints=2048, split='test', normalize=False)
+    for data, label, _, _ in train:
         print(data.shape)
         print(label.shape)

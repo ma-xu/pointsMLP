@@ -7,7 +7,7 @@ from util.GDANet_util import local_operator_withnorm, local_operator, GDM, SGCAM
 class GDANet(nn.Module):
     def __init__(self, num_classes):
         super(GDANet, self).__init__()
-
+        self.num_part = num_classes
         self.bn1 = nn.BatchNorm2d(64, momentum=0.1)
         self.bn11 = nn.BatchNorm2d(64, momentum=0.1)
         self.bn12 = nn.BatchNorm1d(64, momentum=0.1)
@@ -68,8 +68,7 @@ class GDANet(nn.Module):
         self.SGCAM_2s = SGCAM(64)
         self.SGCAM_2g = SGCAM(64)
 
-    def forward(self, x, norm_plt, cls_label):
-        print(f"x.shape: {x.shape} | norm_plt.shape:{norm_plt.shape} | cls_label.shape: {cls_label.shape}")
+    def forward(self, x, norm_plt, cls_label,gt=None):
         B, C, N = x.size()
         ###############
         """block 1"""
@@ -122,7 +121,7 @@ class GDANet(nn.Module):
         x = F.relu(self.conv7(x))
         x = self.conv8(x)
         x = F.log_softmax(x, dim=1)
-        x = x.permute(0, 2, 1)  # b,n,50
+        x = x.permute(0, 2, 1)  # b,n,64
 
         return x
 
