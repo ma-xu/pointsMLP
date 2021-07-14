@@ -7,7 +7,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from util.data_util import PartNormalDataset
 import torch.nn.functional as F
 import torch.nn as nn
-from model.GDANet_ptseg import GDANet
+import model as models
 import numpy as np
 from torch.utils.data import DataLoader
 from util.util import to_categorical, compute_overall_iou, IOStream
@@ -54,7 +54,7 @@ def train(args, io):
     num_part = 50
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    model = GDANet(num_part).to(device)
+    model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
 
     model.apply(weight_init)
@@ -306,7 +306,7 @@ def test(args, io):
     num_part = 50
     device = torch.device("cuda" if args.cuda else "cpu")
 
-    model = GDANet(num_part).to(device)
+    model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
 
     from collections import OrderedDict
