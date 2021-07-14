@@ -188,6 +188,7 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
                                           target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
         # target: b,n
         seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # seg_pred: b,n,50
+        print(f"seg_pred.shape is: {seg_pred.shape}")
 
         # loss
         seg_pred = seg_pred.contiguous().view(-1, num_part)  # b*n,50
