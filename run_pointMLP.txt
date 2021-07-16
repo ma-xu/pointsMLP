@@ -122,7 +122,13 @@ CUDA_VISIBLE_DEVICES=3 nohup sh train_model26D.sh > nohup/train_model26D.log &
 # in partseg_gdaversion
 nohup python main_ptseg.py --model PointMLP1 --exp_name test1 --batch_size 64 > nohup/PointMLP1_test1.log &
 nohup python main_ptseg.py --model PointMLP2 --exp_name test1 --batch_size 64 > nohup/PointMLP2_test1.log &
-nohup python main_ptseg.py --model PointMLP2 --exp_name test2 --batch_size 64 > nohup/PointMLP2_test2.log &
+nohup python main_ptseg.py --model PointMLP2 --exp_name test2 --batch_size 64 --scheduler cos > nohup/PointMLP2_test2.log &
 
 
+# run this after meeting
+nohup python main_ptseg.py --model PointMLP3 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP3_test1.log &
+nohup python main_ptseg.py --model PointMLP3 --exp_name test2 --batch_size 64 --scheduler cos > nohup/PointMLP3_test2.log &
+nohup python main_ptseg.py --model PointMLP3 --exp_name test3 --batch_size 64 > nohup/PointMLP3_test3.log &
+
+permutation-invariant MLP
 

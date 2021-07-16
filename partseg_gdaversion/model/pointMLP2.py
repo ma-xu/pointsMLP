@@ -1,4 +1,5 @@
 """
+Based on PointMLP1, using poseExtraction to replace MLP in decode.
 PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
 """
 

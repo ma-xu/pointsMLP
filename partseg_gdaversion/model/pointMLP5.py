@@ -1,4 +1,6 @@
 """
+Based on PointMLP4, remove global context, enlarge info channel
+Based on PointMLP3, change dropout to 0.1
 Based on PointMLP2, add blocks in decode, change channel numbers.
 Based on PointMLP1, using poseExtraction to replace MLP in decode.
 PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
@@ -334,11 +336,11 @@ class PointNetFeaturePropagation(nn.Module):
 
 
 
-class PointMLP3(nn.Module):
+class PointMLP5(nn.Module):
     def __init__(self, num_classes=50,points=2048, embed_dim=128, normal_channel=True,
                  pre_blocks=[2,2,2,2], pos_blocks=[2,2,2,2], k_neighbors=[32,32,32,32],
                  reducers=[2,2,2,2], **kwargs):
-        super(PointMLP3, self).__init__()
+        super(PointMLP5, self).__init__()
         # self.stages = len(pre_blocks)
         self.num_classes = num_classes
         self.points=points
@@ -360,28 +362,24 @@ class PointMLP3(nn.Module):
         self.fp4 = PointNetFeaturePropagation(in_channel=(512+512),out_channel=512, blocks=4)
         self.fp3 = PointNetFeaturePropagation(in_channel=512+256, out_channel=512, blocks=4)
         self.fp2 = PointNetFeaturePropagation(in_channel=512 + 256, out_channel=256, blocks=4 )
-        self.fp1 = PointNetFeaturePropagation(in_channel=256+128+128, out_channel=256, blocks=4 )
+        self.fp1 = PointNetFeaturePropagation(in_channel=256+256, out_channel=256, blocks=4 )
 
         self.info_encoder = nn.Sequential(
-            FCBNReLU1D(16+3+input_channel, 128),
-            FCBNReLU1D(128, 128),
+            FCBNReLU1D(16+3, 256),
+            FCBNReLU1D(256, 256),
         )
-        self.global_encoder = nn.Sequential(
-            FCBNReLU1D(512, 256),
-            FCBNReLU1D(256, 128),
-        )
+
 
         self.conv0 = nn.Conv1d(256, 256, 1)
         self.bn0 = nn.BatchNorm1d(256)
-        self.drop0 = nn.Dropout(0.4)
+        self.drop0 = nn.Dropout(0.1)
         self.conv1 = nn.Conv1d(256, 128, 1)
         self.bn1 = nn.BatchNorm1d(128)
-        self.drop1 = nn.Dropout(0.4)
+        self.drop1 = nn.Dropout(0.1)
         self.conv2 = nn.Conv1d(128, num_classes, 1)
 
     def forward(self, x, norm_plt, cls_label):
         x = torch.cat([x,norm_plt],dim=1)
-        points_0 = x
         B, C, N = x.shape
         xyz = x.permute(0, 2, 1)[:,:,:3]
         batch_size, _, _ = x.size()
@@ -390,16 +388,14 @@ class PointMLP3(nn.Module):
         xyz_2, fea_2 = self.encoder_stage2(xyz_1, fea_1)  # [b,p2,3] [b,d2,p2]
         xyz_3, fea_3 = self.encoder_stage3(xyz_2, fea_2)  # [b,p3,3] [b,d3,p3]
         xyz_4, fea_4 = self.encoder_stage4(xyz_3, fea_3)  # [b,p4,3] [b,d4,p3]
-        global_context = F.adaptive_max_pool1d(fea_4, 1)
 
         l3_points = self.fp4(xyz_3, xyz_4, fea_3, fea_4)
         l2_points = self.fp3(xyz_2, xyz_3, fea_2, l3_points)
         l1_points = self.fp2(xyz_1, xyz_2, fea_1, l2_points)
         cls_label_one_hot = cls_label.view(B, 16, 1).repeat(1, 1, N)
-        extra_info = torch.cat([cls_label_one_hot, xyz.permute(0, 2, 1), points_0], 1)
+        extra_info = torch.cat([cls_label_one_hot, xyz.permute(0, 2, 1)], 1)
         extra_info = self.info_encoder(extra_info)
-        global_context = self.global_encoder(global_context)
-        l0_points = self.fp1(xyz, xyz_1, torch.cat([extra_info,global_context.expand_as(extra_info) ], 1), l1_points)
+        l0_points = self.fp1(xyz, xyz_1, extra_info, l1_points)
 
         # FC layers
         feat = F.gelu(self.bn0(self.conv0(l0_points)))
@@ -439,7 +435,7 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = PointMLP3(points=2048)
+    model = PointMLP5(points=2048)
     out = model(data, norm, cls_label)
     print(out.shape)
 

@@ -1,4 +1,5 @@
 """
+Based on PointMLP3, change dropout to 0.1
 Based on PointMLP2, add blocks in decode, change channel numbers.
 Based on PointMLP1, using poseExtraction to replace MLP in decode.
 PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
@@ -334,11 +335,11 @@ class PointNetFeaturePropagation(nn.Module):
 
 
 
-class PointMLP3(nn.Module):
+class PointMLP4(nn.Module):
     def __init__(self, num_classes=50,points=2048, embed_dim=128, normal_channel=True,
                  pre_blocks=[2,2,2,2], pos_blocks=[2,2,2,2], k_neighbors=[32,32,32,32],
                  reducers=[2,2,2,2], **kwargs):
-        super(PointMLP3, self).__init__()
+        super(PointMLP4, self).__init__()
         # self.stages = len(pre_blocks)
         self.num_classes = num_classes
         self.points=points
@@ -373,10 +374,10 @@ class PointMLP3(nn.Module):
 
         self.conv0 = nn.Conv1d(256, 256, 1)
         self.bn0 = nn.BatchNorm1d(256)
-        self.drop0 = nn.Dropout(0.4)
+        self.drop0 = nn.Dropout(0.1)
         self.conv1 = nn.Conv1d(256, 128, 1)
         self.bn1 = nn.BatchNorm1d(128)
-        self.drop1 = nn.Dropout(0.4)
+        self.drop1 = nn.Dropout(0.1)
         self.conv2 = nn.Conv1d(128, num_classes, 1)
 
     def forward(self, x, norm_plt, cls_label):
@@ -439,7 +440,7 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = PointMLP3(points=2048)
+    model = PointMLP4(points=2048)
     out = model(data, norm, cls_label)
     print(out.shape)
 
