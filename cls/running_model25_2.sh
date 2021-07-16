@@ -1,12 +1,7 @@
 #!/usr/bin/env bash
 
-python main.py --model model25A --msg demo2
-python main.py --model model25B --msg demo2
-python main.py --model model25C --msg demo2
-python main.py --model model25D --msg demo2
-python main.py --model model25E --msg demo2
-python main.py --model model25F --msg demo2
-python main.py --model model25G --msg demo2
-python main.py --model model25H --msg demo2
-python main.py --model model25I --msg demo2
-python main.py --model model25J --msg demo2
+python main.py --model model25H2 --msg demo1
+python main.py --model model25H2 --msg demo2
+python main.py --model model25H2 --msg demo3
+python main.py --model model25H2 --msg demo4
+python main.py --model model25H2 --msg demo5

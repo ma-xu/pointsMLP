@@ -386,6 +386,28 @@ def model25J(num_classes=40, **kwargs) -> model25:
     return model25(points=1024, class_num=num_classes, embed_dim=256,
                    pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2], k_neighbors=[32, 32],
                    reducers=[2, 2,2], **kwargs)
+
+
+def model25H1(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[1, 1], pos_blocks=[1, 1], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H2(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[2, 2], pos_blocks=[2, 2], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H3(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[3, 3], pos_blocks=[3, 3], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H5(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[5, 5], pos_blocks=[5, 5], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
 if __name__ == '__main__':
     # data = torch.rand(2, 128, 10)
     # att = Attention(128)
