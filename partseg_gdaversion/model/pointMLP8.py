@@ -1,21 +1,18 @@
 """
-Based on model24, using ReLU to replace GELU
-Based on model22, remove attention
-Bsed on model21, change FPS to random sampling.
-Exactly based on Model10, but ReLU to GeLU
-Based on Model8, add dropout and max, avg combine.
-Based on Local model, add residual connections.
-The extraction is doubled for depth.
-Learning Point Cloud with Progressively Local representation.
-[B,3,N] - {[B,G,K,d]-[B,G,d]}  - {[B,G',K,d]-[B,G',d]} -cls
+Based on PointMLP4, fea_4 += global_context
+Based on PointMLP3, change dropout to 0.1
+Based on PointMLP2, add blocks in decode, change channel numbers.
+Based on PointMLP1, using poseExtraction to replace MLP in decode.
+PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
 """
+
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import einsum
 from einops import rearrange, repeat
-# from pointnet2_ops import pointnet2_utils
-
 
 def square_distance(src, dst):
     """
@@ -135,10 +132,10 @@ class LocalGrouper(nn.Module):
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        fps_idx= torch.multinomial(torch.linspace(0, N-1, steps=N).repeat(B, 1).to(xyz.device),
-                              num_samples=self.groups, replacement=False).long()
+        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device),
+                                    num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long() # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)
         new_points = index_points(points, fps_idx)
 
@@ -159,7 +156,7 @@ class FCBNReLU1D(nn.Module):
         self.net = nn.Sequential(
             nn.Conv1d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, bias=bias),
             nn.BatchNorm1d(out_channels),
-            nn.ReLU(inplace=True)
+            nn.GELU()
         )
 
     def forward(self, x):
@@ -172,22 +169,22 @@ class FCBNReLU1DRes(nn.Module):
         self.net = nn.Sequential(
             nn.Conv1d(in_channels=channel, out_channels=channel, kernel_size=kernel_size, bias=bias),
             nn.BatchNorm1d(channel),
-            nn.ReLU(inplace=True),
+            nn.GELU(),
             nn.Conv1d(in_channels=channel, out_channels=channel, kernel_size=kernel_size, bias=bias),
             nn.BatchNorm1d(channel)
         )
 
     def forward(self, x):
-        return F.relu(self.net(x) + x,inplace=True)
+        return F.gelu(self.net(x)+x)
 
 
 class Attention(nn.Module):
-    def __init__(self, dim, heads=8, dim_head=32, dropout=0.):
+    def __init__(self, dim, heads = 8, dim_head = 32, dropout = 0.):
         super().__init__()
-
 
     def forward(self, x):
         return 0
+
 
 class TransformerBlock(nn.Module):
     def __init__(self, dim, heads=8, dim_head=32, **kwargs):
@@ -199,11 +196,11 @@ class TransformerBlock(nn.Module):
         :param kwargs:
         """
         super(TransformerBlock, self).__init__()
-        # self.attention = Attention(dim=dim, heads=heads, dim_head=dim_head)
         self.ffn = nn.Sequential(
             nn.Conv1d(dim, dim, 1, bias=False),
             nn.BatchNorm1d(dim)
         )
+
 
     def forward(self, x):
         """
@@ -211,7 +208,7 @@ class TransformerBlock(nn.Module):
         :return: [b batch,  d dimension, p points,]
         """
         out = self.ffn(x)
-        out = F.relu(x + out, inplace=True)
+        out = F.gelu(x + out)
         return out
 
 
@@ -230,7 +227,6 @@ class PreExtraction(nn.Module):
             )
         self.operation = nn.Sequential(*operation)
         self.transformer = TransformerBlock(channels, heads=4)
-
     def forward(self, x):
         b, n, s, d = x.size()  # torch.Size([32, 512, 32, 6])
         x = x.permute(0, 1, 3, 2)
@@ -263,160 +259,177 @@ class PosExtraction(nn.Module):
         return self.transformer(self.operation(x))
 
 
-class model25(nn.Module):
-    def __init__(self, points=1024, class_num=40, embed_dim=64,
-                 pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2], k_neighbors=[32, 32, 32, 32],
-                 reducers=[2, 2, 2, 2], **kwargs):
-        super(model25, self).__init__()
-        self.stages = len(pre_blocks)
-        self.class_num = class_num
-        self.points = points
+class encoder_stage(nn.Module):
+    def __init__(self, anchor_points=1024, channel=64,
+                 pre_blocks=2, pos_blocks=2, k_neighbor=32, reduce=False, **kwargs):
+        super(encoder_stage, self).__init__()
+        out_channel = channel * 2
+        # append local_grouper_list
+        self.reduce = reduce
+        if self.reduce:
+            self.reducer = nn.Sequential(
+                nn.Linear(out_channel, channel),
+                nn.GELU()
+            )
+            out_channel = channel
+        self.local_grouper = LocalGrouper(anchor_points, k_neighbor)  # [b,g,k,d]
+        # append pre_block_list
+        self.pre_block_module = PreExtraction(out_channel, pre_blocks)
+        # append pos_block_list
+        self.pos_block_module = PosExtraction(out_channel, pos_blocks)
+
+    def forward(self, xyz, x):
+        xyz, x = self.local_grouper(xyz, x.permute(0, 2, 1)) # [b,g,3]  [b,g,k,d]
+        if hasattr(self,"reducer"):
+            x = self.reducer(x)
+        x = self.pre_block_module(x)  # [b,d,g]
+        x = self.pos_block_module(x)  # [b,d,g]
+        return xyz, x
+
+class PointNetFeaturePropagation(nn.Module):
+    def __init__(self, in_channel, out_channel, blocks=1):
+        super(PointNetFeaturePropagation, self).__init__()
+        self.fuse = nn.Conv1d(in_channel, out_channel,1,bias=False)
+        self.extraction = PosExtraction(out_channel, blocks)
+
+
+    def forward(self, xyz1, xyz2, points1, points2):
+        """
+        Input:
+            xyz1: input points position data, [B, N, 3]
+            xyz2: sampled input points position data, [B, S, 3]
+            points1: input points data, [B, D, N]
+            points2: input points data, [B, D, S]
+        Return:
+            new_points: upsampled points data, [B, D', N] D'=D+D
+        """
+        # xyz1 = xyz1.permute(0, 2, 1)
+        # xyz2 = xyz2.permute(0, 2, 1)
+
+        points2 = points2.permute(0, 2, 1)
+        B, N, C = xyz1.shape
+        _, S, _ = xyz2.shape
+
+        if S == 1:
+            interpolated_points = points2.repeat(1, N, 1)
+        else:
+            dists = square_distance(xyz1, xyz2)
+            dists, idx = dists.sort(dim=-1)
+            dists, idx = dists[:, :, :3], idx[:, :, :3]  # [B, N, 3]
+
+            dist_recip = 1.0 / (dists + 1e-8)
+            norm = torch.sum(dist_recip, dim=2, keepdim=True)
+            weight = dist_recip / norm
+            interpolated_points = torch.sum(index_points(points2, idx) * weight.view(B, N, 3, 1), dim=2)
+
+        if points1 is not None:
+            points1 = points1.permute(0, 2, 1)
+            new_points = torch.cat([points1, interpolated_points], dim=-1)
+        else:
+            new_points = interpolated_points
+
+        new_points = new_points.permute(0, 2, 1)
+        new_points = self.fuse(new_points)
+        new_points = self.extraction(new_points)
+        return new_points
+
+
+
+
+class PointMLP8(nn.Module):
+    def __init__(self, num_classes=50,points=2048, embed_dim=128, normal_channel=True,
+                 pre_blocks=[2,2,2,2], pos_blocks=[2,2,2,2], k_neighbors=[32,32,32,32],
+                 reducers=[2,2,2,2], **kwargs):
+        super(PointMLP8, self).__init__()
+        # self.stages = len(pre_blocks)
+        self.num_classes = num_classes
+        self.points=points
+        input_channel=6 if normal_channel else 3
         self.embedding = nn.Sequential(
-            FCBNReLU1D(3, embed_dim),
+            FCBNReLU1D(input_channel, embed_dim),
             FCBNReLU1D(embed_dim, embed_dim)
         )
-        assert len(pre_blocks) == len(k_neighbors) == len(reducers) == len(pos_blocks), \
-            "Please check stage number consistent for pre_blocks, pos_blocks k_neighbors, reducers."
-        self.local_grouper_list = nn.ModuleList()
-        self.pre_blocks_list = nn.ModuleList()
-        self.pos_blocks_list = nn.ModuleList()
-        last_channel = embed_dim
-        anchor_points = self.points
-        for i in range(len(pre_blocks)):
-            out_channel = last_channel * 2
-            pre_block_num = pre_blocks[i]
-            pos_block_num = pos_blocks[i]
-            kneighbor = k_neighbors[i]
-            reduce = reducers[i]
-            anchor_points = anchor_points // reduce
 
-            # append local_grouper_list
-            local_grouper = LocalGrouper(anchor_points, kneighbor)  # [b,g,k,d]
-            self.local_grouper_list.append(local_grouper)
-            # append pre_block_list
-            pre_block_module = PreExtraction(out_channel, pre_block_num)
-            self.pre_blocks_list.append(pre_block_module)
-            # append pos_block_list
-            pos_block_module = PosExtraction(out_channel, pos_block_num)
-            self.pos_blocks_list.append(pos_block_module)
+        self.encoder_stage1 = encoder_stage(anchor_points=points//4, channel=128, reduce=False,
+                                            pre_blocks=4, pos_blocks=4, k_neighbor=32)
+        self.encoder_stage2 = encoder_stage(anchor_points=points//8, channel=256, reduce=True,
+                                            pre_blocks=4, pos_blocks=4, k_neighbor=32)
+        self.encoder_stage3 = encoder_stage(anchor_points=points // 16, channel=256, reduce=False,
+                                            pre_blocks=4, pos_blocks=4, k_neighbor=32)
+        self.encoder_stage4 = encoder_stage(anchor_points=points // 32, channel=512, reduce=True,
+                                            pre_blocks=4, pos_blocks=4, k_neighbor=32)
 
-            last_channel = out_channel
+        self.fp4 = PointNetFeaturePropagation(in_channel=(512+512),out_channel=512, blocks=4)
+        self.fp3 = PointNetFeaturePropagation(in_channel=512+256, out_channel=512, blocks=4)
+        self.fp2 = PointNetFeaturePropagation(in_channel=512 + 256, out_channel=256, blocks=4 )
+        self.fp1 = PointNetFeaturePropagation(in_channel=256+128+128, out_channel=256, blocks=4 )
 
-        self.classifier = nn.Sequential(
-            nn.Linear(last_channel * 2, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
-            nn.Linear(256, self.class_num)
+        self.info_encoder = nn.Sequential(
+            FCBNReLU1D(16+3+input_channel, 128),
+            FCBNReLU1D(128, 128),
+        )
+        self.global_encoder = nn.Sequential(
+            FCBNReLU1D(512, 256),
+            FCBNReLU1D(256, 128),
         )
 
-    def forward(self, x):
-        xyz = x.permute(0, 2, 1)
-        batch_size, _, _ = x.size()
-        x = self.embedding(x)  # B,D,N
-        for i in range(self.stages):
-            xyz, x = self.local_grouper_list[i](xyz, x.permute(0, 2, 1))  # [b,g,3]  [b,g,k,d]
-            x = self.pre_blocks_list[i](x)  # [b,d,g]
-            x = self.pos_blocks_list[i](x)  # [b,d,g]
+        self.conv0 = nn.Conv1d(256, 256, 1)
+        self.bn0 = nn.BatchNorm1d(256)
+        self.drop0 = nn.Dropout(0.1)
+        self.conv1 = nn.Conv1d(256, 128, 1)
+        self.bn1 = nn.BatchNorm1d(128)
+        self.drop1 = nn.Dropout(0.1)
+        self.conv2 = nn.Conv1d(128, num_classes, 1)
 
-        x_max = F.adaptive_max_pool1d(x, 1).squeeze(dim=-1)
-        x_mean = x.mean(dim=-1, keepdim=False)
-        x = torch.cat([x_max, x_mean], dim=-1)
-        x = self.classifier(x)
+    def forward(self, x, norm_plt, cls_label):
+        x = torch.cat([x,norm_plt],dim=1)
+        points_0 = x
+        B, C, N = x.shape
+        xyz = x.permute(0, 2, 1)[:,:,:3]
+        batch_size, _, _ = x.size()
+        x = self.embedding(x) # B,D,N
+        xyz_1, fea_1 = self.encoder_stage1(xyz, x)  # [b,p1,3] [b,d1,p1]
+        xyz_2, fea_2 = self.encoder_stage2(xyz_1, fea_1)  # [b,p2,3] [b,d2,p2]
+        xyz_3, fea_3 = self.encoder_stage3(xyz_2, fea_2)  # [b,p3,3] [b,d3,p3]
+        xyz_4, fea_4 = self.encoder_stage4(xyz_3, fea_3)  # [b,p4,3] [b,d4,p3]
+        global_context = F.adaptive_max_pool1d(fea_4, 1)
+
+        fea_4 += global_context
+        l3_points = self.fp4(xyz_3, xyz_4, fea_3, fea_4)
+        l2_points = self.fp3(xyz_2, xyz_3, fea_2, l3_points)
+        l1_points = self.fp2(xyz_1, xyz_2, fea_1, l2_points)
+        cls_label_one_hot = cls_label.view(B, 16, 1).repeat(1, 1, N)
+        extra_info = torch.cat([cls_label_one_hot, xyz.permute(0, 2, 1), points_0], 1)
+        extra_info = self.info_encoder(extra_info)
+        global_context = self.global_encoder(global_context)
+        l0_points = self.fp1(xyz, xyz_1, torch.cat([extra_info,global_context.expand_as(extra_info) ], 1), l1_points)
+
+        # FC layers
+        feat = F.gelu(self.bn0(self.conv0(l0_points)))
+        feat = self.drop0(feat)
+        feat = F.gelu(self.bn1(self.conv1(feat)))
+        x = self.drop1(feat)
+        x = self.conv2(x)
+        x = F.log_softmax(x, dim=1)
+        x = x.permute(0, 2, 1)
         return x
 
 
-def model25A(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=64,
-                   pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2], k_neighbors=[32, 32, 32],
-                   reducers=[4, 2, 2], **kwargs)
 
 
-def model25B(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=32,
-                   pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2], k_neighbors=[32, 32, 32],
-                   reducers=[4, 2, 2], **kwargs)
+class get_loss(nn.Module):
+    def __init__(self):
+        super(get_loss, self).__init__()
 
+    def forward(self, pred, target, trans_feat):
+        total_loss = F.nll_loss(pred, target)
 
-def model25C(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=32,
-                   pre_blocks=[4, 4, 4], pos_blocks=[2, 2, 2], k_neighbors=[32, 32, 32],
-                   reducers=[4, 2, 2], **kwargs)
-
-
-def model25D(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=32,
-                   pre_blocks=[4, 4, 4], pos_blocks=[2, 2, 2], k_neighbors=[20, 20, 20],
-                   reducers=[4, 2, 2], **kwargs)
-
-
-def model25E(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=64,
-                   pre_blocks=[4, 4, 4], pos_blocks=[2, 2, 2], k_neighbors=[20, 20, 20],
-                   reducers=[4, 2, 2], **kwargs)
-
-
-def model25F(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=64,
-                   pre_blocks=[4, 4, 4], pos_blocks=[2, 2, 2], k_neighbors=[16, 16, 16],
-                   reducers=[4, 2, 2], **kwargs)
-
-
-def model25G(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=64,
-                   pre_blocks=[4, 4], pos_blocks=[2, 2], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-
-def model25H(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=128,
-                   pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-def model25I(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=256,
-                   pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-def model25J(num_classes=40, **kwargs) -> model25:
-    return model25(points=1024, class_num=num_classes, embed_dim=256,
-                   pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2], k_neighbors=[32, 32],
-                   reducers=[2, 2,2], **kwargs)
-
-
-def model25H1(num_classes=40, **kwargs) -> model25:  # 5390MiB
-    return model25(points=1024, class_num=num_classes, embed_dim=128,
-                   pre_blocks=[1, 1], pos_blocks=[1, 1], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-def model25H2(num_classes=40, **kwargs) -> model25:  # 6940MiB
-    return model25(points=1024, class_num=num_classes, embed_dim=128,
-                   pre_blocks=[2, 2], pos_blocks=[2, 2], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-def model25H3(num_classes=40, **kwargs) -> model25:  # 8492MiB
-    return model25(points=1024, class_num=num_classes, embed_dim=128,
-                   pre_blocks=[3, 3], pos_blocks=[3, 3], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
-
-def model25H5(num_classes=40, **kwargs) -> model25:  # 11594MiB
-    return model25(points=1024, class_num=num_classes, embed_dim=128,
-                   pre_blocks=[5, 5], pos_blocks=[5, 5], k_neighbors=[32, 32],
-                   reducers=[4, 4], **kwargs)
+        return total_loss
 
 if __name__ == '__main__':
-    # data = torch.rand(2, 128, 10)
-    # att = Attention(128)
-    # out = att(data)
-    # print(out.shape)
-
-    batch, groups, neighbors, dim = 2, 512, 32, 16
-    x = torch.rand(batch, groups, neighbors, dim)
-    pre_extractor = PreExtraction(dim, 3)
+    batch, groups,neighbors,dim=2,512,32,16
+    x = torch.rand(batch,groups,neighbors,dim)
+    pre_extractor = PreExtraction(dim,3)
     out = pre_extractor(x)
     print(out.shape)
 
@@ -425,13 +438,11 @@ if __name__ == '__main__':
     out = pos_extractor(x)
     print(out.shape)
 
-    data = torch.rand(2, 3, 1024)
+    data = torch.rand(2, 3, 2048)
+    norm = torch.rand(2, 3, 2048)
+    cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = model25()
-    out = model(data)
+    model = PointMLP8(points=2048)
+    out = model(data, norm, cls_label)
     print(out.shape)
 
-    print("===> testing modelE ...")
-    model = model25E()
-    out = model(data)
-    print(out.shape)

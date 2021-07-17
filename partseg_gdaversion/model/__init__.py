@@ -6,3 +6,7 @@ from .pointMLP3 import PointMLP3
 from .pointMLP4 import PointMLP4
 from .pointMLP5 import PointMLP5
 from .pointMLP6 import PointMLP6
+
+from .pointMLP7 import PointMLP7
+from .pointMLP8 import PointMLP8
+from .pointMLP9 import PointMLP9
