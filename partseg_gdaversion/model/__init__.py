@@ -10,3 +10,8 @@ from .pointMLP6 import PointMLP6
 from .pointMLP7 import PointMLP7
 from .pointMLP8 import PointMLP8
 from .pointMLP9 import PointMLP9
+
+
+from .pointMLP10 import PointMLP10
+from .pointMLP11 import PointMLP11
+from .pointMLP12 import PointMLP12
