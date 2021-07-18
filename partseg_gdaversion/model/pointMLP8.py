@@ -394,7 +394,7 @@ class PointMLP8(nn.Module):
         xyz_4, fea_4 = self.encoder_stage4(xyz_3, fea_3)  # [b,p4,3] [b,d4,p3]
         global_context = F.adaptive_max_pool1d(fea_4, 1)
 
-        fea_4 += global_context.clone()
+        fea_4 = fea_4 + F.adaptive_max_pool1d(fea_4, 1)
         l3_points = self.fp4(xyz_3, xyz_4, fea_3, fea_4)
         l2_points = self.fp3(xyz_2, xyz_3, fea_2, l3_points)
         l1_points = self.fp2(xyz_1, xyz_2, fea_1, l2_points)
