@@ -130,9 +130,17 @@ nohup python main_ptseg.py --model PointMLP3 --exp_name test1 --batch_size 64 --
 nohup python main_ptseg.py --model PointMLP3 --exp_name test2 --batch_size 64 --scheduler cos > nohup/PointMLP3_test2.log &
 nohup python main_ptseg.py --model PointMLP3 --exp_name test3 --batch_size 64 > nohup/PointMLP3_test3.log &
 
-nohup python main_ptseg.py --model PointMLP4 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP4_test1.log &
-nohup python main_ptseg.py --model PointMLP5 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP5_test1.log &
-nohup python main_ptseg.py --model PointMLP6 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP6_test1.log &
+nohup python main_ptseg.py --model PointMLP10 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP10_test1.log &
+nohup python main_ptseg.py --model PointMLP11 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP11_test1.log &
+nohup python main_ptseg.py --model PointMLP12 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP12_test1.log &
+
+
+nohup python main_ptseg.py --model PointMLP13 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP13_test1.log &
+nohup python main_ptseg.py --model PointMLP9 --exp_name lr005 --batch_size 64 --scheduler cos > nohup/PointMLP9_lr005.log &
+
+
+
+
 
 permutation-invariant MLP
 
