@@ -402,10 +402,29 @@ def model25H3(num_classes=40, **kwargs) -> model25:  # 8492MiB
     return model25(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[3, 3], pos_blocks=[3, 3], k_neighbors=[32, 32],
                    reducers=[4, 4], **kwargs)
+def model25H4(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[4, 4], pos_blocks=[4, 4], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
 
 def model25H5(num_classes=40, **kwargs) -> model25:  # 11594MiB
     return model25(points=1024, class_num=num_classes, embed_dim=128,
                    pre_blocks=[5, 5], pos_blocks=[5, 5], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H6(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[6, 6], pos_blocks=[6, 6], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H7(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[7, 7], pos_blocks=[7, 7], k_neighbors=[32, 32],
+                   reducers=[4, 4], **kwargs)
+
+def model25H8(num_classes=40, **kwargs) -> model25:
+    return model25(points=1024, class_num=num_classes, embed_dim=128,
+                   pre_blocks=[8, 8], pos_blocks=[8, 8], k_neighbors=[32, 32],
                    reducers=[4, 4], **kwargs)
 
 if __name__ == '__main__':
