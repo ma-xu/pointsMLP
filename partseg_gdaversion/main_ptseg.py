@@ -396,7 +396,7 @@ if __name__ == "__main__":
                         help='SGD momentum (default: 0.9)')
     parser.add_argument('--no_cuda', type=bool, default=False,
                         help='enables CUDA training')
-    parser.add_argument('--manual_seed', type=int, default=1, metavar='S',
+    parser.add_argument('--manual_seed', type=int, metavar='S',
                         help='random seed (default: 1)')
     parser.add_argument('--eval', type=bool,  default=False,
                         help='evaluate the model')

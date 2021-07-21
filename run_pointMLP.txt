@@ -114,10 +114,10 @@ CUDA_VISIBLE_DEVICES=1 nohup sh train2.sh > nohup/train_model26H.log &
 
 
 
-CUDA_VISIBLE_DEVICES=0 nohup sh running_model25_1.sh > nohup/running_model25_1.log &
-CUDA_VISIBLE_DEVICES=1 nohup sh running_model25_2.sh > nohup/running_model25_2.log &
-CUDA_VISIBLE_DEVICES=2 nohup sh running_model25_3.sh > nohup/running_model25_3.log &
-CUDA_VISIBLE_DEVICES=3 nohup sh running_model25_5.sh > nohup/running_model25_5.log &
+CUDA_VISIBLE_DEVICES=0 nohup sh running_model25_4.sh > nohup/running_model25_4.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_model25_6.sh > nohup/running_model25_6.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_model25_7.sh > nohup/running_model25_7.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_model25_8.sh > nohup/running_model25_8.log &
 
 # in partseg_gdaversion
 nohup python main_ptseg.py --model PointMLP1 --exp_name test1 --batch_size 64 > nohup/PointMLP1_test1.log &
@@ -136,8 +136,13 @@ nohup python main_ptseg.py --model PointMLP12 --exp_name test1 --batch_size 64 -
 
 
 nohup python main_ptseg.py --model PointMLP13 --exp_name test1 --batch_size 64 --scheduler cos > nohup/PointMLP13_test1.log &
-nohup python main_ptseg.py --model PointMLP9 --exp_name lr005 --batch_size 64 --scheduler cos > nohup/PointMLP9_lr005.log &
+nohup python main_ptseg.py --model PointMLP9 --exp_name lr005 --batch_size 64 --scheduler cos --lr 0.005 > nohup/PointMLP9_lr005.log &
+nohup python main_ptseg.py --model PointMLP9 --exp_name seed0 --batch_size 64 --scheduler cos --manual_seed 0 > nohup/PointMLP9_seed0.log &
 
+
+nohup python main_ptseg.py --model PointMLP9 --exp_name seed_no1 --batch_size 64 --scheduler cos > nohup/PointMLP9_seed_no1.log &
+nohup python main_ptseg.py --model PointMLP9 --exp_name seed_no2 --batch_size 64 --scheduler cos > nohup/PointMLP9_seed_no2.log &
+nohup python main_ptseg.py --model PointMLP9 --exp_name lr001 --batch_size 64 --scheduler cos --lr 0.001 > nohup/PointMLP9_lr001.log &
 
 
 
