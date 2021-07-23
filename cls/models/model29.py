@@ -1,4 +1,5 @@
 """
+Based on model28, change cuda FPS to rand selection.
 Based on model25, simple LocalGrouper (not x-a), reorgnized structure
 Based on model24, using ReLU to replace GELU
 Based on model22, remove attention
@@ -17,7 +18,7 @@ from torch import einsum
 from einops import rearrange, repeat
 
 
-from pointnet2_ops import pointnet2_utils
+# from pointnet2_ops import pointnet2_utils
 
 
 def get_activation(activation):
@@ -155,10 +156,10 @@ class LocalGrouper(nn.Module):
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device),
-        #                             num_samples=self.groups, replacement=False).long()
+        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device),
+                                    num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)
         new_points = index_points(points, fps_idx)
 
@@ -269,11 +270,11 @@ class PosExtraction(nn.Module):
         return self.operation(x)
 
 
-class model28(nn.Module):
+class model29(nn.Module):
     def __init__(self, points=1024, class_num=40, embed_dim=64, groups=1, res_expansion=1, activation="relu", bias=True,
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs):
-        super(model28, self).__init__()
+        super(model29, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = class_num
         self.points = points
@@ -334,54 +335,54 @@ class model28(nn.Module):
         return x
 
 
-def model28A(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29A(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28B(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=32, res_expansion=2,
+def model29B(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=32, res_expansion=2,
                    activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28C(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29C(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[3, 3],
                    pos_blocks=[3, 3], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28D(num_classes=40, **kwargs) -> model28:  # model28D-demo3 NEU  83.761% | model28D-demo4 NEU 84.039%
-    return model28(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1,
+def model29D(num_classes=40, **kwargs) -> model29:  # model29D-demo3 NEU  83.761% | model29D-demo4 NEU 84.039%
+    return model29(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1,
                    activation="relu", bias=False, dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2],
                    pos_blocks=[2, 2, 2, 2], k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
-def model28E(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29E(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="gelu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28F(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29F(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="leakyrelu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28G(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29G(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="relu", bias=True, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28H(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29H(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="selu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
 
-def model28I(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29I(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="hardswish", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
-def model28J(num_classes=40, **kwargs) -> model28:
-    return model28(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
+def model29J(num_classes=40, **kwargs) -> model29:
+    return model29(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
                    activation="silu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
                    pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[2, 2], **kwargs)
 
@@ -405,31 +406,31 @@ if __name__ == '__main__':
 
     data = torch.rand(2, 3, 1024)
     print("===> testing model ...")
-    model = model28()
+    model = model29()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelA ...")
-    model = model28J()
+    model = model29J()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelB ...")
-    model = model28B()
+    model = model29B()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelC ...")
-    model = model28C()
+    model = model29C()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelE ...")
-    model = model28E()
+    model = model29E()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelJ ...")
-    model = model28J()
+    model = model29J()
     out = model(data)
     print(out.shape)
