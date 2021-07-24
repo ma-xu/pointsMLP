@@ -1,6 +1,6 @@
 """
 Usage:
-python train.py --model MLP --msg demo
+python train.py --model PointNetSeg --msg demo --train_batch_size 32 --workers 16
 """
 
 import os
