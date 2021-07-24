@@ -102,14 +102,14 @@ class PointNetCls(nn.Module):
 
 # Segmentation with 9 channels input XYZ, RGB and normalized location to the room (from 0 to 1), with STN3D on input and feature
 class PointNetSeg(nn.Module):
-    def __init__(self, c=9, k=13, sync_bn=False):
+    def __init__(self, c=9, num_classes=13, sync_bn=False):
         super(PointNetSeg, self).__init__()
         self.feat = PointNetFeat(c, global_feat=False)
         self.conv1 = nn.Conv1d(1088, 512, 1)
         self.conv2 = nn.Conv1d(512, 256, 1)
         self.conv3 = nn.Conv1d(256, 128, 1)
         self.conv4 = nn.Conv1d(128, 128, 1)
-        self.conv5 = nn.Conv1d(128, k, 1)
+        self.conv5 = nn.Conv1d(128, num_classes, 1)
 
         self.bn1 = nn.BatchNorm1d(512)
         self.bn2 = nn.BatchNorm1d(256)
