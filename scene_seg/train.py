@@ -34,6 +34,7 @@ def parse_args():
     parser.add_argument('-c', '--checkpoint', type=str, metavar='PATH',
                         help='path to save checkpoint (default: checkpoint)')
     parser.add_argument('--msg', type=str, help='message after checkpoint')
+    parser.add_argument('--batch_size', type=int, default=16, help='batch size in training')
     parser.add_argument('--num_classes', type=int, default=13, help='class_number')
     parser.add_argument('--model', default='MLP', help='model name [default: pointnet_cls]')
     parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
@@ -45,7 +46,7 @@ def parse_args():
     parser.add_argument('--block_size', type=float, default=1.0)
     parser.add_argument('--sample_rate', type=float, default=1.0)
     parser.add_argument('--fea_dim', type=int, default=6)
-    parser.add_argument('--train_batch_size', type=int, default=32)
+    parser.add_argument('--train_batch_size', type=int, default=16)
     parser.add_argument('--train_batch_size_val', type=int, default=8)
     parser.add_argument('--data_root', default='dataset/s3dis')
 
@@ -58,8 +59,6 @@ def parse_args():
     parser.add_argument('--seed', type=int, help='random seed')
     parser.add_argument('--workers', default=8, type=int, help='workers')
     parser.add_argument('--no_transformation', action='store_true', default=False, help='do not use trnsformations')
-    parser.add_argument('--verbose', action='store_true', default=False,
-                        help='Calculate mIoU during training, slow down significantly.')
     return parser.parse_args()
 
 
@@ -187,21 +186,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
         optimizer.step()
 
         output = output.max(1)[1]
+        intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
+        intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
+        intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
 
+        accuracy = sum(intersection_meter.val) / (sum(target_meter.val) + 1e-10)
         loss_meter.update(loss.item(), input.size(0))
-        if args.verbose:
-            intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
-            intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
-            intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
-            accuracy = sum(intersection_meter.val) / (sum(target_meter.val) + 1e-10)
-            iou_class = intersection_meter.sum / (union_meter.sum + 1e-10)
-            accuracy_class = intersection_meter.sum / (target_meter.sum + 1e-10)
-            mIoU = np.mean(iou_class)
-            mAcc = np.mean(accuracy_class)
-            allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
-        else:
-            mIoU, accuracy, mAcc, allAcc =0.0, 0.0, 0.0, 0.0
-
         batch_time.update(time.time() - end)
         end = time.time()
 
@@ -224,12 +214,15 @@ def train(train_loader, model, criterion, optimizer, epoch):
                                                           remain_time=remain_time,
                                                           loss_meter=loss_meter,
                                                           accuracy=accuracy))
-    if args.verbose:
-        screen.info(
-            'Train result at epoch [{}/{}]: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'
-                .format(epoch + 1, args.epoch, mIoU, mAcc, allAcc))
-    else:
-        screen.info("Ignoring training results calculationg for fast training.")
+
+    iou_class = intersection_meter.sum / (union_meter.sum + 1e-10)
+    accuracy_class = intersection_meter.sum / (target_meter.sum + 1e-10)
+    mIoU = np.mean(iou_class)
+    mAcc = np.mean(accuracy_class)
+    allAcc = sum(intersection_meter.sum) / (sum(target_meter.sum) + 1e-10)
+    screen.info(
+        'Train result at epoch [{}/{}]: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'.format(epoch + 1, args.epoch, mIoU,
+                                                                                       mAcc, allAcc))
     return loss_meter.avg, mIoU, mAcc, allAcc
 
 

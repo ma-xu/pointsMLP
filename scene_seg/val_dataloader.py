@@ -1,6 +1,8 @@
 """
 Usage:
 python train.py --model MLP --msg demo
+--print_freq 500 --workers 16    90s 88s
+--print_freq 500 --workers 16    107s 91s
 """
 
 import os
