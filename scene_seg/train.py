@@ -189,7 +189,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
         output = output.max(1)[1]
 
         loss_meter.update(loss.item(), input.size(0))
-        if argparse.verbose:
+        if args.verbose:
             intersection, union, target = intersectionAndUnionGPU(output, target, args.num_classes, args.ignore_label)
             intersection, union, target = intersection.cpu().numpy(), union.cpu().numpy(), target.cpu().numpy()
             intersection_meter.update(intersection), union_meter.update(union), target_meter.update(target)
@@ -224,7 +224,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                                                           remain_time=remain_time,
                                                           loss_meter=loss_meter,
                                                           accuracy=accuracy))
-    if argparse.verbose:
+    if args.verbose:
         screen.info(
             'Train result at epoch [{}/{}]: mIoU/mAcc/allAcc {:.4f}/{:.4f}/{:.4f}.'
                 .format(epoch + 1, args.epoch, mIoU, mAcc, allAcc))
