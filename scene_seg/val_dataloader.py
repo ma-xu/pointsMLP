@@ -98,8 +98,8 @@ def main():
         print(f"[epoch: {epoch}] Looping trainloader ....")
         time_cost = datetime.datetime.now()
         for i, (input, target) in enumerate(train_loader):
-            input = input.cuda()
-            target = target.cuda()
+            input = input.cuda(non_blocking=True)
+            target = target.cuda(non_blocking=True)
             if i > 0 and i% args.print_freq == 0:
                 time_cost = int((datetime.datetime.now() - time_cost).total_seconds())
                 print(f"Running {args.print_freq} iterations costs {time_cost}s [{input.shape}, {target.shape}]")
