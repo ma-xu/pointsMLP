@@ -102,7 +102,7 @@ def main():
             target = target.cuda(non_blocking=True)
             if i > 0 and i% args.print_freq == 0:
                 time_cost = int((datetime.datetime.now() - time_cost).total_seconds())
-                print(f"Running {args.print_freq} iterations costs {time_cost}s [{input.shape}, {target,shape}]")
+                print(f"Running {args.print_freq} iterations costs {time_cost}s [{input.shape}, {target.shape}]")
                 time_cost = datetime.datetime.now()
 
         print(f"[epoch: {epoch}] Looping valloader ....")
