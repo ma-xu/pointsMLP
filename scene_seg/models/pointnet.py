@@ -129,27 +129,27 @@ class PointNetSeg(nn.Module):
 
 if __name__ == '__main__':
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+    # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
-    sim_data = torch.rand(16, 2048, 3)
-
-    trans = STN3D(c=3)
-    out = trans(sim_data.transpose(1, 2))
-    print('stn', out.size())
-
-    point_feat = PointNetFeat(global_feat=True)
-    out = point_feat(sim_data.transpose(1, 2))
-    print('global feat', out.size())
-
-    point_feat = PointNetFeat(global_feat=False)
-    out = point_feat(sim_data.transpose(1, 2))
-    print('point feat', out.size())
-
-    cls = PointNetCls(c=3, k=40)
-    out = cls(sim_data)
-    print('class', out.size())
+    # sim_data = torch.rand(16, 2048, 3)
+    #
+    # trans = STN3D(c=3)
+    # out = trans(sim_data.transpose(1, 2))
+    # print('stn', out.size())
+    #
+    # point_feat = PointNetFeat(global_feat=True)
+    # out = point_feat(sim_data.transpose(1, 2))
+    # print('global feat', out.size())
+    #
+    # point_feat = PointNetFeat(global_feat=False)
+    # out = point_feat(sim_data.transpose(1, 2))
+    # print('point feat', out.size())
+    #
+    # cls = PointNetCls(c=3, k=40)
+    # out = cls(sim_data)
+    # print('class', out.size())
 
     sim_data = torch.rand(16, 2048, 9)
-    seg = PointNetSeg(c=9, k=13)
+    seg = PointNetSeg(c=9, num_classes=13)
     out = seg(sim_data)
     print('seg', out.size())

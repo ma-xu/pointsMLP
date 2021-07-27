@@ -37,7 +37,7 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=16, help='batch size in training')
     parser.add_argument('--num_classes', type=int, default=13, help='class_number')
     parser.add_argument('--model', default='MLP', help='model name [default: pointnet_cls]')
-    parser.add_argument('--epoch', default=200, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=150, type=int, help='number of epoch in training')
     parser.add_argument('--num_point', type=int, default=4096, help='Point Number')
     parser.add_argument('--ignore_label', type=int, default=255, help='Point Number')
 

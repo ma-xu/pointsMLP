@@ -157,3 +157,9 @@ nohup python main_ptseg.py --model PointMLP9 --exp_name sgdlr001 --batch_size 64
 
 permutation-invariant MLP
 
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model28G --msg compare2  > nohup/model28G_compare2.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model28H --msg compare2  > nohup/model28H_compare2.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model28I --msg compare2  > nohup/model28I_compare2.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model28J --msg compare2  > nohup/model28J_compare2.out &
+

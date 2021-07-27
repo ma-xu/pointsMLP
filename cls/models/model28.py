@@ -1,4 +1,5 @@
 """
+Based on model27, change to x-a, reorgnized structure
 Based on model25, simple LocalGrouper (not x-a), reorgnized structure
 Based on model24, using ReLU to replace GELU
 Based on model22, remove attention
