@@ -17,3 +17,4 @@ from .model26 import model26H, model26G
 from .model27 import model27A, model27B, model27C, model27D, model27E, model27F, model27G, model27H, model27I, model27J
 from .model28 import model28A, model28B, model28C, model28D, model28E, model28F, model28G, model28H, model28I, model28J
 from .model29 import model29A, model29B, model29C, model29D, model29E, model29F, model29G, model29H, model29I, model29J
+from .model30 import model30A, model30B, model30C, model30D, model30E, model30F, model30G, model30H, model30I, model30J

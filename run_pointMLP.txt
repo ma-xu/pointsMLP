@@ -155,6 +155,8 @@ nohup python main_ptseg.py --model PointMLP9 --exp_name sgdlr001 --batch_size 64
 
 
 
+python train.py --model PointMLP9 --msg demo --train_batch_size 32 --workers 16
+
 permutation-invariant MLP
 
 
