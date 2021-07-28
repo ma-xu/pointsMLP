@@ -1,6 +1,6 @@
 """
 Usage:
-python train.py --model PointNetSeg --msg demo --train_batch_size 32 --workers 16
+python train.py --model PointMLP9 --msg demo --train_batch_size 32 --workers 16
 """
 
 import os
@@ -34,10 +34,9 @@ def parse_args():
     parser.add_argument('-c', '--checkpoint', type=str, metavar='PATH',
                         help='path to save checkpoint (default: checkpoint)')
     parser.add_argument('--msg', type=str, help='message after checkpoint')
-    parser.add_argument('--batch_size', type=int, default=16, help='batch size in training')
     parser.add_argument('--num_classes', type=int, default=13, help='class_number')
     parser.add_argument('--model', default='MLP', help='model name [default: pointnet_cls]')
-    parser.add_argument('--epoch', default=150, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
     parser.add_argument('--num_point', type=int, default=4096, help='Point Number')
     parser.add_argument('--ignore_label', type=int, default=255, help='Point Number')
 
