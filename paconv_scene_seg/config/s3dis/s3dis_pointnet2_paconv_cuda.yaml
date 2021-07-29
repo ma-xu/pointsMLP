@@ -19,7 +19,7 @@ TRAIN:
   ignore_label: 255
   train_gpu: 
   train_workers: 8  # data loader workers
-  train_batch_size: 16  # batch size for training
+  train_batch_size: 32  # batch size for training
   train_batch_size_val: 8 # batch size for validation during training, memory and speed tradeoff
   base_lr: 0.05
   epochs: 100
