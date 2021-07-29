@@ -43,7 +43,7 @@ TRAIN:
   no_transformation: False
   color_augment: 0.0
   norm_no_trans: True
-  correlation_loss: True
+  correlation_loss: False
   correlation_loss_scale: 10.0
 
 TEST:
