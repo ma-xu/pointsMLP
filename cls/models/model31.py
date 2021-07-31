@@ -16,11 +16,11 @@ Learning Point Cloud with Progressively Local representation.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import einsum
-from einops import rearrange, repeat
+# from torch import einsum
+# from einops import rearrange, repeat
 
 
-# from pointnet2_ops import pointnet2_utils
+from pointnet2_ops import pointnet2_utils
 
 
 def get_activation(activation):
@@ -142,7 +142,7 @@ def knn_point(nsample, xyz, new_xyz):
 
 
 class LocalGrouper(nn.Module):
-    def __init__(self, groups, kneighbors, **kwargs):
+    def __init__(self, channel, groups, kneighbors, use_xyz=True, normalize="center", **kwargs):
         """
         Give xyz[b,p,3] and fea[b,p,d], return new_xyz[b,g,3] and new_fea[b,g,k,d]
         :param groups: groups number
@@ -152,27 +152,47 @@ class LocalGrouper(nn.Module):
         super(LocalGrouper, self).__init__()
         self.groups = groups
         self.kneighbors = kneighbors
+        self.use_xyz = use_xyz
+        if normalize is not None:
+            self.normalize = normalize.lower()
+        else:
+            self.normalize = None
+        if self.normalize not in ["center", "anchor"]:
+            print(f"Unrecognized normalize parameter (self.normalize), set to None. Should be one of [center, anchor].")
+            self.normalize = None
+        if self.normalize is not None:
+            add_channel=3 if self.use_xyz else 0
+            self.affine_alpha = nn.Parameter(torch.ones([1,1,1,channel + add_channel]))
+            self.affine_beta = nn.Parameter(torch.zeros([1, 1, 1, channel + add_channel]))
 
     def forward(self, xyz, points):
         B, N, C = xyz.shape
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device),
-                                    num_samples=self.groups, replacement=False).long()
+        # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
-        new_xyz = index_points(xyz, fps_idx)
-        new_points = index_points(points, fps_idx)
+        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
+        new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
         idx = knn_point(self.kneighbors, xyz, new_xyz)
         # idx = query_ball_point(radius, nsample, xyz, new_xyz)
-        # grouped_xyz = index_points(xyz, idx)  # [B, npoint, nsample, C]
-        grouped_points = index_points(points, idx)
-        grouped_points_norm = grouped_points - new_points.view(B, S, 1, -1)
-        new_points = torch.cat([grouped_points_norm,
-                                new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)]
-                               , dim=-1)
+        grouped_xyz = index_points(xyz, idx)  # [B, npoint, k, 3]
+        grouped_points = index_points(points, idx)  # [B, npoint, k, d]
+        if self.use_xyz:
+            grouped_points = torch.cat([grouped_points, grouped_xyz],dim=-1)  # [B, npoint, k, d+3]
+        if self.normalize is not None:
+            if self.normalize =="center":
+                std, mean = torch.std_mean(grouped_points, dim=2, keepdim=True)
+            if self.normalize =="anchor":
+                mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
+                mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
+                std = torch.std(grouped_points-mean)
+            grouped_points = (grouped_points-mean)/(std + 1e-5)
+            grouped_points = self.affine_alpha*grouped_points + self.affine_beta
+
+        new_points = torch.cat([grouped_points, new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)], dim=-1)
         return new_xyz, new_points
 
 
@@ -191,18 +211,18 @@ class ConvBNReLU1D(nn.Module):
 
 
 class ConvBNReLURes1D(nn.Module):
-    def __init__(self, channel, kernel_size=1, groups=1, res_expansion=1, bias=True, activation='relu'):
+    def __init__(self, channel, kernel_size=1, groups=1, res_expansion=1.0, bias=True, activation='relu'):
         super(ConvBNReLURes1D, self).__init__()
         self.act = get_activation(activation)
         self.net1 = nn.Sequential(
-            nn.Conv1d(in_channels=channel, out_channels=channel * res_expansion,
+            nn.Conv1d(in_channels=channel, out_channels=int(channel * res_expansion),
                       kernel_size=kernel_size, groups=groups, bias=bias),
-            nn.BatchNorm1d(channel * res_expansion),
+            nn.BatchNorm1d(int(channel * res_expansion)),
             self.act
         )
         if groups > 1:
             self.net2 = nn.Sequential(
-                nn.Conv1d(in_channels=channel * res_expansion, out_channels=channel,
+                nn.Conv1d(in_channels=int(channel * res_expansion), out_channels=channel,
                           kernel_size=kernel_size, groups=groups, bias=bias),
                 nn.BatchNorm1d(channel),
                 self.act,
@@ -212,7 +232,7 @@ class ConvBNReLURes1D(nn.Module):
             )
         else:
             self.net2 = nn.Sequential(
-                nn.Conv1d(in_channels=channel * res_expansion, out_channels=channel,
+                nn.Conv1d(in_channels=int(channel * res_expansion), out_channels=channel,
                           kernel_size=kernel_size, bias=bias),
                 nn.BatchNorm1d(channel)
             )
@@ -222,29 +242,30 @@ class ConvBNReLURes1D(nn.Module):
 
 
 class PreExtraction(nn.Module):
-    def __init__(self, channels, blocks=1, groups=1, res_expansion=1, bias=True, activation='relu', dim_expansion=1):
+    def __init__(self, channels, out_channels,  blocks=1, groups=1, res_expansion=1, bias=True,
+                 activation='relu', use_xyz=True):
         """
         input: [b,g,k,d]: output:[b,d,g]
         :param channels:
         :param blocks:
         """
         super(PreExtraction, self).__init__()
-        self.transfer = ConvBNReLU1D(channels, channels * dim_expansion // 2, bias=bias, activation=activation)
+        in_channels = 3+2*channels if use_xyz else 2*channels
+        self.transfer = ConvBNReLU1D(in_channels, out_channels, bias=bias, activation=activation)
         operation = []
         for _ in range(blocks):
             operation.append(
-                ConvBNReLURes1D(channels, groups=groups, res_expansion=res_expansion, bias=bias, activation=activation)
+                ConvBNReLURes1D(out_channels, groups=groups, res_expansion=res_expansion,
+                                bias=bias, activation=activation)
             )
         self.operation = nn.Sequential(*operation)
-
-
 
     def forward(self, x):
         b, n, s, d = x.size()  # torch.Size([32, 512, 32, 6])
         x = x.permute(0, 1, 3, 2)
         x = x.reshape(-1, d, s)
         x = self.transfer(x)
-        batch_size, _, N = x.size()
+        batch_size, _, _ = x.size()
         x = self.operation(x)  # [b, d, k]
         x = F.adaptive_max_pool1d(x, 1).view(batch_size, -1)
         x = x.reshape(b, n, -1).permute(0, 2, 1)
@@ -271,7 +292,8 @@ class PosExtraction(nn.Module):
 
 
 class model31(nn.Module):
-    def __init__(self, points=1024, class_num=40, embed_dim=64, groups=1, res_expansion=1, activation="relu", bias=True,
+    def __init__(self, points=1024, class_num=40, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="center",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs):
         super(model31, self).__init__()
@@ -294,14 +316,15 @@ class model31(nn.Module):
             reduce = reducers[i]
             anchor_points = anchor_points // reduce
             # append local_grouper_list
-            local_grouper = LocalGrouper(anchor_points, kneighbor)  # [b,g,k,d]
+            local_grouper = LocalGrouper(last_channel, anchor_points, kneighbor, use_xyz, normalize)  # [b,g,k,d]
             self.local_grouper_list.append(local_grouper)
             # append pre_block_list
-            pre_block_module = PreExtraction(out_channel, pre_block_num, groups=groups, res_expansion=res_expansion,
-                                             bias=bias, activation=activation, dim_expansion=dim_expansion[i])
+            pre_block_module = PreExtraction(last_channel, out_channel, pre_block_num, groups=groups,
+                                             res_expansion=res_expansion,
+                                             bias=bias, activation=activation, use_xyz=use_xyz)
             self.pre_blocks_list.append(pre_block_module)
             # append pos_block_list
-            pos_block_module = PosExtraction(out_channel * dim_expansion[i] // 2, pos_block_num, groups=groups,
+            pos_block_module = PosExtraction(out_channel, pos_block_num, groups=groups,
                                              res_expansion=res_expansion, bias=bias, activation=activation)
             self.pos_blocks_list.append(pos_block_module)
 
@@ -335,56 +358,32 @@ class model31(nn.Module):
         return x
 
 
+
 def model31A(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
+    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def model31B(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=32, res_expansion=2,
-                   activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
+    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=False, use_xyz=False, normalize="center",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
+
 
 def model31C(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="relu", bias=False, dim_expansion=[2, 2], pre_blocks=[3, 3],
-                   pos_blocks=[3, 3], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
+    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=False, use_xyz=True, normalize="anchor",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def model31D(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1,
-                   activation="relu", bias=False, dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2],
-                   pos_blocks=[2, 2, 2, 2], k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
+    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=False, use_xyz=True, normalize="center",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
-def model31E(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="gelu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
-
-def model31F(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="leakyrelu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
-
-def model31G(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="relu", bias=True, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
-
-def model31H(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="selu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
-
-
-def model31I(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="hardswish", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
-
-def model31J(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1,
-                   activation="silu", bias=False, dim_expansion=[2, 2], pre_blocks=[4, 4],
-                   pos_blocks=[4, 4], k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
 
 
 if __name__ == '__main__':
@@ -411,7 +410,7 @@ if __name__ == '__main__':
     print(out.shape)
 
     print("===> testing modelA ...")
-    model = model31J()
+    model = model31A()
     out = model(data)
     print(out.shape)
 
@@ -425,12 +424,8 @@ if __name__ == '__main__':
     out = model(data)
     print(out.shape)
 
-    print("===> testing modelE ...")
-    model = model31E()
+    print("===> testing modelD ...")
+    model = model31D()
     out = model(data)
     print(out.shape)
 
-    print("===> testing modelJ ...")
-    model = model31J()
-    out = model(data)
-    print(out.shape)
