@@ -1,27 +1,20 @@
 """
-Based on model30, change the grouper operation by normalization.
-Based on model28, only change configurations, mainly the reducer.
-Based on model27, change to x-a, reorgnized structure
-Based on model25, simple LocalGrouper (not x-a), reorgnized structure
-Based on model24, using ReLU to replace GELU
-Based on model22, remove attention
-Bsed on model21, change FPS to random sampling.
-Exactly based on Model10, but ReLU to GeLU
-Based on Model8, add dropout and max, avg combine.
-Based on Local model, add residual connections.
-The extraction is doubled for depth.
-Learning Point Cloud with Progressively Local representation.
-[B,3,N] - {[B,G,K,d]-[B,G,d]}  - {[B,G',K,d]-[B,G',d]} -cls
+Based on PointMLP9, change to 128, 256, 512, 512
+Based on PointMLP4, use fps replace random sample.
+Based on PointMLP3, change dropout to 0.1
+Based on PointMLP2, add blocks in decode, change channel numbers.
+Based on PointMLP1, using poseExtraction to replace MLP in decode.
+PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
 """
+
+
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-# from torch import einsum
-# from einops import rearrange, repeat
-
-
-from pointnet2_ops import pointnet2_utils
-
+from torch import einsum
+from einops import rearrange, repeat
+# from pointnet2_ops import pointnet2_utils
 
 def get_activation(activation):
     if activation.lower() == 'gelu':
@@ -170,9 +163,9 @@ class LocalGrouper(nn.Module):
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
+        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
@@ -291,16 +284,67 @@ class PosExtraction(nn.Module):
         return self.operation(x)
 
 
-class model31(nn.Module):
-    def __init__(self, points=1024, class_num=40, embed_dim=64, groups=1, res_expansion=1.0,
+class PointNetFeaturePropagation(nn.Module):
+    def __init__(self, in_channel, out_channel, blocks=1, groups=1, res_expansion=1.0, bias=True, activation='relu'):
+        super(PointNetFeaturePropagation, self).__init__()
+        self.fuse = ConvBNReLU1D(in_channel, out_channel,1,bias=bias)
+        self.extraction = PosExtraction(out_channel, blocks, groups=groups,
+                                        res_expansion=res_expansion, bias=bias, activation=activation)
+
+
+    def forward(self, xyz1, xyz2, points1, points2):
+        """
+        Input:
+            xyz1: input points position data, [B, N, 3]
+            xyz2: sampled input points position data, [B, S, 3]
+            points1: input points data, [B, D, N]
+            points2: input points data, [B, D, S]
+        Return:
+            new_points: upsampled points data, [B, D', N] D'=D+D
+        """
+        # xyz1 = xyz1.permute(0, 2, 1)
+        # xyz2 = xyz2.permute(0, 2, 1)
+
+        points2 = points2.permute(0, 2, 1)
+        B, N, C = xyz1.shape
+        _, S, _ = xyz2.shape
+
+        if S == 1:
+            interpolated_points = points2.repeat(1, N, 1)
+        else:
+            dists = square_distance(xyz1, xyz2)
+            dists, idx = dists.sort(dim=-1)
+            dists, idx = dists[:, :, :3], idx[:, :, :3]  # [B, N, 3]
+
+            dist_recip = 1.0 / (dists + 1e-8)
+            norm = torch.sum(dist_recip, dim=2, keepdim=True)
+            weight = dist_recip / norm
+            interpolated_points = torch.sum(index_points(points2, idx) * weight.view(B, N, 3, 1), dim=2)
+
+        if points1 is not None:
+            points1 = points1.permute(0, 2, 1)
+            new_points = torch.cat([points1, interpolated_points], dim=-1)
+        else:
+            new_points = interpolated_points
+
+        new_points = new_points.permute(0, 2, 1)
+        new_points = self.fuse(new_points)
+        new_points = self.extraction(new_points)
+        return new_points
+
+
+
+
+class PointMLP31(nn.Module):
+    def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="center",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs):
-        super(model31, self).__init__()
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], **kwargs):
+        super(PointMLP31, self).__init__()
         self.stages = len(pre_blocks)
-        self.class_num = class_num
+        self.class_num = num_classes
         self.points = points
-        self.embedding = ConvBNReLU1D(3, embed_dim, bias=bias, activation=activation)
+        self.embedding = ConvBNReLU1D(6, embed_dim, bias=bias, activation=activation)
         assert len(pre_blocks) == len(k_neighbors) == len(reducers) == len(pos_blocks) == len(dim_expansion), \
             "Please check stage number consistent for pre_blocks, pos_blocks k_neighbors, reducers."
         self.local_grouper_list = nn.ModuleList()
@@ -331,121 +375,42 @@ class model31(nn.Module):
             last_channel = out_channel
 
         self.act = get_activation(activation)
-        self.classifier = nn.Sequential(
-            nn.Linear(last_channel, 512),
-            nn.BatchNorm1d(512),
-            self.act,
-            nn.Dropout(0.5),
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            self.act,
-            nn.Dropout(0.5),
-            nn.Linear(256, self.class_num)
-        )
 
-    def forward(self, x):
+
+
+
+    def forward(self, x, norm_plt, cls_label):
         xyz = x.permute(0, 2, 1)
-        batch_size, _, _ = x.size()
+        x = torch.cat([x,norm_plt],dim=1)
         x = self.embedding(x)  # B,D,N
+
+        xyz_list = [xyz]  # [B, N, 3]
+        x_list = [x]  # [B, D, N]
+
+        # here is the encoder
         for i in range(self.stages):
             # Give xyz[b, p, 3] and fea[b, p, d], return new_xyz[b, g, 3] and new_fea[b, g, k, d]
             xyz, x = self.local_grouper_list[i](xyz, x.permute(0, 2, 1))  # [b,g,3]  [b,g,k,d]
             x = self.pre_blocks_list[i](x)  # [b,d,g]
             x = self.pos_blocks_list[i](x)  # [b,d,g]
+            print(f"stage {i+1}: xyz shape: {xyz.shape}, x shape: {x.shape}")
+            xyz_list.append(xyz)
+            x_list.append(x)
 
-        x = F.adaptive_max_pool1d(x, 1).squeeze(dim=-1)
-        x = self.classifier(x)
+        for i in range(len(xyz_list),1,-1):
+            print(i)
+
+        x = F.log_softmax(x, dim=1)
+        x = x.permute(0, 2, 1)
         return x
 
 
-
-def model31A(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
-                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-def model31B(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
-                   activation="relu", bias=False, use_xyz=False, normalize="center",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-
-def model31C(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
-                   activation="relu", bias=False, use_xyz=True, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-def model31D(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
-                   activation="relu", bias=False, use_xyz=True, normalize="center",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-
-
-def model31E(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
-                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-
-def model31F(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.125,
-                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
-
-def model31G(num_classes=40, **kwargs) -> model31:
-    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=16, res_expansion=2.0,
-                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                   k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
-
 if __name__ == '__main__':
-    # data = torch.rand(2, 128, 10)
-    # model = ConvBNReLURes1D(128, groups=2, activation='relu')
-    # out = model(data)
-    # print(out.shape)
-    #
-    # batch, groups, neighbors, dim = 2, 512, 32, 16
-    # x = torch.rand(batch, groups, neighbors, dim)
-    # pre_extractor = PreExtraction(dim, 3)
-    # out = pre_extractor(x)
-    # print(out.shape)
-    #
-    # x = torch.rand(batch, dim, groups)
-    # pos_extractor = PosExtraction(dim, 3)
-    # out = pos_extractor(x)
-    # print(out.shape)
-
-    data = torch.rand(2, 3, 1024)
+    data = torch.rand(2, 3, 2048)
+    norm = torch.rand(2, 3, 2048)
+    cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = model31()
-    out = model(data)
-    print(out.shape)
-
-    print("===> testing modelA ...")
-    model = model31A()
-    out = model(data)
-    print(out.shape)
-
-    print("===> testing modelB ...")
-    model = model31B()
-    out = model(data)
-    print(out.shape)
-
-    print("===> testing modelC ...")
-    model = model31C()
-    out = model(data)
-    print(out.shape)
-
-    print("===> testing modelD ...")
-    model = model31D()
-    out = model(data)
+    model = PointMLP31(points=2048)
+    out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)
 
