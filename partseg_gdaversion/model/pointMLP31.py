@@ -135,7 +135,7 @@ def knn_point(nsample, xyz, new_xyz):
 
 
 class LocalGrouper(nn.Module):
-    def __init__(self, channel, groups, kneighbors, use_xyz=True, normalize="center", **kwargs):
+    def __init__(self, channel, groups, kneighbors, use_xyz=True, normalize="anchor", **kwargs):
         """
         Give xyz[b,p,3] and fea[b,p,d], return new_xyz[b,g,3] and new_fea[b,g,k,d]
         :param groups: groups number
@@ -287,7 +287,7 @@ class PosExtraction(nn.Module):
 class PointNetFeaturePropagation(nn.Module):
     def __init__(self, in_channel, out_channel, blocks=1, groups=1, res_expansion=1.0, bias=True, activation='relu'):
         super(PointNetFeaturePropagation, self).__init__()
-        self.fuse = ConvBNReLU1D(in_channel, out_channel,1,bias=bias)
+        self.fuse = ConvBNReLU1D(in_channel, out_channel, 1, bias=bias)
         self.extraction = PosExtraction(out_channel, blocks, groups=groups,
                                         res_expansion=res_expansion, bias=bias, activation=activation)
 
@@ -297,10 +297,10 @@ class PointNetFeaturePropagation(nn.Module):
         Input:
             xyz1: input points position data, [B, N, 3]
             xyz2: sampled input points position data, [B, S, 3]
-            points1: input points data, [B, D, N]
-            points2: input points data, [B, D, S]
+            points1: input points data, [B, D', N]
+            points2: input points data, [B, D'', S]
         Return:
-            new_points: upsampled points data, [B, D', N] D'=D+D
+            new_points: upsampled points data, [B, D''', N]
         """
         # xyz1 = xyz1.permute(0, 2, 1)
         # xyz2 = xyz2.permute(0, 2, 1)
@@ -337,9 +337,11 @@ class PointNetFeaturePropagation(nn.Module):
 
 class PointMLP31(nn.Module):
     def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="center",
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], **kwargs):
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
+                 gmp_dim=64,cls_dim=64, **kwargs):
         super(PointMLP31, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = num_classes
@@ -352,6 +354,8 @@ class PointMLP31(nn.Module):
         self.pos_blocks_list = nn.ModuleList()
         last_channel = embed_dim
         anchor_points = self.points
+        en_dims = [last_channel]
+        ### Building Encoder #####
         for i in range(len(pre_blocks)):
             out_channel = last_channel * dim_expansion[i]
             pre_block_num = pre_blocks[i]
@@ -373,11 +377,42 @@ class PointMLP31(nn.Module):
             self.pos_blocks_list.append(pos_block_module)
 
             last_channel = out_channel
+            en_dims.append(last_channel)
+
+
+        ### Building Decoder #####
+        self.decode_list = nn.ModuleList()
+        en_dims.reverse()
+        de_dims.insert(0,en_dims[0])
+        assert len(en_dims) ==len(de_dims) == len(de_blocks)+1
+        for i in range(len(en_dims)-1):
+            self.decode_list.append(
+                PointNetFeaturePropagation(de_dims[i]+en_dims[i+1], de_dims[i+1],
+                                           blocks=de_blocks[i], groups=groups, res_expansion=res_expansion,
+                                           bias=bias, activation=activation)
+            )
 
         self.act = get_activation(activation)
 
+        # class label mapping
+        self.cls_map = nn.Sequential(
+            ConvBNReLU1D(16, cls_dim, bias=bias, activation=activation),
+            ConvBNReLU1D(cls_dim, cls_dim, bias=bias, activation=activation)
+        )
+        # global max pooling mapping
+        self.gmp_map_list = nn.ModuleList()
+        for en_dim in en_dims:
+            self.gmp_map_list.append(ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation))
+        self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
 
-
+        # classifier
+        self.classifier = nn.Sequential(
+            nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
+            nn.BatchNorm1d(128),
+            nn.Dropout(),
+            nn.Conv1d(128, num_classes, 1, bias=bias)
+        )
+        self.en_dims = en_dims
 
     def forward(self, x, norm_plt, cls_label):
         xyz = x.permute(0, 2, 1)
@@ -393,16 +428,55 @@ class PointMLP31(nn.Module):
             xyz, x = self.local_grouper_list[i](xyz, x.permute(0, 2, 1))  # [b,g,3]  [b,g,k,d]
             x = self.pre_blocks_list[i](x)  # [b,d,g]
             x = self.pos_blocks_list[i](x)  # [b,d,g]
-            print(f"stage {i+1}: xyz shape: {xyz.shape}, x shape: {x.shape}")
             xyz_list.append(xyz)
             x_list.append(x)
 
-        for i in range(len(xyz_list),1,-1):
-            print(i)
+        # here is the decoder
+        xyz_list.reverse()
+        x_list.reverse()
+        x = x_list[0]
+        for i in range(len(self.decode_list)):
+            x = self.decode_list[i](xyz_list[i+1], xyz_list[i], x_list[i+1],x)
 
+        # here is the global context
+        gmp_list = []
+        for i in range(len(x_list)):
+            gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
+        global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
+
+        #here is the cls_token
+        cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
+        x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
+        x = self.classifier(x)
         x = F.log_softmax(x, dim=1)
         x = x.permute(0, 2, 1)
         return x
+
+
+def model31A(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+
+def model31B(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31C(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[24, 24, 24, 24], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
+                 gmp_dim=64,cls_dim=64, **kwargs)
 
 
 if __name__ == '__main__':
@@ -410,7 +484,18 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing model ...")
-    model = PointMLP31(points=2048)
+    model = PointMLP31(50)
     out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)
 
+    model = model31A(50)
+    out = model(data, norm, cls_label)  # [2,2048,50]
+    print(out.shape)
+
+    model = model31B(50)
+    out = model(data, norm, cls_label)  # [2,2048,50]
+    print(out.shape)
+
+    model = model31C(50)
+    out = model(data, norm, cls_label)  # [2,2048,50]
+    print(out.shape)
