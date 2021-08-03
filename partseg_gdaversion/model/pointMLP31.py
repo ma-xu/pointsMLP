@@ -479,12 +479,21 @@ def model31C(num_classes=50, **kwargs) -> PointMLP31:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
+
+def model31D(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=32, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
 if __name__ == '__main__':
     data = torch.rand(2, 3, 2048)
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
-    print("===> testing model ...")
-    model = PointMLP31(50)
+    print("===> testing modelD ...")
+    model = model31D(50)
     out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)
 
