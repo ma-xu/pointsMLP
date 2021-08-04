@@ -18,4 +18,4 @@ from .pointMLP12 import PointMLP12
 
 from .pointMLP13 import PointMLP13
 
-from .pointMLP31 import model31A, model31B, model31C, model31D, model31E, model31F, model31G
+from .pointMLP31 import model31A, model31B, model31C, model31D, model31E, model31F, model31G, model31H, model31I
