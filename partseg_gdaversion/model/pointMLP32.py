@@ -538,6 +538,15 @@ def model32I(num_classes=50, **kwargs) -> PointMLP32:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
+def model32J(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
+                 k_neighbors=[24,24,24,24], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4, 4, 4, 4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+
 
 
 if __name__ == '__main__':
