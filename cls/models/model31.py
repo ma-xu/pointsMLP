@@ -372,7 +372,7 @@ def model31B(num_classes=40, **kwargs) -> model31:
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 
-def model31C(num_classes=40, **kwargs) -> model31:
+def model31C(num_classes=40, **kwargs) -> model31: # 85.219, 85.67, 85.115 , 85.566
     return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -404,6 +404,7 @@ def model31G(num_classes=40, **kwargs) -> model31:
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
+
 
 if __name__ == '__main__':
     # data = torch.rand(2, 128, 10)

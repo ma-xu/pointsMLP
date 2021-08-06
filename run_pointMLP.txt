@@ -114,10 +114,10 @@ CUDA_VISIBLE_DEVICES=1 nohup sh train2.sh > nohup/train_model26H.log &
 
 
 
-CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_model31CD_1.log &
-CUDA_VISIBLE_DEVICES=1 nohup sh running_2.sh > nohup/running_model31CD_2.log &
-CUDA_VISIBLE_DEVICES=2 nohup sh running_3.sh > nohup/running_model31CD_3.log &
-CUDA_VISIBLE_DEVICES=3 nohup sh running_4.sh > nohup/running_model31CD_4.log &
+CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_model31_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_2.sh > nohup/running_model31_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_3.sh > nohup/running_model31_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_4.sh > nohup/running_model31_4.log &
 
 
 CUDA_VISIBLE_DEVICES=0,1 nohup sh running_model28_1.sh > nohup/running_model28_twogpu1-2.log &
@@ -155,7 +155,7 @@ nohup python main_ptseg.py --model PointMLP9 --exp_name sgdlr001 --batch_size 64
 nohup python main_ptseg.py --model model31A --exp_name demo1 --batch_size 64 --scheduler cos > nohup/model31A_demo1.out &
 nohup python main_ptseg.py --model model31B --exp_name demo1 --batch_size 64 --scheduler cos > nohup/model31B_demo1.out &
 nohup python main_ptseg.py --model model31C --exp_name demo1 --batch_size 64 --scheduler cos > nohup/model31C_demo1.out &
-
+nohup python main_ptseg.py --model model32A --exp_name demo1 --batch_size 64 --scheduler cos > nohup/model32A_demo1.out &
 
 
 nohup python train.py --model PointMLP9 --msg demo3 --train_batch_size 64 > nohup/PointMLP9_demo3_bs64.out &
