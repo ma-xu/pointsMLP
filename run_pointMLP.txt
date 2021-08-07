@@ -114,10 +114,10 @@ CUDA_VISIBLE_DEVICES=1 nohup sh train2.sh > nohup/train_model26H.log &
 
 
 
-CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_model31HIAG_1.log &
-CUDA_VISIBLE_DEVICES=1 nohup sh running_2.sh > nohup/running_model31HIAG_2.log &
-CUDA_VISIBLE_DEVICES=2 nohup sh running_3.sh > nohup/running_model31HIAG_3.log &
-CUDA_VISIBLE_DEVICES=3 nohup sh running_4.sh > nohup/running_model31HIAG_4.log &
+CUDA_VISIBLE_DEVICES=0 nohup sh running2_1.sh > nohup/running_model31CDEFJ_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running2_2.sh > nohup/running_model31CDEFJ_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running2_3.sh > nohup/running_model31CDEFJ_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running2_4.sh > nohup/running_model31CDEFJ_4.log &
 
 
 CUDA_VISIBLE_DEVICES=0,1 nohup sh running_model28_1.sh > nohup/running_model28_twogpu1-2.log &
@@ -177,3 +177,9 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31J --msg demo1 > nohup
 CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31J --msg demo2 > nohup/model31J_demo2.out &
 CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31J --msg demo3 > nohup/model31J_demo3.out &
 CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31J --msg demo4 > nohup/model31J_demo4.out &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_model31HIAG_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_2.sh > nohup/running_model31HIAG_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_3.sh > nohup/running_model31HIAG_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_4.sh > nohup/running_model31HIAG_4.log &
