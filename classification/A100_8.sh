@@ -7,5 +7,5 @@
 
 
 python main.py --model model31A --seed 111 --epoch 300 --msg epoch300_seed111
-python main.py --model model31A --seed 111 --epoch 300 --msg epoch300_seed111
+python main.py --model model31A --seed 321 --epoch 300 --msg epoch300_seed321
 python main.py --model model31A --batch_size 16 --epoch 300 --msg epoch300_bs16_8
