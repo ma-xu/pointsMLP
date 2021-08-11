@@ -6,6 +6,8 @@
 #python main.py --model model32N  --epoch 300 --msg epoch300_3
 
 
-python main.py --model model31A --seed 42 --epoch 300 --msg epoch300_seed42
+#python main.py --model model31A --seed 42 --epoch 300 --msg epoch300_seed42
 python main.py --model model31A --seed 1234 --epoch 300 --msg epoch300_seed1234
 python main.py --model model31A --batch_size 16 --epoch 300 --msg epoch300_bs16_7
+python main.py --model model33G --epoch 300 --msg epoch300_1
+python main.py --model model33B --epoch 300 --msg epoch300_2
