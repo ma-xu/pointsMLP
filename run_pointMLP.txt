@@ -189,11 +189,11 @@ CUDA_VISIBLE_DEVICES=3 nohup sh running_4.sh > nohup/running_model31HIAG_4.log &
 
 
 
-CUDA_VISIBLE_DEVICES=0 nohup sh A100_1.sh > nohup/A100_1_c.log &
-CUDA_VISIBLE_DEVICES=1 nohup sh A100_2.sh > nohup/A100_2_c.log &
-CUDA_VISIBLE_DEVICES=2 nohup sh A100_3.sh > nohup/A100_3_c.log &
-CUDA_VISIBLE_DEVICES=3 nohup sh A100_4.sh > nohup/A100_4_c.log &
-CUDA_VISIBLE_DEVICES=4 nohup sh A100_5.sh > nohup/A100_5_c.log &
-CUDA_VISIBLE_DEVICES=5 nohup sh A100_6.sh > nohup/A100_6_c.log &
-CUDA_VISIBLE_DEVICES=6 nohup sh A100_7.sh > nohup/A100_7_c.log &
-CUDA_VISIBLE_DEVICES=7 nohup sh A100_8.sh > nohup/A100_8_c.log &
+CUDA_VISIBLE_DEVICES=0 nohup sh A100_1.sh > nohup/A100_1_d.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh A100_2.sh > nohup/A100_2_d.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh A100_3.sh > nohup/A100_3_d.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh A100_4.sh > nohup/A100_4_d.log &
+CUDA_VISIBLE_DEVICES=4 nohup sh A100_5.sh > nohup/A100_5_d.log &
+CUDA_VISIBLE_DEVICES=5 nohup sh A100_6.sh > nohup/A100_6_d.log &
+CUDA_VISIBLE_DEVICES=6 nohup sh A100_7.sh > nohup/A100_7_d.log &
+CUDA_VISIBLE_DEVICES=7 nohup sh A100_8.sh > nohup/A100_8_d.log &
