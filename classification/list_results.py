@@ -29,8 +29,8 @@ def main():
         args = parse_args()
         models = os.listdir(args.path)
         for model in models:
-            if os.path.isfile(os.path.join(args.path, model, "best_checkpoint.pth")):
-                checkpoint_path = os.path.join(args.checkpoint, "last_checkpoint.pth")
+            checkpoint_path = os.path.join(args.path, model, "best_checkpoint.pth")
+            if os.path.isfile(checkpoint_path):
                 checkpoint = torch.load(checkpoint_path)
                 epoch = checkpoint['epoch']
                 best_test_acc = checkpoint['best_test_acc']
