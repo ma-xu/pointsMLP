@@ -32,9 +32,9 @@ def parse_args():
     parser.add_argument('--msg', type=str, help='message after checkpoint')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size in training')
     parser.add_argument('--model', default='PointNet', help='model name [default: pointnet_cls]')
-    parser.add_argument('--epoch', default=350, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=200, type=int, help='number of epoch in training')
     parser.add_argument('--num_points', type=int, default=1024, help='Point Number')
-    parser.add_argument('--learning_rate', default=0.01, type=float, help='learning rate in training')
+    parser.add_argument('--learning_rate', default=0.1, type=float, help='learning rate in training')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
     parser.add_argument('--seed', type=int, help='random seed')
     parser.add_argument('--workers', default=8, type=int, help='workers')
@@ -43,15 +43,21 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.seed is None:
+        args.seed = np.random.randint(1, 10000)
     os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
+
+    assert torch.cuda.is_available(), "Please ensure codes are executed in cuda."
+    device = 'cuda'
     if args.seed is not None:
         torch.manual_seed(args.seed)
-    if torch.cuda.is_available():
-        device = 'cuda'
-        if args.seed is not None:
-            torch.cuda.manual_seed(args.seed)
-    else:
-        device = 'cpu'
+        np.random.seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        torch.set_printoptions(10)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        os.environ['PYTHONHASHSEED'] = str(args.seed)
     time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
     if args.msg is None:
         message = time_str
@@ -122,12 +128,12 @@ def main():
     train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=args.workers,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=args.workers,
-                             batch_size=args.batch_size, shuffle=True, drop_last=False)
+                             batch_size=args.batch_size//2, shuffle=True, drop_last=False)
 
     optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=args.weight_decay)
     if optimizer_dict is not None:
         optimizer.load_state_dict(optimizer_dict)
-    scheduler = CosineAnnealingLR(optimizer, args.epoch, eta_min=args.learning_rate / 100, last_epoch=start_epoch-1)
+    scheduler = CosineAnnealingLR(optimizer, args.epoch, eta_min=1e-3, last_epoch=start_epoch-1)
 
 
     for epoch in range(start_epoch, args.epoch):
@@ -195,6 +201,7 @@ def train(net, trainloader, optimizer, criterion, device):
         logits = net(data)
         loss = criterion(logits, label)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(net.parameters(), 1)
         optimizer.step()
         train_loss += loss.item()
         preds = logits.max(dim=1)[1]
