@@ -385,7 +385,7 @@ def model32A3(num_classes=40, **kwargs) -> model32:
 def model32A4(num_classes=40, **kwargs) -> model32:
     return model32(points=1024, class_num=num_classes, embed_dim=128, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2], pre_blocks=[2, 4, 2], pos_blocks=[2, 4, 2],
+                   dim_expansion=[2, 2, 2], pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2],
                    k_neighbors=[32, 32, 32], reducers=[2, 2, 2], **kwargs)
 
 
