@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
 
-python main.py --model model31C --msg epoch350_2
-python main.py --model model31D --msg epoch350_2
-python main.py --model model31E --msg epoch350_2
-python main.py --model model31F --msg epoch350_2
-python main.py --model model31J --msg epoch350_2
+python main.py --model model32A3 --msg update2
+python main.py --model model32A4 --msg update2
