@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 
-python main.py --model model32H --msg update_3
-python main.py --model model32I --msg update_3
+python main.py --model model31A --msg update_E
+python main.py --model model31A --msg update_F
