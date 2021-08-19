@@ -8,14 +8,11 @@ import sys
 sys.path.append("..")
 from data import ModelNet40
 
-id = np.random.randint(0,2048)
-id=800 #airplane 11
-id=2001 # lighter
-id=860
+id=21
 color='lightskyblue'
 color='yellowgreen'
 color='orange'
-points=50
+points=500
 save_fig=True
 rotation=True
 scale=True
@@ -44,7 +41,7 @@ z_max = max(sequence_containing_z_vals)
 print(f"z range: {z_max-z_min}")
 
 
-ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = color)
+ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = color, s=30)
 
 
 # make the panes transparent
