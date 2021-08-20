@@ -62,7 +62,7 @@ u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
 x = np.cos(u)*np.sin(v)
 y = np.sin(u)*np.sin(v)
 z = np.cos(v)
-ax.plot_wireframe(x, y, z, color="orange", linewidth=0.5)
+ax.plot_wireframe(x, y, z, color="lightgray", linewidth=0.5, linestyle='dashed')
 
 # draw a point
 # ax.scatter([0], [0], [0], color="g", s=100)
