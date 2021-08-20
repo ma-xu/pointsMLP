@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 id=21
 color='orange'
-points=128 # dont change the id and points, the point_id will not look good
+points=80 # dont change the id and points, the point_id will not look good
 save_fig=True
 rotation=True
 scale=True
@@ -52,9 +52,14 @@ z_min = min(sequence_containing_z_vals)
 z_max = max(sequence_containing_z_vals)
 print(f"z range: {z_max-z_min}")
 
-cmap = plt.get_cmap('Set2')
-colors = cmap(np.linspace(0, 1, len(sequence_containing_x_vals)))
-ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = colors, s=70)
+# cmap = plt.get_cmap('prism')
+# colors = cmap(np.linspace(0, 1, len(sequence_containing_x_vals)))
+# ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = colors, s=110)
+
+colors = 5*sequence_containing_x_vals+3*sequence_containing_y_vals+2*sequence_containing_z_vals
+norm = pyplot.Normalize(vmin=min(colors), vmax=max(colors))
+ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals,
+           c=colors, s=110, cmap='rainbow', norm=norm)
 
 # add indexed point
 # ax.scatter(indexed_point[0], indexed_point[1], indexed_point[2], color = "red", s=80, marker="*")
@@ -81,4 +86,4 @@ pyplot.show()
 if save_fig:
     fig.tight_layout()
     # ax = fig.add_axes([0.6, 0.6, 0.6, 0.6])
-    fig.savefig(f"{id}_{points}_end.pdf", bbox_inches='tight', pad_inches=-0.8, transparent=True)
+    fig.savefig(f"{id}_{points}_end.pdf", bbox_inches='tight', pad_inches=-0.7, transparent=True)
