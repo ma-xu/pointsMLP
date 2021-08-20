@@ -2,3 +2,4 @@
 __pycache__/
 #*.pdf
 data/modelnet40_ply_hdf5_2048/
+Others/plot/data/*
