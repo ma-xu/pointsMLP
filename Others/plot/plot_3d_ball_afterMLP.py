@@ -113,6 +113,6 @@ cmap = plt.get_cmap('cool')
 colors = cmap(np.linspace(0, 1, len(abs_neighbors)))
 ax.scatter(abs_neighbors[:, 0], abs_neighbors[:, 1], abs_neighbors[:, 2], color = colors, s=30)
 plt.show()
-fig.savefig("3d_ball_afterMLP.pdf", bbox_inches='tight', pad_inches=0.05, transparent=True)
+fig.savefig("3d_ball_afterMLP.pdf", bbox_inches='tight', pad_inches=-0.6, transparent=True)
 
 

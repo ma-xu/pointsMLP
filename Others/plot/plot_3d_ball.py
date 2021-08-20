@@ -111,6 +111,6 @@ ax.get_xaxis().get_major_formatter().set_useOffset(False)
 ax.scatter(0, 0, 0, color = "red", s=80, marker="*")
 ax.scatter(abs_neighbors[:, 0], abs_neighbors[:, 1], abs_neighbors[:, 2], color = "limegreen", s=30)
 plt.show()
-fig.savefig("3d_ball.pdf", bbox_inches='tight', pad_inches=0.05, transparent=True)
+fig.savefig("3d_ball.pdf", bbox_inches='tight', pad_inches=-0.6, transparent=True)
 
 

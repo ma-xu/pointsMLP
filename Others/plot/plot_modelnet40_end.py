@@ -9,28 +9,28 @@ import sys
 sys.path.append("..")
 from data import ModelNet40
 from utils import knn_point, index_points, square_distance
-
+import matplotlib.pyplot as plt
 
 
 id=21
 color='orange'
-points=500 # dont change the id and points, the point_id will not look good
+points=128 # dont change the id and points, the point_id will not look good
 save_fig=True
 rotation=True
 scale=True
 
-point_id = 381  # 459, 470, 240 tail ,310, 330
-k_neighbors=20
+# point_id = 381  # 459, 470, 240 tail ,310, 330
+# k_neighbors=20
 
 
 datset = ModelNet40(points, partition='test')
 sample,label = datset.__getitem__(id)
 
-indexed_point = sample[point_id]
-indexed_point_torch = torch.Tensor(indexed_point).view(1,1,3)
-sample_torch = torch.Tensor(sample).unsqueeze(dim=0)
-idx = knn_point(k_neighbors, sample_torch, indexed_point_torch)
-neighbor_points = index_points(sample_torch, idx[:,:,1:]).squeeze(dim=0).squeeze(dim=0).numpy()
+# indexed_point = sample[point_id]
+# indexed_point_torch = torch.Tensor(indexed_point).view(1,1,3)
+# sample_torch = torch.Tensor(sample).unsqueeze(dim=0)
+# idx = knn_point(k_neighbors, sample_torch, indexed_point_torch)
+# neighbor_points = index_points(sample_torch, idx[:,:,1:]).squeeze(dim=0).squeeze(dim=0).numpy()
 
 
 
@@ -38,7 +38,7 @@ fig = pyplot.figure()
 ax = Axes3D(fig)
 
 
-sample = np.delete(sample, idx, 0)
+# sample = np.delete(sample, idx, 0)
 sequence_containing_x_vals = sample[:, 0]
 x_min = min(sequence_containing_x_vals)
 x_max = max(sequence_containing_x_vals)
@@ -52,12 +52,13 @@ z_min = min(sequence_containing_z_vals)
 z_max = max(sequence_containing_z_vals)
 print(f"z range: {z_max-z_min}")
 
-
-ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = color, s=30)
+cmap = plt.get_cmap('Set2')
+colors = cmap(np.linspace(0, 1, len(sequence_containing_x_vals)))
+ax.scatter(sequence_containing_x_vals, sequence_containing_y_vals, sequence_containing_z_vals, color = colors, s=70)
 
 # add indexed point
-ax.scatter(indexed_point[0], indexed_point[1], indexed_point[2], color = "red", s=80, marker="*")
-ax.scatter(neighbor_points[:, 0], neighbor_points[:, 1], neighbor_points[:, 2], color = "limegreen", s=30)
+# ax.scatter(indexed_point[0], indexed_point[1], indexed_point[2], color = "red", s=80, marker="*")
+# ax.scatter(neighbor_points[:, 0], neighbor_points[:, 1], neighbor_points[:, 2], color = "limegreen", s=30)
 
 
 # make the panes transparent
@@ -78,4 +79,6 @@ ax.get_xaxis().get_major_formatter().set_useOffset(False)
 # pyplot.tight_layout()
 pyplot.show()
 if save_fig:
-    fig.savefig(f"{id}_{points}.pdf", bbox_inches='tight', pad_inches=-0.8, transparent=True)
+    fig.tight_layout()
+    # ax = fig.add_axes([0.6, 0.6, 0.6, 0.6])
+    fig.savefig(f"{id}_{points}_end.pdf", bbox_inches='tight', pad_inches=-0.8, transparent=True)
