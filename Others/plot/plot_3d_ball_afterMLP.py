@@ -13,8 +13,7 @@ from utils import knn_point, index_points, square_distance
 
 
 indexed_point = [-0.6179733,  -0.01154609,  0.13754988]
-neighbors=[[-0.6179733,  -0.01154609,  0.13754988],
- [-6.0331327e-01, -3.5651371e-02,  8.8275500e-02],
+neighbors=[[-6.0331327e-01, -3.5651371e-02,  8.8275500e-02],
  [-5.8656329e-01, -2.5616191e-02,  1.8500750e-01],
  [-6.4876240e-01,  6.9144275e-03,  8.4561124e-02],
  [-6.8672258e-01, -2.3941665e-03,  1.5412858e-01],
@@ -60,12 +59,12 @@ ax = fig.gca(projection='3d')
 #     if np.sum(np.abs(s-e)) == r[1]-r[0]:
 #         ax.plot3D(*zip(s, e), color="b")
 
-# # draw sphere
-# u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-# x = np.cos(u)*np.sin(v)
-# y = np.sin(u)*np.sin(v)
-# z = np.cos(v)
-# ax.plot_wireframe(x, y, z, color="lightgray", linewidth=0.5, linestyle='dashed')
+# draw sphere
+u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
+x = np.cos(u)*np.sin(v)
+y = np.sin(u)*np.sin(v)
+z = np.cos(v)
+ax.plot_wireframe(x, y, z, color="none", linewidth=0.5, linestyle='dashed')
 
 # draw a point
 # ax.scatter([0], [0], [0], color="g", s=100)
@@ -87,15 +86,15 @@ class Arrow3D(FancyArrowPatch):
         self.set_positions((xs[0], ys[0]), (xs[1], ys[1]))
         FancyArrowPatch.draw(self, renderer)
 
-a = Arrow3D([-1.0, 1.0], [0, 0], [0, 0], mutation_scale=20,
-            lw=1, arrowstyle="-|>", color="dimgray",  linewidth=0.5, linestyle='dashed')
+a = Arrow3D([-1.4, 1.4], [0, 0], [0, 0], mutation_scale=20,
+            lw=1, arrowstyle="-|>", color="lightgray")
 ax.add_artist(a)
 
-b = Arrow3D([0, 0], [-0.4, 0.4], [0, 0], mutation_scale=20,
-            lw=1, arrowstyle="-|>", color="dimgray",  linewidth=0.5, linestyle='dashed')
+b = Arrow3D([0, 0], [-1.4, 1.4], [0, 0], mutation_scale=20,
+            lw=1, arrowstyle="-|>", color="lightgray")
 ax.add_artist(b)
-c = Arrow3D([0, 0], [0,0], [-1.0, 1.0], mutation_scale=20,
-            lw=1, arrowstyle="-|>", color="dimgray",  linewidth=0.5, linestyle='dashed')
+c = Arrow3D([0, 0], [0,0], [-1.4, 1.4], mutation_scale=20,
+            lw=1, arrowstyle="-|>", color="lightgray")
 ax.add_artist(c)
 
 # make the panes transparent
@@ -109,10 +108,10 @@ ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
 ax.set_axis_off()
 ax.get_xaxis().get_major_formatter().set_useOffset(False)
 
-cmap = plt.get_cmap('jet')
+ax.scatter(0, 0, 0,  color = "limegreen", s=30)
+cmap = plt.get_cmap('cool')
 colors = cmap(np.linspace(0, 1, len(abs_neighbors)))
-for i in range(len(abs_neighbors)):
-    ax.scatter(abs_neighbors[i, 0], abs_neighbors[i, 1], abs_neighbors[i, 2], color = colors[i], s=30)
+ax.scatter(abs_neighbors[:, 0], abs_neighbors[:, 1], abs_neighbors[:, 2], color = colors, s=30)
 plt.show()
 fig.savefig("3d_ball_afterMLP.pdf", bbox_inches='tight', pad_inches=0.05, transparent=True)
 
