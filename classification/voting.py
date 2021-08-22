@@ -1,5 +1,5 @@
 """
-nohup python eval_voting_enhance.py --model model21H --msg try2 > model21H_try2_evaluate_voting.out &
+nohup python voting.py --model model31A --msg 20210818204651 > model31A_20210818204651_voting.out &
 """
 import argparse
 import os
@@ -41,7 +41,7 @@ def parse_args():
     # parser.add_argument('--use_normals', action='store_true', default=False, help='use normals besides x,y,z')
     # parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
     # parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
-    parser.add_argument('--seed', type=int, default=1, help='random seed (default: 1)')
+    parser.add_argument('--seed', type=int, help='random seed (default: 1)')
 
     # Voting evaluation, referring: https://github.com/CVMI-Lab/PAConv/blob/main/obj_cls/eval_voting.py
     parser.add_argument('--NUM_PEPEAT', type=int, default=300)
@@ -66,10 +66,17 @@ def main():
     args = parse_args()
     print(f"args: {args}")
     os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
-    torch.manual_seed(args.seed)
+    if args.seed is not None:
+        torch.manual_seed(args.seed)
+        np.random.seed(args.seed)
+        torch.cuda.manual_seed_all(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        torch.set_printoptions(10)
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
+        os.environ['PYTHONHASHSEED'] = str(args.seed)
     if torch.cuda.is_available():
         device = 'cuda'
-        torch.cuda.manual_seed(args.seed)
     else:
         device = 'cpu'
     print(f"==> Using device: {device}")
