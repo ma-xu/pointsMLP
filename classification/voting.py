@@ -87,7 +87,7 @@ def main():
 
     print('==> Preparing data..')
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
-                             batch_size=args.batch_size, shuffle=True, drop_last=False)
+                             batch_size=args.batch_size//2, shuffle=True, drop_last=False)
     # Model
     print('==> Building model..')
     net = models.__dict__[args.model]()
@@ -105,8 +105,10 @@ def main():
         test_out = validate(net, test_loader, criterion, device)
         print(f"Vanilla out: {test_out}")
         print(f"Note 1: Please also load the random seed parameter (if forgot, see out.txt).\n"
-              f"Note 2: This result may vary little on different GPUs, we tested 2080Ti, P100, and V100.\n"
+              f"Note 2: This result may vary little on different GPUs (and number of GPUs), we tested 2080Ti, P100, and V100.\n"
               f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
+        # Interestingly, we get original best_test_acc on 4 V100 gpus, but this model is trained on one V100 gpu.
+        # On different GPUs, and different number of GPUs, both OA and mean_acc vary a little.
 
     print(f"===> start voting evaluation...")
     voting(net, test_loader, device, args)
@@ -157,7 +159,7 @@ def voting(net, testloader, device, args):
     net.eval()
     best_acc = 0
     best_mean_acc = 0
-    pointscale = PointcloudScale()  # set the range of scaling
+    pointscale = PointcloudScale(scale_low=0.8, scale_high=1.18)  # set the range of scaling
 
     for i in range(args.NUM_PEPEAT):
         test_true = []
