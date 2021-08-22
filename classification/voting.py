@@ -160,7 +160,7 @@ def voting(net, testloader, device, args):
     net.eval()
     best_acc = 0
     best_mean_acc = 0
-    pointscale = PointcloudScale()  # set the range of scaling
+    pointscale = PointcloudScale(scale_low=0.8, scale_high=1.18)  # set the range of scaling
 
     for i in range(args.NUM_PEPEAT):
         test_true = []
@@ -189,7 +189,7 @@ def voting(net, testloader, device, args):
             best_acc = test_acc
         if test_mean_acc > best_mean_acc:
             best_mean_acc = test_mean_acc
-        outstr = 'Voting %d, test acc: %.3f, test mean acc: %.3f,  [current best(mean_acc: %.3f all_acc: %.3f)]' % \
+        outstr = 'Voting %d, test acc: %.3f, test mean acc: %.3f,  [current best(all_acc: %.3f mean_acc: %.3f)]' % \
                  (i, test_acc, test_mean_acc, best_acc, best_mean_acc)
         io.cprint(outstr)
 
