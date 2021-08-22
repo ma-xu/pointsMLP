@@ -152,7 +152,7 @@ def validate(net, testloader, criterion, device):
 
 
 def voting(net, testloader, device, args):
-    name='/evaluate_voting'+str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))+'.log'
+    name ='/evaluate_voting'+str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))+'seed_'+str(args.seed)+'.log'
     io = IOStream(args.checkpoint + name)
     io.cprint(str(args))
 
