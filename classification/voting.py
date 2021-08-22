@@ -109,6 +109,7 @@ def main():
               f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
         # Interestingly, we get original best_test_acc on 4 V100 gpus, but this model is trained on one V100 gpu.
         # On different GPUs, and different number of GPUs, both OA and mean_acc vary a little.
+        # Also, the batch size also affect the testing results, could not understand.
 
     print(f"===> start voting evaluation...")
     voting(net, test_loader, device, args)
@@ -159,7 +160,7 @@ def voting(net, testloader, device, args):
     net.eval()
     best_acc = 0
     best_mean_acc = 0
-    pointscale = PointcloudScale(scale_low=0.8, scale_high=1.18)  # set the range of scaling
+    pointscale = PointcloudScale()  # set the range of scaling
 
     for i in range(args.NUM_PEPEAT):
         test_true = []
