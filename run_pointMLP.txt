@@ -182,10 +182,16 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31A --msg bs16 --batch_
 CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31A --msg wd0 --weight_decay 0 > nohup/model31A_wd0.out &
 
 
-CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_0818point1_1.log &
-CUDA_VISIBLE_DEVICES=1 nohup sh running_1.sh > nohup/running_0818point1_2.log &
-CUDA_VISIBLE_DEVICES=2 nohup sh running_1.sh > nohup/running_0818point1_3.log &
-CUDA_VISIBLE_DEVICES=3 nohup sh running_1.sh > nohup/running_0818point1_4.log &
+CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_0818point2_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_1.sh > nohup/running_0818point2_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_1.sh > nohup/running_0818point2_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_1.sh > nohup/running_0818point2_4.log &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup sh running_1.sh > nohup/running_0818point3_1.log &
+CUDA_VISIBLE_DEVICES=1 nohup sh running_1.sh > nohup/running_0818point3_2.log &
+CUDA_VISIBLE_DEVICES=2 nohup sh running_1.sh > nohup/running_0818point3_3.log &
+CUDA_VISIBLE_DEVICES=3 nohup sh running_1.sh > nohup/running_0818point3_4.log &
 
 CUDA_VISIBLE_DEVICES=0 nohup sh running3_1.sh > nohup/running3_model31_A.log &
 CUDA_VISIBLE_DEVICES=1 nohup sh running3_2.sh > nohup/running3_model31_B.log &
@@ -228,3 +234,37 @@ CUDA_VISIBLE_DEVICES=1 nohup python main_partseg.py --exp_name=curvenet_seg_2 > 
 CUDA_VISIBLE_DEVICES=2 nohup python main_partseg.py --exp_name=curvenet_seg_3 > log3.out &
 
 CUDA_VISIBLE_DEVICES=3 nohup python main_partseg.py --exp_name=curvenet_seg_4 > log4.out &
+
+
+
+model31A-20210818144650	184
+model31A-20210818145058 183
+model31A-20210818145344 180
+model31A-20210818150245 176
+model31A-20210818204507	82
+model31A-20210818204627 81
+model31A-20210818204646 81
+model31A-20210818204651 81
+model31A-20210818204737 81
+model31A-20210818204919 80
+model31A-20210818205129 79
+model31A-20210818205442	78
+
+
+model31A-20210820005334 11
+model31A-20210820005423	11
+model31A-20210820005501	11
+model31A-20210820005623	10
+model31A-20210820005842	10
+model31A-20210820010345	8
+model31A-20210820010718	7
+model31A-20210820010724	7
+model31A-20210820010858	7
+model31A-20210820011119 7
+model31A-20210820011531	5
+model31A-20210820012732 3
+
+CUDA_VISIBLE_DEVICES=0 python main.py --model model31A --msg 20210820005334 > nohup/20210820005334.out &
+CUDA_VISIBLE_DEVICES=1 python main.py --model model31A --msg 20210820005423 > nohup/20210820005423.out &
+CUDA_VISIBLE_DEVICES=2 python main.py --model model31A --msg 20210820005501 > nohup/20210820005501.out &
+CUDA_VISIBLE_DEVICES=3 python main.py --model model31A --msg 20210820005623 > nohup/20210820005623.out &
