@@ -12,9 +12,8 @@ import torch.utils.data
 import torch.utils.data.distributed
 from torch.utils.data import DataLoader
 import models as models
-from utils import Logger, mkdir_p, progress_bar, save_model, save_args, IOStream
+from utils import progress_bar, IOStream
 from data import ModelNet40
-from torch.optim.lr_scheduler import CosineAnnealingLR
 import sklearn.metrics as metrics
 from helper import cal_loss
 import numpy as np
@@ -27,7 +26,6 @@ model_names = sorted(name for name in models.__dict__
 def parse_args():
     """Parameters"""
     parser = argparse.ArgumentParser('training')
-    # parser.add_argument('-d', '--data_path', default='data/modelnet40_normal_resampled/', type=str)
     parser.add_argument('-c', '--checkpoint', type=str, metavar='PATH',
                         help='path to save checkpoint (default: checkpoint)')
     parser.add_argument('--msg', type=str, help='message after checkpoint')
@@ -38,14 +36,13 @@ def parse_args():
     parser.add_argument('--num_points', type=int, default=1024, help='Point Number')
     parser.add_argument('--learning_rate', default=0.01, type=float, help='learning rate in training')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
-    # parser.add_argument('--use_normals', action='store_true', default=False, help='use normals besides x,y,z')
-    # parser.add_argument('--process_data', action='store_true', default=False, help='save data offline')
-    # parser.add_argument('--use_uniform_sample', action='store_true', default=False, help='use uniform sampling')
     parser.add_argument('--seed', type=int, help='random seed (default: 1)')
 
     # Voting evaluation, referring: https://github.com/CVMI-Lab/PAConv/blob/main/obj_cls/eval_voting.py
     parser.add_argument('--NUM_PEPEAT', type=int, default=300)
     parser.add_argument('--NUM_VOTE', type=int, default=10)
+
+    parser.add_argument('--validate', action='store_true', help='Validate the original testing result.')
     return parser.parse_args()
 
 
@@ -66,15 +63,17 @@ def main():
     args = parse_args()
     print(f"args: {args}")
     os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
-    if args.seed is not None:
-        torch.manual_seed(args.seed)
-        np.random.seed(args.seed)
-        torch.cuda.manual_seed_all(args.seed)
-        torch.cuda.manual_seed(args.seed)
-        torch.set_printoptions(10)
-        torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic = True
-        os.environ['PYTHONHASHSEED'] = str(args.seed)
+    if args.seed is None:
+        args.seed = np.random.randint(1, 10000)
+    print(f"random seed is set to {args.seed}, the speed will slow down.")
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    torch.cuda.manual_seed_all(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    torch.set_printoptions(10)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+    os.environ['PYTHONHASHSEED'] = str(args.seed)
     if torch.cuda.is_available():
         device = 'cuda'
     else:
@@ -103,11 +102,13 @@ def main():
         net = torch.nn.DataParallel(net)
         cudnn.benchmark = True
     net.load_state_dict(checkpoint['net'])
-    test_out = validate(net, test_loader, criterion, device)
-    print(f"Vanilla out: {test_out}")
-    print(f"Note 1: Please also load the random seed parameter (if forgot, see out.txt).\n"
-          f"Note 2: This result may vary little on different GPUs, we tested 2080Ti, P100, and V100.\n"
-          f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
+
+    if args.validate:
+        test_out = validate(net, test_loader, criterion, device)
+        print(f"Vanilla out: {test_out}")
+        print(f"Note 1: Please also load the random seed parameter (if forgot, see out.txt).\n"
+              f"Note 2: This result may vary little on different GPUs, we tested 2080Ti, P100, and V100.\n"
+              f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
 
     print(f"===> start voting evaluation...")
     voting(net, vote_loader, device, args)
