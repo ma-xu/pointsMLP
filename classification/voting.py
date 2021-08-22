@@ -105,6 +105,9 @@ def main():
     net.load_state_dict(checkpoint['net'])
     test_out = validate(net, test_loader, criterion, device)
     print(f"Vanilla out: {test_out}")
+    print(f"Note 1: Please also load the random seed parameter (if forgot, see out.txt).\n"
+          f"Note 2: This result may vary little on different GPUs, we tested 2080Ti, P100, and V100.\n"
+          f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
 
     print(f"===> start voting evaluation...")
     voting(net, vote_loader, device, args)
