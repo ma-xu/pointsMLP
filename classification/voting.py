@@ -88,8 +88,6 @@ def main():
     print('==> Preparing data..')
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
                              batch_size=args.batch_size, shuffle=True, drop_last=False)
-    vote_loader = DataLoader(ModelNet40(partition='test', num_points=2048), num_workers=8,
-                             batch_size=args.batch_size, shuffle=True, drop_last=False)
     # Model
     print('==> Building model..')
     net = models.__dict__[args.model]()
@@ -111,7 +109,7 @@ def main():
               f"[note : Original result is achieved with V100 GPUs.]\n\n\n")
 
     print(f"===> start voting evaluation...")
-    voting(net, vote_loader, device, args)
+    voting(net, test_loader, device, args)
 
 
 
@@ -169,8 +167,7 @@ def voting(net, testloader, device, args):
             data, label = data.to(device), label.to(device).squeeze()
             pred = 0
             for v in range(args.NUM_VOTE):
-                idx = np.random.choice(2048, args.num_points, False)
-                new_data = data[:, idx, :]
+                new_data = data
                 # batch_size = data.size()[0]
                 if v > 0:
                     new_data.data = pointscale(new_data.data)

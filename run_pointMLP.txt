@@ -275,8 +275,8 @@ CUDA_VISIBLE_DEVICES=3 python main.py --model model31A --msg 20210820005623 > no
 model31A-20210818204651: epoch155  best_test_acc: 93.801  seed 7422
 model31A-20210818145058: epoch187  best_test_acc: 93.76   seed 663
 
-CUDA_VISIBLE_DEVICES=0 nohup python voting.py --model model31A --msg 20210818145058 --seed 663 > model31A_20210818145058_voting1.out &
-CUDA_VISIBLE_DEVICES=1 nohup python voting.py --model model31A --msg 20210818145058 --seed 663 > model31A_20210818145058_voting2.out &
-CUDA_VISIBLE_DEVICES=2 nohup python voting.py --model model31A --msg 20210818145058 --seed 663 > model31A_20210818145058_voting3.out &
-CUDA_VISIBLE_DEVICES=3 nohup python voting.py --model model31A --msg 20210818145058 --seed 663 > model31A_20210818145058_voting4.out &
+CUDA_VISIBLE_DEVICES=0 nohup python voting.py --model model31A --msg 20210818204651 --seed 7422 --validate > nohup/model31A_20210818204651_voting.out &
+CUDA_VISIBLE_DEVICES=1 nohup python voting.py --model model31A --msg 20210818204651 > nohup/model31A_20210818204651_voting1.out &
+CUDA_VISIBLE_DEVICES=2 nohup python voting.py --model model31A --msg 20210818204651 > nohup/model31A_20210818204651_voting2.out &
+CUDA_VISIBLE_DEVICES=3 nohup python voting.py --model model31A --msg 20210818204651 > nohup/model31A_20210818204651_voting3.out &
 
