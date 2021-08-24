@@ -15,6 +15,7 @@ Modified by
 
 from __future__ import print_function
 import os
+import datetime
 import argparse
 import torch
 import torch.nn as nn
@@ -240,7 +241,7 @@ def test(args, io):
 
     #Try to load models
     seg_start_index = test_loader.dataset.seg_start_index
-    model = CurveNet().to(device)
+    model = models.__dict__[args.model]().to(device)
     model = nn.DataParallel(model)
     model.load_state_dict(torch.load(args.model_path))
 
@@ -328,6 +329,10 @@ if __name__ == "__main__":
     parser.add_argument('--model_path', type=str, default='', metavar='N',
                         help='Pretrained model path')
     args = parser.parse_args()
+    time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
+    if args.exp_name is None:
+        args.exp_name = time_str
+    args.exp_name = args.model+"_"+args.exp_name
 
     _init_()
 
