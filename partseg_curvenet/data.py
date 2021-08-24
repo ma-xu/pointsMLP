@@ -38,12 +38,12 @@ def download_modelnet40():
 def download_shapenetpart():
     if not os.path.exists(DATA_DIR):
         os.mkdir(DATA_DIR)
-    if not os.path.exists(os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data')):
-        os.mkdir(os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data'))
+    if not os.path.exists(os.path.join(DATA_DIR)):
+        os.mkdir(os.path.join(DATA_DIR))
         www = 'https://shapenet.cs.stanford.edu/media/shapenet_part_seg_hdf5_data.zip'
         zipfile = os.path.basename(www)
         os.system('wget %s --no-check-certificate; unzip %s' % (www, zipfile))
-        os.system('mv %s %s' % (zipfile[:-4], os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data')))
+        os.system('mv %s %s' % (zipfile[:-4], os.path.join(DATA_DIR)))
         os.system('rm %s' % (zipfile))
 
 
@@ -77,10 +77,10 @@ def load_data_partseg(partition):
     all_label = []
     all_seg = []
     if partition == 'trainval':
-        file = glob.glob(os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data', 'hdf5_data', '*train*.h5')) \
-               + glob.glob(os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data', 'hdf5_data', '*val*.h5'))
+        file = glob.glob(os.path.join(DATA_DIR, 'part_segmentation_data', '*train*.h5')) \
+               + glob.glob(os.path.join(DATA_DIR,  'part_segmentation_data', '*val*.h5'))
     else:
-        file = glob.glob(os.path.join(DATA_DIR, 'shapenet_part_seg_hdf5_data', 'hdf5_data', '*%s*.h5'%partition))
+        file = glob.glob(os.path.join(DATA_DIR, 'part_segmentation_data', '*%s*.h5'%partition))
     for h5_name in file:
         f = h5py.File(h5_name, 'r+')
         data = f['data'][:].astype('float32')
