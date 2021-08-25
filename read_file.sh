@@ -3,6 +3,6 @@
 
 dir = $1
 
-for file in $dir/*; do
+for file in $(ls $dir); do
     echo $file
 done
