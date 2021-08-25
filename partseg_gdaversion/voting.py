@@ -124,11 +124,11 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
                                           Variable(norm_plt.float())
         norm_plt = norm_plt.transpose(2, 1)
         seg_pred = 0.
+        points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
+                                              target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
         for v in range(args.NUM_VOTE):
             scaled_point = pointscale(points)
             scaled_point = scaled_point.transpose(2, 1)
-            scaled_point, label, target, norm_plt = scaled_point.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
-                                              target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
             seg_pred_v = model(scaled_point, norm_plt, to_categorical(label, num_classes))  # b,n,50
             seg_pred += seg_pred_v
         seg_pred /= args.NUM_VOTE
