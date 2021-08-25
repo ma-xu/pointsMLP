@@ -52,13 +52,17 @@ def voting(args, io):
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
     # Try to load models
-    from collections import OrderedDict
     state_dict = torch.load("checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
                             map_location=torch.device('cpu'))['model']
-    new_state_dict = OrderedDict()
-    for layer in state_dict:
-        new_state_dict[layer.replace('module.', '')] = state_dict[layer]
-    model.load_state_dict(new_state_dict)
+    for k in state_dict.keys():
+        if 'module' not in k:
+            from collections import OrderedDict
+            new_state_dict = OrderedDict()
+            for k in state_dict:
+                new_state_dict['module.' + k] = state_dict[k]
+            state_dict = new_state_dict
+        break
+    model.load_state_dict(state_dict)
     print("Resume training model...")
 
 
