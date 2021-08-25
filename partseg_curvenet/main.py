@@ -1,6 +1,6 @@
 """
 Usage:
-python main_partseg.py --exp_name=curvenet_seg_1
+python main.py --exp_name=curvenet_seg_1
 
 @Author: An Tao
 @Contact: ta19@mails.tsinghua.edu.cn
@@ -96,7 +96,7 @@ def train(args, io):
                             num_workers=8, batch_size=args.test_batch_size, shuffle=False, drop_last=False)
 
     device = torch.device("cuda" if args.cuda else "cpu")
-    io.cprint("Let's use" + str(torch.cuda.device_count()) + "GPUs!")
+    io.cprint("Let's use " + str(torch.cuda.device_count()) + " GPUs!")
 
     seg_num_all = train_loader.dataset.seg_num_all
     seg_start_index = train_loader.dataset.seg_start_index
@@ -193,6 +193,7 @@ def train(args, io):
         test_pred_seg = []
         test_label_seg = []
         for data, label, seg in test_loader:
+            print(f"data shape is: {data.shape}, label shape is: {label.shape}")
             seg = seg - seg_start_index
             label_one_hot = np.zeros((label.shape[0], 16))
             for idx in range(label.shape[0]):
