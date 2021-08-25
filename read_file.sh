@@ -2,8 +2,9 @@
 
 
 dir = $1
-echo $dir
+cd $dir
+filenames = $(ls *.log)
 
-for file in $(ls $dir); do
-    echo $file
+for file in ${filenames}; do
+    echo ${file}
 done
