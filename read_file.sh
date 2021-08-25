@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-
-$dir = $1
-cd $dir
+echo $1
+cd $1
 $filenames = $(ls *.log)
 echo $filenames
 
