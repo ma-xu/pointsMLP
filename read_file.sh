@@ -2,8 +2,7 @@
 
 echo $1
 cd $1
-filenames = $(ls *.log)
-echo $filenames
+filenames=$(ls *.log)
 
 for file in ${filenames}; do
     echo ${file}
