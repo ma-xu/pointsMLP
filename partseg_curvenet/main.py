@@ -51,7 +51,6 @@ def _init_():
         os.makedirs('checkpoints/'+args.exp_name)
     if not os.path.exists('checkpoints/'+args.exp_name+'/'+'models'):
         os.makedirs('checkpoints/'+args.exp_name+'/'+'models')
-    os.system('cp main_partseg.py checkpoints/'+args.exp_name+'/main_partseg.py.backup')
 
 
 def calculate_shape_IoU(pred_np, seg_np, label, class_choice, eva=False):
@@ -231,7 +230,7 @@ def train(args, io):
         io.cprint(outstr)
         if np.mean(test_ious) >= best_test_iou:
             best_test_iou = np.mean(test_ious)
-            torch.save(model.state_dict(), '../checkpoints/%s/models/model.t7' % args.exp_name)
+            torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
 
 
 def test(args, io):
