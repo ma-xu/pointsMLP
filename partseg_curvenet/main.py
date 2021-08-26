@@ -142,7 +142,12 @@ def train(args, io):
             data = data.permute(0, 2, 1)
             batch_size = data.size()[0]
             opt.zero_grad()
+            print(f"input data shape: {data.shape}")
+            print(f"input label_one_hot shape: {label_one_hot.shape}")
+            print(f"input label_one_hot : {label_one_hot}")
             seg_pred = model(data, label_one_hot)
+            print(f"output shape : {seg_pred.shape}")
+            return 0
             seg_pred = seg_pred.permute(0, 2, 1).contiguous()
             loss = criterion(seg_pred.view(-1, seg_num_all), seg.view(-1,1).squeeze())
             loss.backward()
