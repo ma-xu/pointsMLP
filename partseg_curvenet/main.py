@@ -123,6 +123,7 @@ def train(args, io):
         ####################
         # Train
         ####################
+        train_time_cost = datetime.datetime.now()
         train_loss = 0.0
         count = 0.0
         model.train()
@@ -173,16 +174,19 @@ def train(args, io):
         train_pred_seg = np.concatenate(train_pred_seg, axis=0)
         train_label_seg = np.concatenate(train_label_seg)
         train_ious = calculate_shape_IoU(train_pred_seg, train_true_seg, train_label_seg, args.class_choice)
+        train_time_cost = int((datetime.datetime.now() - train_time_cost).total_seconds())
         outstr = 'Train %d, loss: %.6f, train acc: %.6f, train avg acc: %.6f, train iou: %.6f' % (epoch,
                                                                                                   train_loss*1.0/count,
                                                                                                   train_acc,
                                                                                                   avg_per_class_acc,
                                                                                                   np.mean(train_ious))
         io.cprint(outstr)
+        io.cprint(f"Training time: {train_time_cost} seconds.")
 
         ####################
         # Test
         ####################
+        test_time_cost = datetime.datetime.now()
         test_loss = 0.0
         count = 0.0
         model.eval()
@@ -222,12 +226,14 @@ def train(args, io):
         test_pred_seg = np.concatenate(test_pred_seg, axis=0)
         test_label_seg = np.concatenate(test_label_seg)
         test_ious = calculate_shape_IoU(test_pred_seg, test_true_seg, test_label_seg, args.class_choice)
+        test_time_cost = int((datetime.datetime.now() - test_time_cost).total_seconds())
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, test iou: %.6f, best iou %.6f' % (epoch,
                                                                                               test_loss*1.0/count,
                                                                                               test_acc,
                                                                                               avg_per_class_acc,
                                                                                               np.mean(test_ious), best_test_iou)
         io.cprint(outstr)
+        io.cprint(f"Testing time: {test_time_cost} seconds.")
         if np.mean(test_ious) >= best_test_iou:
             best_test_iou = np.mean(test_ious)
             torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
