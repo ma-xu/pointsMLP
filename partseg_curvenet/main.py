@@ -196,7 +196,6 @@ def train(args, io):
         test_pred_seg = []
         test_label_seg = []
         for data, label, seg in test_loader:
-            print(f"data shape is: {data.shape}, label shape is: {label.shape}")
             seg = seg - seg_start_index
             label_one_hot = np.zeros((label.shape[0], 16))
             for idx in range(label.shape[0]):
