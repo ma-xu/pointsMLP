@@ -94,7 +94,7 @@ def main():
     criterion = cal_loss
     net = net.to(device)
     checkpoint_path = os.path.join(args.checkpoint, 'best_checkpoint.pth')
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     # criterion = criterion.to(device)
     if device == 'cuda':
         net = torch.nn.DataParallel(net)
