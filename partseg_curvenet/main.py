@@ -1,6 +1,6 @@
 """
 Usage:
-python main.py --exp_name=curvenet_seg_1
+python main.py --model model31G --exp_name=demo1
 
 @Author: An Tao
 @Contact: ta19@mails.tsinghua.edu.cn

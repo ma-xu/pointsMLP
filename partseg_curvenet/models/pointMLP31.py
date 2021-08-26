@@ -348,7 +348,7 @@ class PointMLP31(nn.Module):
         self.stages = len(pre_blocks)
         self.class_num = num_classes
         self.points = points
-        self.embedding = ConvBNReLU1D(6, embed_dim, bias=bias, activation=activation)
+        self.embedding = ConvBNReLU1D(3, embed_dim, bias=bias, activation=activation)
         assert len(pre_blocks) == len(k_neighbors) == len(reducers) == len(pos_blocks) == len(dim_expansion), \
             "Please check stage number consistent for pre_blocks, pos_blocks k_neighbors, reducers."
         self.local_grouper_list = nn.ModuleList()
@@ -411,6 +411,7 @@ class PointMLP31(nn.Module):
         self.classifier = nn.Sequential(
             nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
             nn.BatchNorm1d(128),
+            self.act,
             nn.Dropout(),
             nn.Conv1d(128, num_classes, 1, bias=bias)
         )
