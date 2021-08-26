@@ -450,8 +450,8 @@ class PointMLP31(nn.Module):
         cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
         x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
-        x = F.log_softmax(x, dim=1)
-        x = x.permute(0, 2, 1)
+        # x = F.log_softmax(x, dim=1)
+        # x = x.permute(0, 2, 1)
         return x
 
 
@@ -569,5 +569,5 @@ if __name__ == '__main__':
     print(out.shape)
 
     model = model31C(50)
-    out = model(data, norm, cls_label)  # [2,2048,50]
+    out = model(data, norm, cls_label)  # [2,50, 2048]
     print(out.shape)
