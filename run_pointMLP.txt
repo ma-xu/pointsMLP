@@ -232,6 +232,13 @@ CUDA_VISIBLE_DEVICES=5 nohup python main.py --model model31A --msg updated_6 > n
 CUDA_VISIBLE_DEVICES=6 nohup python main.py --model model31A --msg updated_7 > nohup/model31A_updated_7.out &
 CUDA_VISIBLE_DEVICES=7 nohup python main.py --model model31A --msg updated_8 > nohup/model31A_updated_8.out &
 
+cd /scratch/ma.xu1/pointsMLP/classification/
+conda activate point
+nohup python main.py --model model31C --epoch 300 > nohup/training_model31C_8 & 
+
+
+
+
 
 nohup python main.py --model model31A --seed 2015 --msg seed2015 > nohup/model31A_seed2015.out &
 nohup python main.py --model model33A --msg updated9 > nohup/model33A_updated9.out &
