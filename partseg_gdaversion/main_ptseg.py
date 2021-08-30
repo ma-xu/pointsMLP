@@ -202,8 +202,8 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
 
     for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(train_loader), total=len(train_loader), smoothing=0.9):
         batch_size, num_point, _ = points.size()
-        points, label, target, norm_plt = torch.Tensor(points.float()), torch.Tensor(label.long()), \
-                                          torch.Tensor(target.long()),torch.Tensor(norm_plt.float())
+        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), \
+                                          Variable(target.long()), Variable(norm_plt.float())
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
         points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
@@ -261,8 +261,8 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
     # label_size: b, means each sample has one corresponding class
     for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
         batch_size, num_point, _ = points.size()
-        points, label, target, norm_plt = torch.Tensor(points.float()), torch.Tensor(label.long()), \
-                                          torch.Tensor(target.long()), torch.Tensor(norm_plt.float())
+        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), \
+                                          Variable(target.long()), Variable(norm_plt.float())
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
         points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
