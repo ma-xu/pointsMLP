@@ -134,9 +134,8 @@ def train(args, io):
     num_classes = 16
 
     for epoch in range(start_epoch, args.epochs):
-
+        io.cprint(f"\n===> Epoch {str(epoch+1)}")
         train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classes, io)
-
         test_metrics, total_per_cat_iou = test_epoch(test_loader, model, epoch, num_part, num_classes, io)
 
         # 1. when get the best accuracy, save the model:
