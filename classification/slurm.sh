@@ -6,10 +6,9 @@
 #SBATCH -p multigpu
 #SBATCH --gres=gpu:v100-sxm2:1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=32G
+#SBATCH --mem=32Gb
 #SBATCH --time=1-00:00:00
-#SBATCH --ntasks-per-node=4
-#SBATCH --partition=short
+#SBATCH --ntasks=4
 #SBATCH --output=nohup/out_%j.log
 conda activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
