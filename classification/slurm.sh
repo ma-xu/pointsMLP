@@ -1,14 +1,15 @@
 #!/bin/bash
-#BATCH --job-name=voting_model31C_20210829112651
+#SBATCH --job-name=voting_model31C_20210829112651
 #SBATCH --mail-type=END,FAIL,BEGIN
 #SBATCH --mail-user=ma.xu1@northeastern.edu
 #SBATCH -N 1
 #SBATCH -p multigpu
 #SBATCH --gres=gpu:v100-sxm2:1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64Gb
+#SBATCH --mem=32G
 #SBATCH --time=1-00:00:00
-#SBATCH --ntasks=4
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=short
 #SBATCH --output=nohup/out_%j.log
 conda activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
