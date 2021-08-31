@@ -328,4 +328,8 @@ CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31A --exp_name demo1 > 
 
 
 
-python main_ptseg.py --model model31G --exp_name test
+CUDA_VISIBLE_DEVICES=0 nohup python main_ptseg.py --model model31G --exp_name test1bs64 --batch_size 64 > nohup/model31G_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main_ptseg.py --model model31G2 --exp_name test1bs64  --batch_size 64 > nohup/model31G2_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main_ptseg.py --model model31G3 --exp_name test1bs64  --batch_size 64 > nohup/model31G3_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main_ptseg.py --model model31G --lr 0.001 --exp_name lr0.001bs64  --batch_size 64 > nohup/model31G_lr0.001_bs64.out &
+nohup python main_ptseg.py --model model31G --exp_name test1bs32 --batch_size 32 > nohup/model31G_test1_bs32.out &
