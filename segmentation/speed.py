@@ -142,14 +142,15 @@ def main(args):
         loss_sum = 0.
         classifier = classifier.train()
 
-        for i, (points, target) in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9):
+        iter_Loader = tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9)
+        for i, (points, target) in iter_Loader:
             optimizer.zero_grad()
             points = points.data.numpy()
             points[:, :, :3] = provider.rotate_point_cloud_z(points[:, :, :3])
             points = torch.Tensor(points)
             points, target = points.float().cuda(), target.long().cuda()
             points = points.transpose(2, 1) # [b,d,n]
-            tqdm.set_postfix(f"points shape is {points.shape}")
+            iter_Loader.set_postfix(f"points shape is {points.shape}")
 
         '''Evaluate on chopped scenes'''
         with torch.no_grad():
