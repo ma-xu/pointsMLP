@@ -1,15 +1,18 @@
 cd /scratch/ma.xu1/pointsMLP/cls/
 tmux new-session -d -s point7
 tmux attach -t point7
-salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:4 --cpus-per-task=8 --mem=128Gb  --time=1-00:00:00
+salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:4 --cpus-per-task=16 --mem=128Gb  --time=1-00:00:00
 conda activate point
 
 
-tmux new-session -d -s point10
-tmux attach -t point10
+tmux new-session -d -s point2
+tmux attach -t point2
 salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:1 --cpus-per-task=2 --mem=32Gb  --time=1-00:00:00
 conda activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
+
+nohup python voting.py --model model31A --msg 20210818204651 --epoch 200 > model31A_20210818204651_voting.out &
+
 nohup python main.py --model model31C --epoch 200 > nohup/model31C_0829_3.out &
 
 
@@ -333,3 +336,9 @@ CUDA_VISIBLE_DEVICES=1 nohup python main_ptseg.py --model model31G2 --exp_name t
 CUDA_VISIBLE_DEVICES=2 nohup python main_ptseg.py --model model31G3 --exp_name test1bs64  --batch_size 64 > nohup/model31G3_test1_bs64.out &
 CUDA_VISIBLE_DEVICES=3 nohup python main_ptseg.py --model model31G --lr 0.001 --exp_name lr0.001bs64  --batch_size 64 > nohup/model31G_lr0.001_bs64.out &
 nohup python main_ptseg.py --model model31G --exp_name test1bs32 --batch_size 32 > nohup/model31G_test1_bs32.out &
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31G --exp_name test1bs64 --batch_size 64 > nohup/model31G_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G2 --exp_name test1bs64 --batch_size 64 > nohup/model31G2_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31G3 --exp_name test1bs64 --batch_size 64 > nohup/model31G3_test1_bs64.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31G --exp_name test1bs64sgd --batch_size 64 --optimizer sgd > nohup/model31G_test1_bs64_sgd.out &
