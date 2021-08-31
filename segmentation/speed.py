@@ -150,7 +150,7 @@ def main(args):
             points = torch.Tensor(points)
             points, target = points.float().cuda(), target.long().cuda()
             points = points.transpose(2, 1) # [b,d,n]
-            iter_Loader.set_postfix(f"points shape is {points.shape}")
+            iter_Loader.set_postfix({'shape': points.shape})
 
         '''Evaluate on chopped scenes'''
         with torch.no_grad():
