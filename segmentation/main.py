@@ -102,6 +102,7 @@ def main(args):
     '''MODEL LOADING'''
     classifier = models.__dict__[args.model]()
     classifier = classifier.cuda()
+    classifier = torch.nn.DataParallel(classifier)
     criterion = provider.get_loss().cuda()
     cudnn.benchmark = True
 
