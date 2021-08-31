@@ -1,4 +1,6 @@
 import numpy as np
+import torch.nn as nn
+import torch.nn.functional as F
 
 def normalize_data(batch_data):
     """ Normalize the batch data, use coordinates of the block centered at origin,
@@ -246,3 +248,11 @@ def random_point_dropout(batch_pc, max_dropout_ratio=0.875):
         if len(drop_idx)>0:
             batch_pc[b,drop_idx,:] = batch_pc[b,0,:] # set to the first point
     return batch_pc
+
+
+class get_loss(nn.Module):
+    def __init__(self):
+        super(get_loss, self).__init__()
+    def forward(self, pred, target, weight):
+        total_loss = F.nll_loss(pred, target, weight=weight)
+        return total_loss

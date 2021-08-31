@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from models.pointnet2_utils import PointNetSetAbstraction,PointNetFeaturePropagation
+from pointnet2_utils import PointNetSetAbstraction,PointNetFeaturePropagation
 
 
 class get_model(nn.Module):
@@ -52,4 +52,5 @@ if __name__ == '__main__':
     import  torch
     model = get_model(13)
     xyz = torch.rand(6, 9, 2048)
-    (model(xyz))
+    out,_ = model(xyz)
+    print(out.shape)
