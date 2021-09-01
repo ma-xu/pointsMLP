@@ -12,3 +12,8 @@ from .model32 import model32A,model32C,model32D, model32E, model32F, model32G, m
     model32L, model32M, model32N, model32A2, model32A3, model32A4
 
 from .model33 import model33A, model33B, model33C, model33D, model33E, model33F, model33G, model33H
+
+
+
+from .pointsformer1 import pointsformer1A, pointsformer1B, pointsformer1C, pointsformer1D, pointsformer1H, \
+    pointsformer1E, pointsformer1F, pointsformer1G
