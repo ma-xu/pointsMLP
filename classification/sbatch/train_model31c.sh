@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=train_model31C
+#SBATCH --job-name=train_model31C_%j
 #SBATCH --mail-type=END,FAIL,BEGIN
 #SBATCH --mail-user=ma.xu1@northeastern.edu
 #SBATCH -N 1
