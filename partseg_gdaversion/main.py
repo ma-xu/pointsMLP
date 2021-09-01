@@ -1,5 +1,5 @@
 """
-python main.py --model model31G --exp_name retest1 --batch_size 32 --scheduler cos
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G --exp_name retest1 --batch_size 64 --scheduler cos > nohup/model31G_retest1_bs64.out &
 """
 
 from __future__ import print_function
@@ -100,10 +100,10 @@ def train(args, io):
     # ============= Optimizer ================
     if args.use_sgd:
         print("Use SGD")
-        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=0)
+        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=args.wd)
     else:
         print("Use Adam")
-        opt = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+        opt = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=args.wd)
 
     if args.scheduler == 'cos':
         print("Use CosLR")
@@ -397,6 +397,9 @@ if __name__ == "__main__":
                         help='lr decay step')
     parser.add_argument('--lr', type=float, default=0.003, metavar='LR',
                         help='learning rate')
+    parser.add_argument('--wd', type=float, default=1e-4, metavar='LR',
+                        help='learning rate')
+
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                         help='SGD momentum (default: 0.9)')
     parser.add_argument('--no_cuda', type=bool, default=False,
