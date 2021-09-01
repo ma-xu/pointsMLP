@@ -11,4 +11,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python main.py --model model31C --epoch 300 --workers 4 --learning_rate 0.3
+python main.py --model model31C --epoch 300 --workers 4
