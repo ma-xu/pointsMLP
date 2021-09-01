@@ -9,7 +9,7 @@
 #SBATCH --mem=32Gb
 #SBATCH --time=1-00:00:00
 #SBATCH --ntasks=2
-#SBATCH --output=nohup/out_%j.log
+#SBATCH --output=out_%j.log
 conda activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
 python voting.py --model model31C --msg 20210829112651 --epoch 200
