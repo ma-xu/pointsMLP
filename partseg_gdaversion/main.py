@@ -246,42 +246,43 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
 
     # label_size: b, means each sample has one corresponding class
     for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
-        batch_size, num_point, _ = points.size()
-        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
-                                          Variable(norm_plt.float())
-        points = points.transpose(2, 1)
-        norm_plt = norm_plt.transpose(2, 1)
-        points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
-                                          target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
-        seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # b,n,50
+        with torch.no_grad():
+            batch_size, num_point, _ = points.size()
+            points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
+                                              Variable(norm_plt.float())
+            points = points.transpose(2, 1)
+            norm_plt = norm_plt.transpose(2, 1)
+            points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
+                                              target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
+            seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # b,n,50
 
-        # instance iou without considering the class average at each batch_size:
-        batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
-        # per category iou at each batch_size:
+            # instance iou without considering the class average at each batch_size:
+            batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
+            # per category iou at each batch_size:
 
-        for shape_idx in range(seg_pred.size(0)):  # sample_idx
-            cur_gt_label = label[shape_idx]  # label[sample_idx], denotes current sample belongs to which cat
-            final_total_per_cat_iou[cur_gt_label] += batch_shapeious[shape_idx]  # add the iou belongs to this cat
-            final_total_per_cat_seen[cur_gt_label] += 1  # count the number of this cat is chosen
+            for shape_idx in range(seg_pred.size(0)):  # sample_idx
+                cur_gt_label = label[shape_idx]  # label[sample_idx], denotes current sample belongs to which cat
+                final_total_per_cat_iou[cur_gt_label] += batch_shapeious[shape_idx]  # add the iou belongs to this cat
+                final_total_per_cat_seen[cur_gt_label] += 1  # count the number of this cat is chosen
 
-        # total iou of current batch in each process:
-        batch_ious = seg_pred.new_tensor([np.sum(batch_shapeious)], dtype=torch.float64)  # same device with seg_pred!!!
+            # total iou of current batch in each process:
+            batch_ious = seg_pred.new_tensor([np.sum(batch_shapeious)], dtype=torch.float64)  # same device with seg_pred!!!
 
-        # prepare seg_pred and target for later calculating loss and acc:
-        seg_pred = seg_pred.contiguous().view(-1, num_part)
-        target = target.view(-1, 1)[:, 0]
-        # Loss
-        loss = F.nll_loss(seg_pred.contiguous(), target.contiguous())
+            # prepare seg_pred and target for later calculating loss and acc:
+            seg_pred = seg_pred.contiguous().view(-1, num_part)
+            target = target.view(-1, 1)[:, 0]
+            # Loss
+            loss = F.nll_loss(seg_pred.contiguous(), target.contiguous())
 
-        # accuracy:
-        pred_choice = seg_pred.data.max(1)[1]  # b*n
-        correct = pred_choice.eq(target.data).sum()  # torch.int64: total number of correct-predict pts
+            # accuracy:
+            pred_choice = seg_pred.data.max(1)[1]  # b*n
+            correct = pred_choice.eq(target.data).sum()  # torch.int64: total number of correct-predict pts
 
-        loss = torch.mean(loss)
-        shape_ious += batch_ious.item()  # count the sum of ious in each iteration
-        count += batch_size  # count the total number of samples in each iteration
-        test_loss += loss.item() * batch_size
-        accuracy.append(correct.item() / (batch_size * num_point))  # append the accuracy of each iteration
+            loss = torch.mean(loss)
+            shape_ious += batch_ious.item()  # count the sum of ious in each iteration
+            count += batch_size  # count the total number of samples in each iteration
+            test_loss += loss.item() * batch_size
+            accuracy.append(correct.item() / (batch_size * num_point))  # append the accuracy of each iteration
 
     for cat_idx in range(16):
         if final_total_per_cat_seen[cat_idx] > 0:  # indicating this cat is included during previous iou appending
