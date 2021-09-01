@@ -10,8 +10,7 @@
 #SBATCH --time=1-00:00:00
 #SBATCH --ntasks=2
 #SBATCH --output=out_%j.log
-source /shared/centos7/anaconda3/3.7/bin
-conda init
-conda activate point
+source /home/ma.xu1/.condarc
+source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
 python voting.py --model model31C --msg 20210829112651 --epoch 200
