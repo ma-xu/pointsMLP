@@ -11,4 +11,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python main.py --model pointsformer1I --epoch 300 --workers 4
+python main_pointsformer.py --model pointsformer1H --epoch 300 --workers 4 --optimizer adam
