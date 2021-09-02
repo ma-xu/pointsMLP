@@ -133,7 +133,7 @@ def main():
     if args.optimizer == "sgd":
         optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=args.weight_decay)
     else:
-        optimizer = torch.optim.Adam(net.parameters(), lr=args.learning_rate//100, weight_decay=args.weight_decay)
+        optimizer = torch.optim.Adam(net.parameters(), lr=args.learning_rate/100, weight_decay=args.weight_decay)
     if optimizer_dict is not None:
         optimizer.load_state_dict(optimizer_dict)
     scheduler = CosineAnnealingLR(optimizer, args.epoch, eta_min=args.learning_rate/50.0, last_epoch=start_epoch-1)
