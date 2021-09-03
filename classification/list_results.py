@@ -22,6 +22,7 @@ def parse_args():
     """Parameters"""
     parser = argparse.ArgumentParser('training')
     parser.add_argument('--path', default='./checkpoints', type=str)
+    parser.add_argument('--model', type=str)
     return parser.parse_args()
 
 
@@ -29,6 +30,8 @@ def main():
         args = parse_args()
         models = os.listdir(args.path)
         for model in models:
+            if args.model is not None and args.model not in model:
+                continue
             checkpoint_path = os.path.join(args.path, model, "best_checkpoint.pth")
             if os.path.isfile(checkpoint_path):
                 checkpoint = torch.load(checkpoint_path)

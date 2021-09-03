@@ -1,5 +1,5 @@
 """
-CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G --exp_name retest1 --batch_size 64 --scheduler cos > nohup/model31G_retest1_bs64.out &
+CUDA_VISIBLE_DEVICES=0,1 nohup python main.py --model model31G --exp_name retest1 --batch_size 64 --scheduler cos > nohup/model31G_retest1_bs64.out &
 """
 
 from __future__ import print_function
