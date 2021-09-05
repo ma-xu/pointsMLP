@@ -91,10 +91,10 @@ def train(args, io):
     test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
     print("The number of test data is:%d", len(test_data))
 
-    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=6,
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=8,
                               drop_last=True)
 
-    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=6,
+    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=8,
                              drop_last=False)
 
     # ============= Optimizer ================

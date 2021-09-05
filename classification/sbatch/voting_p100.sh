@@ -11,4 +11,4 @@
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
 
-python voting.py --model model31C --msg 20210829112651 --epoch 100
+python voting.py --model model31C --msg 20210829112651 --NUM_PEPEAT 100
