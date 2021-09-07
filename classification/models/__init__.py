@@ -17,3 +17,5 @@ from .model33 import model33A, model33B, model33C, model33D, model33E, model33F,
 
 from .pointsformer1 import pointsformer1A, pointsformer1B, pointsformer1C, pointsformer1D, pointsformer1H, \
     pointsformer1E, pointsformer1F, pointsformer1G, pointsformer1I
+
+from .modelelite import modeleliteA, modeleliteB, modeleliteC, modeleliteD, modeleliteE, modeleliteF, modeleliteG
