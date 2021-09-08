@@ -389,7 +389,8 @@ def pointsformer1G(num_classes=40, **kwargs) -> Pointsformer1:
                  pre_blocks=[4,4], pos_blocks=[2,2], k_neighbors=[32,32],
                  reducers=[4,4], **kwargs)
 
-def pointsformer1H(num_classes=40, **kwargs) -> Pointsformer1:
+
+def pointsformer1H(num_classes=40, **kwargs) -> Pointsformer1:  # 7.40M
     return Pointsformer1(points=1024, class_num=num_classes, embed_dim=128,
                  pre_blocks=[4,4], pos_blocks=[4,4], k_neighbors=[32,32],
                  reducers=[4,4], **kwargs)
