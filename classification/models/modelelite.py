@@ -1,4 +1,5 @@
 """
+Based on model31, different configures for elite version.
 Based on model30, change the grouper operation by normalization.
 Based on model28, only change configurations, mainly the reducer.
 Based on model27, change to x-a, reorgnized structure

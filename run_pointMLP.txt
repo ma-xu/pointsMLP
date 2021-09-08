@@ -1,22 +1,38 @@
+ active env location : /home/ma.xu1/.conda/envs/point
+            shell level : 2
+       user config file : /home/ma.xu1/.condarc
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
+export PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
+Please make sure that
+ -   PATH includes /usr/local/cuda-11.1/bin
+ -   LD_LIBRARY_PATH includes /usr/local/cuda-11.1/lib64, or, add /usr/local/cuda-11.1/lib64 to /etc/ld.so.conf and run ldconfig as root
+
+
+export PATH=/usr/local/cuda-11.1/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-11.1/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+
+
 cd /scratch/ma.xu1/pointsMLP/cls/
-tmux new-session -d -s point7
+tmux new-session -d -s point
 tmux attach -t point7
 salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:4 --cpus-per-task=16 --mem=128Gb  --time=1-00:00:00
 conda activate point
 
 
-tmux new-session -d -s point2
-tmux attach -t point2
-salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:1 --cpus-per-task=2 --mem=32Gb  --time=1-00:00:00
+tmux new-session -d -s point12
+tmux attach -t point12
+salloc -N 1 -p multigpu --gres=gpu:v100-sxm2:1 --cpus-per-task=4 --mem=32Gb  --time=1-00:00:00
 conda activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
 
-nohup python voting.py --model model31A --msg 20210818204651 --epoch 200 > model31A_20210818204651_voting.out &
+nohup python voting.py --model model31C --msg 20210829112651 --epoch 200 > model31C_20210829112651_votingok6.out &
 
 nohup python main.py --model model31C --epoch 200 > nohup/model31C_0829_3.out &
 
 
-
+model31C-20210829112651 93.72
 
 
 nohup bash vote.sh > nohup/vote_9.out &
@@ -342,3 +358,32 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31G --exp_name test1bs6
 CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G2 --exp_name test1bs64 --batch_size 64 > nohup/model31G2_test1_bs64.out &
 CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31G3 --exp_name test1bs64 --batch_size 64 > nohup/model31G3_test1_bs64.out &
 CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31G --exp_name test1bs64sgd --batch_size 64 --optimizer sgd > nohup/model31G_test1_bs64_sgd.out &
+--job-name=train_model31C_1
+
+CUDA_VISIBLE_DEVICES=2,3 nohup python main.py --model model31G1 --exp_name retest1 --batch_size 64 --scheduler cos > nohup/model31G1_retest1_bs64.out &
+
+nohup python main.py --model model31G --exp_name retest_sep2 --batch_size 32 --scheduler cos > retest_sep2_demol31G.out &
+
+
+CUDA_VISIBLE_DEVICES=0,1 nohup python main.py --model model31G --exp_name wd0_bs64  --scheduler cos --batch_size 64 --wd 0 > nohup/model31G_wd0_bs64.out &
+CUDA_VISIBLE_DEVICES=2,3 nohup python main.py --model model31G --exp_name bs64  --scheduler cos --batch_size 64 > nohup/model31G_wd1e-4_bs64.out &
+ 2153  nvidia-smi 
+ 2154  clear
+ 2155  CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G1 --exp_name wd1e-4 --scheduler cos > nohup/model31G1_wd1e-4.out &
+ 2156  nvidia-smi 
+ 2157  clear
+ 2158  CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31G2 --exp_name wd1e-4 --scheduler cos > nohup/model31G2_wd1e-4.out &
+ 2159  nvidia-smi 
+ 2160  CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31G3 --exp_name wd1e-4 --scheduler cos > nohup/model31G3_wd1e-4.out &
+
+Slurm Job_id=20969147 Name=train_model31c_wd2e-4.sh Ended no-voting 94.125   20210905101714
+
+
+
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31G --exp_name sep05_1 --batch_size 32 --scheduler cos > nohup/model31G_sep05.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G --exp_name sep05_2 --batch_size 32 --scheduler cos > nohup/model31G_sep05_2.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31G --exp_name sep05_3 --batch_size 16 --scheduler cos > nohup/model31G_sep05_3.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31G --exp_name sep05_4 --batch_size 32 --lr 0.001 --scheduler cos > nohup/model31G_sep05_4.out &
+CUDA_VISIBLE_DEVICES=4 nohup python main.py --model model31G --exp_name sep05_5 --batch_size 32 --lr 0.005 --scheduler cos > nohup/model31G_sep05_5.out &
+
+

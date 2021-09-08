@@ -19,3 +19,10 @@ from .pointsformer1 import pointsformer1A, pointsformer1B, pointsformer1C, point
     pointsformer1E, pointsformer1F, pointsformer1G, pointsformer1I
 
 from .modelelite import modeleliteA, modeleliteB, modeleliteC, modeleliteD, modeleliteE, modeleliteF, modeleliteG
+from .modelelite2 import modelelite2A, modelelite2B, modelelite2C, modelelite2D, modelelite2E, modelelite2F, \
+    modelelite2G, modelelite2H, modelelite2I, modelelite2J, modelelite2K, modelelite2L, \
+    modelelite2A2, modelelite2B2, modelelite2C2, modelelite2D2, modelelite2E2, modelelite2F2, \
+    modelelite2G2, modelelite2H2, modelelite2I2, modelelite2J2, modelelite2K2, modelelite2L2, \
+    modelelite2A3, modelelite2B3, modelelite2C3, modelelite2D3, modelelite2E3, modelelite2F3, \
+    modelelite2G3, modelelite2H3, modelelite2I3, modelelite2J3, modelelite2K3, modelelite2L3
+
