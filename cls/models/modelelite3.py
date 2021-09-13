@@ -22,7 +22,7 @@ import torch.nn.functional as F
 from einops.layers.torch import Rearrange
 
 
-# from pointnet2_ops import pointnet2_utils
+from pointnet2_ops import pointnet2_utils
 
 
 def get_activation(activation):
@@ -433,11 +433,12 @@ def modelelite3L1(num_classes=40, **kwargs) -> modelelite3:  # 0.95M
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 4, 6, 3], pos_blocks=[3, 4, 6, 3],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def modelelite3M1(num_classes=40, **kwargs) -> modelelite3:  # 0.90M
-    return modelelite3(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=0.125,
+def modelelite3M1(num_classes=40, **kwargs) -> modelelite3:  # 0.94M
+    return modelelite3(points=1024, class_num=num_classes, embed_dim=64, groups=4, res_expansion=0.125,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                   dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
-                   k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                   dim_expansion=[2, 2, 2], pre_blocks=[4, 4, 4], pos_blocks=[4, 4, 4],
+                   k_neighbors=[24, 24, 24], reducers=[2, 2, 2], **kwargs)
+
 
 
 ########version 2: 64 neighbors with 0.5 drop ratio ###########
@@ -525,7 +526,11 @@ def modelelite3L2(num_classes=40, **kwargs) -> modelelite3:  # 0.95M
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 
-
+def modelelite3M2(num_classes=40, **kwargs) -> modelelite3:  # 0.94M
+    return modelelite3(points=1024, class_num=num_classes, embed_dim=64, groups=4, res_expansion=0.125,
+                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
+                   dim_expansion=[2, 2, 2], pre_blocks=[4, 4, 4], pos_blocks=[4, 4, 4],
+                   k_neighbors=[32, 32, 32], reducers=[2, 2, 2], **kwargs)
 
 
 if __name__ == '__main__':
