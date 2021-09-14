@@ -19,7 +19,7 @@ from .model28 import model28A, model28B, model28C, model28D, model28E, model28F,
 from .model29 import model29A, model29B, model29C, model29D, model29E, model29F, model29G, model29H, model29I, model29J
 from .model30 import model30A, model30B, model30C, model30D, model30E, model30F, model30G, model30H, model30I, model30J
 from .model31 import model31A, model31B, model31C, model31D, model31E, model31F, model31G
-
+from .model32 import model32A, model32B, model32C, model32D
 
 from .modelelite3 import modelelite3A1, modelelite3A2, modelelite3B1, modelelite3B2, modelelite3C1, modelelite3C2, \
     modelelite3D1, modelelite3D2, modelelite3E1, modelelite3E2, modelelite3F1, modelelite3F2, modelelite3G1, \
