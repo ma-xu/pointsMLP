@@ -4,7 +4,7 @@
 #SBATCH -N 1
 #SBATCH -p fugpu
 #SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --output=%j.log
 
 source activate point
