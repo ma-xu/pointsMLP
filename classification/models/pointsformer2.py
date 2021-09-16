@@ -243,7 +243,7 @@ class Pointsformer2(nn.Module):
     def __init__(self, points=1024, class_num=40, embed_dim=32, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs):
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs):
         super(Pointsformer2, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = class_num
@@ -315,62 +315,62 @@ def pointsformer2A(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=32, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 
 def pointsformer2B(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=48, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2C(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2D(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='gelu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2E(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.25,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2F(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[4, 4, 4, 4], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2G(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[8, 8, 8, 8], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2H(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.125,
-                 heads=[8, 8, 8, 8], head_dims=[24, 24, 24, 24], norm_augmented=True, concat_anchor=True,
+                 heads=[8, 8, 8, 8], head_dims=[32, 32, 32, 32], norm_augmented=True, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2I(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot', ffn_ratio=0.125,
-                 heads=[8, 8, 8, 8], head_dims=[24, 24, 24, 24], norm_augmented=False, concat_anchor=True,
+                 heads=[8, 8, 8, 8], head_dims=[32, 32, 32, 32], norm_augmented=False, concat_anchor=True,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2J(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=32, activation='relu', smilarity='dot', ffn_ratio=0.125,
                  heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=False,
                  expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+                 k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2K(num_classes=40, **kwargs) -> Pointsformer2:
     return Pointsformer2(points=1024, class_num=num_classes, embed_dim=32, activation='relu', smilarity='dot', ffn_ratio=0.125,
