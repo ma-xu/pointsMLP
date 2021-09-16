@@ -13,7 +13,7 @@ from torch.nn.parameter import Parameter
 from torch import einsum
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
-from pointsformer_utils import get_activation, square_distance, index_points, \
+from .pointsformer_utils import get_activation, square_distance, index_points, \
     farthest_point_sample, query_ball_point, knn_point
 
 
