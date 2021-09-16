@@ -312,11 +312,10 @@ class Pointsformer2(nn.Module):
 
 
 def pointsformer2A(num_classes=40, **kwargs) -> Pointsformer2:
-    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=32, activation='relu', smilarity='dot',
-                         ffn_ratio=0.125,
-                         heads=[16, 16, 16, 16], head_dims=[64, 64, 64, 64], norm_augmented=True, concat_anchor=True,
-                         expansions=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                         k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
+    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=128, activation='relu', smilarity='dot',
+                         ffn_ratio=0.125, heads=[4, 4], head_dims=[64, 64], norm_augmented=True, concat_anchor=True,
+                         expansions=[2, 2], pre_blocks=[2, 2], pos_blocks=[2, 2],
+                         k_neighbors=[32, 32], reducers=[4, 4], **kwargs)
 
 
 def pointsformer2B(num_classes=40, **kwargs) -> Pointsformer2:
