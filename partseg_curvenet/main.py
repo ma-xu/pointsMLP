@@ -90,9 +90,9 @@ def train(args, io):
         drop_last = False
     else:
         drop_last = True
-    train_loader = DataLoader(train_dataset, num_workers=32, batch_size=args.batch_size, shuffle=True, drop_last=drop_last)
+    train_loader = DataLoader(train_dataset, num_workers=32, batch_size=args.batch_size, shuffle=True, drop_last=drop_last, pin_memory=True)
     test_loader = DataLoader(ShapeNetPart(partition='test', num_points=args.num_points, class_choice=args.class_choice),
-                            num_workers=32, batch_size=args.test_batch_size, shuffle=False, drop_last=False)
+                            num_workers=32, batch_size=args.test_batch_size, shuffle=False, drop_last=False, pin_memory=True)
 
     device = torch.device("cuda" if args.cuda else "cpu")
     io.cprint("Let's use " + str(torch.cuda.device_count()) + " GPUs!")
