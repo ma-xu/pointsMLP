@@ -1,4 +1,5 @@
 """
+Same model as pointMLP31, just different configurations.
 Based on PointMLP9, change to 128, 256, 512, 512
 Based on PointMLP4, use fps replace random sample.
 Based on PointMLP3, change dropout to 0.1
@@ -337,14 +338,14 @@ class PointNetFeaturePropagation(nn.Module):
 
 
 
-class PointMLP31(nn.Module):
+class PointMLP32(nn.Module):
     def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
                  gmp_dim=64,cls_dim=64, **kwargs):
-        super(PointMLP31, self).__init__()
+        super(PointMLP32, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = num_classes
         self.points = points
@@ -455,100 +456,63 @@ class PointMLP31(nn.Module):
         return x
 
 
-def model31A(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+def model32A(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
-def model31B(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+def model32B(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 31, 7], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model32C(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model32D(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+
+def model32E(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-def model31C(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+def model32F(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="gelu", bias=False, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[4, 4, 4, 4],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
                  de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-
-
-def model31D(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=32, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+def model32G(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=0.125,
+                 activation="relu", bias=False, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 k_neighbors=[32, 24, 16, 8], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
                  gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model31E(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[4, 4, 4, 4], pos_blocks=[4, 4, 4, 4],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[6,6,6,6],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model31F(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 2, 4, 2],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model31G(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model31H(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model31I(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 1], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4, 4, 4, 4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model31J(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model31K(num_classes=50, **kwargs) -> PointMLP31:
-    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
 
 
 if __name__ == '__main__':
@@ -556,18 +520,34 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing modelD ...")
-    model = model31D(50)
+    model = model32D(50)
     out = model(data, cls_label)  # [2,2048,50]
     print(out.shape)
 
-    model = model31A(50)
+    model = model32A(50)
     out = model(data, cls_label)  # [2,2048,50]
     print(out.shape)
 
-    model = model31B(50)
+    model = model32B(50)
     out = model(data, cls_label)  # [2,2048,50]
     print(out.shape)
 
-    model = model31C(50)
+    model = model32C(50)
+    out = model(data, cls_label)  # [2,50, 2048]
+    print(out.shape)
+
+    model = model32D(50)
+    out = model(data, cls_label)  # [2,50, 2048]
+    print(out.shape)
+
+    model = model32E(50)
+    out = model(data, cls_label)  # [2,50, 2048]
+    print(out.shape)
+
+    model = model32F(50)
+    out = model(data, cls_label)  # [2,50, 2048]
+    print(out.shape)
+
+    model = model32G(50)
     out = model(data, cls_label)  # [2,50, 2048]
     print(out.shape)
