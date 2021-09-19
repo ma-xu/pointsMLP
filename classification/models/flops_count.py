@@ -318,7 +318,7 @@ def add_flops_mask_variable_or_reset(module):
 if __name__ == '__main__':
     # import models as models
     # model = models.__dict__['new1A'](num_classes=40)
-    from model31 import model31C as net
+    from pointsformer2 import Pointsformer2 as net
 
 
     model = net()
@@ -326,3 +326,4 @@ if __name__ == '__main__':
     flops, params = get_model_complexity_info(model, 1024, as_strings=False, print_per_layer_stat=False, channel=3)
     print('Flops:  %.3fG' % (flops / 1e9))
     print('Params: %.2fM' % (params / 1e6))
+    print(params)

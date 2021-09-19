@@ -1,11 +1,10 @@
 """
-nohup python main.py --model PointMLP31G --exp_name demo --scheduler cos > nohup/PointMLP31G_test2.log &
+CUDA_VISIBLE_DEVICES=0,1 nohup python main.py --model model31G --exp_name retest1 --batch_size 64 --scheduler cos > nohup/model31G_retest1_bs64.out &
 """
 
 from __future__ import print_function
 import os
 import argparse
-import datetime
 import torch
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
@@ -26,10 +25,10 @@ classes_str = ['aero','bag','cap','car','chair','ear','guitar','knife','lamp','l
 
 
 def _init_():
-    if not os.path.exists('new_checkpoints'):
-        os.makedirs('new_checkpoints')
-    if not os.path.exists('new_checkpoints/' + args.exp_name):
-        os.makedirs('new_checkpoints/' + args.exp_name)
+    if not os.path.exists('checkpoints'):
+        os.makedirs('checkpoints')
+    if not os.path.exists('checkpoints/' + args.exp_name):
+        os.makedirs('checkpoints/' + args.exp_name)
 
 
 def weight_init(m):
@@ -64,11 +63,11 @@ def train(args, io):
 
     model.apply(weight_init)
     model = nn.DataParallel(model)
-    print("Let's use ", torch.cuda.device_count(), " GPUs!")
+    print("Let's use", torch.cuda.device_count(), "GPUs!")
 
     '''Resume or not'''
     if args.resume:
-        state_dict = torch.load("new_checkpoints/%s/best_insiou_model.pth" % args.exp_name,
+        state_dict = torch.load("checkpoints/%s/best_insiou_model.pth" % args.exp_name,
                                 map_location=torch.device('cpu'))['model']
         for k in state_dict.keys():
             if 'module' not in k:
@@ -81,7 +80,7 @@ def train(args, io):
         model.load_state_dict(state_dict)
 
         print("Resume training model...")
-        print(torch.load("new_checkpoints/%s/best_insiou_model.pth" % args.exp_name).keys())
+        print(torch.load("checkpoints/%s/best_insiou_model.pth" % args.exp_name).keys())
     else:
         print("Training from scratch...")
 
@@ -93,18 +92,18 @@ def train(args, io):
     print("The number of test data is:%d", len(test_data))
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=8,
-                              drop_last=True, pin_memory=True)
+                              drop_last=True)
 
     test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=8,
-                             drop_last=False, pin_memory=True)
+                             drop_last=False)
 
     # ============= Optimizer ================
     if args.use_sgd:
         print("Use SGD")
-        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=args.weight_decay)
+        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=args.wd)
     else:
         print("Use Adam")
-        opt = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=args.weight_decay)
+        opt = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=args.wd)
 
     if args.scheduler == 'cos':
         print("Use CosLR")
@@ -133,7 +132,7 @@ def train(args, io):
             state = {
                 'model': model.module.state_dict() if torch.cuda.device_count() > 1 else model.state_dict(),
                 'optimizer': opt.state_dict(), 'epoch': epoch, 'test_acc': best_acc}
-            torch.save(state, 'new_checkpoints/%s/best_acc_model.pth' % args.exp_name)
+            torch.save(state, 'checkpoints/%s/best_acc_model.pth' % args.exp_name)
 
         # 2. when get the best instance_iou, save the model:
         if test_metrics['shape_avg_iou'] > best_instance_iou:
@@ -142,7 +141,7 @@ def train(args, io):
             state = {
                 'model': model.module.state_dict() if torch.cuda.device_count() > 1 else model.state_dict(),
                 'optimizer': opt.state_dict(), 'epoch': epoch, 'test_instance_iou': best_instance_iou}
-            torch.save(state, 'new_checkpoints/%s/best_insiou_model.pth' % args.exp_name)
+            torch.save(state, 'checkpoints/%s/best_insiou_model.pth' % args.exp_name)
 
         # 3. when get the best class_iou, save the model:
         # first we need to calculate the average per-class iou
@@ -159,7 +158,7 @@ def train(args, io):
             state = {
                 'model': model.module.state_dict() if torch.cuda.device_count() > 1 else model.state_dict(),
                 'optimizer': opt.state_dict(), 'epoch': epoch, 'test_class_iou': best_class_iou}
-            torch.save(state, 'new_checkpoints/%s/best_clsiou_model.pth' % args.exp_name)
+            torch.save(state, 'checkpoints/%s/best_clsiou_model.pth' % args.exp_name)
 
     # report best acc, ins_iou, cls_iou
     io.cprint('Final Max Acc:%.5f' % best_acc)
@@ -169,11 +168,10 @@ def train(args, io):
     state = {
         'model': model.module.state_dict() if torch.cuda.device_count() > 1 else model.state_dict(),
         'optimizer': opt.state_dict(), 'epoch': args.epochs - 1, 'test_iou': best_instance_iou}
-    torch.save(state, 'new_checkpoints/%s/model_ep%d.pth' % (args.exp_name, args.epochs))
+    torch.save(state, 'checkpoints/%s/model_ep%d.pth' % (args.exp_name, args.epochs))
 
 
 def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classes, io):
-    time_cost = datetime.datetime.now()
     train_loss = 0.0
     count = 0.0
     accuracy = []
@@ -231,14 +229,12 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
     metrics['accuracy'] = np.mean(accuracy)
     metrics['shape_avg_iou'] = shape_ious * 1.0 / count
 
-    time_cost = int((datetime.datetime.now() - time_cost).total_seconds())
-    outstr = '[Train epoch %d], time: %d, loss: %f, train acc: %f, train ins_iou: %f' % (
-        epoch+1, time_cost, train_loss * 1.0 / count, metrics['accuracy'], metrics['shape_avg_iou'])
+    outstr = 'Train %d, loss: %f, train acc: %f, train ins_iou: %f' % (epoch+1, train_loss * 1.0 / count,
+                                                                       metrics['accuracy'], metrics['shape_avg_iou'])
     io.cprint(outstr)
 
 
 def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
-    time_cost = datetime.datetime.now()
     test_loss = 0.0
     count = 0.0
     accuracy = []
@@ -250,42 +246,43 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
 
     # label_size: b, means each sample has one corresponding class
     for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
-        batch_size, num_point, _ = points.size()
-        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
-                                          Variable(norm_plt.float())
-        points = points.transpose(2, 1)
-        norm_plt = norm_plt.transpose(2, 1)
-        points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
-                                          target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
-        seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # b,n,50
+        with torch.no_grad():
+            batch_size, num_point, _ = points.size()
+            points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
+                                              Variable(norm_plt.float())
+            points = points.transpose(2, 1)
+            norm_plt = norm_plt.transpose(2, 1)
+            points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(1).cuda(non_blocking=True), \
+                                              target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
+            seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # b,n,50
 
-        # instance iou without considering the class average at each batch_size:
-        batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
-        # per category iou at each batch_size:
+            # instance iou without considering the class average at each batch_size:
+            batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # [b]
+            # per category iou at each batch_size:
 
-        for shape_idx in range(seg_pred.size(0)):  # sample_idx
-            cur_gt_label = label[shape_idx]  # label[sample_idx], denotes current sample belongs to which cat
-            final_total_per_cat_iou[cur_gt_label] += batch_shapeious[shape_idx]  # add the iou belongs to this cat
-            final_total_per_cat_seen[cur_gt_label] += 1  # count the number of this cat is chosen
+            for shape_idx in range(seg_pred.size(0)):  # sample_idx
+                cur_gt_label = label[shape_idx]  # label[sample_idx], denotes current sample belongs to which cat
+                final_total_per_cat_iou[cur_gt_label] += batch_shapeious[shape_idx]  # add the iou belongs to this cat
+                final_total_per_cat_seen[cur_gt_label] += 1  # count the number of this cat is chosen
 
-        # total iou of current batch in each process:
-        batch_ious = seg_pred.new_tensor([np.sum(batch_shapeious)], dtype=torch.float64)  # same device with seg_pred!!!
+            # total iou of current batch in each process:
+            batch_ious = seg_pred.new_tensor([np.sum(batch_shapeious)], dtype=torch.float64)  # same device with seg_pred!!!
 
-        # prepare seg_pred and target for later calculating loss and acc:
-        seg_pred = seg_pred.contiguous().view(-1, num_part)
-        target = target.view(-1, 1)[:, 0]
-        # Loss
-        loss = F.nll_loss(seg_pred.contiguous(), target.contiguous())
+            # prepare seg_pred and target for later calculating loss and acc:
+            seg_pred = seg_pred.contiguous().view(-1, num_part)
+            target = target.view(-1, 1)[:, 0]
+            # Loss
+            loss = F.nll_loss(seg_pred.contiguous(), target.contiguous())
 
-        # accuracy:
-        pred_choice = seg_pred.data.max(1)[1]  # b*n
-        correct = pred_choice.eq(target.data).sum()  # torch.int64: total number of correct-predict pts
+            # accuracy:
+            pred_choice = seg_pred.data.max(1)[1]  # b*n
+            correct = pred_choice.eq(target.data).sum()  # torch.int64: total number of correct-predict pts
 
-        loss = torch.mean(loss)
-        shape_ious += batch_ious.item()  # count the sum of ious in each iteration
-        count += batch_size  # count the total number of samples in each iteration
-        test_loss += loss.item() * batch_size
-        accuracy.append(correct.item() / (batch_size * num_point))  # append the accuracy of each iteration
+            loss = torch.mean(loss)
+            shape_ious += batch_ious.item()  # count the sum of ious in each iteration
+            count += batch_size  # count the total number of samples in each iteration
+            test_loss += loss.item() * batch_size
+            accuracy.append(correct.item() / (batch_size * num_point))  # append the accuracy of each iteration
 
     for cat_idx in range(16):
         if final_total_per_cat_seen[cat_idx] > 0:  # indicating this cat is included during previous iou appending
@@ -294,9 +291,8 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
     metrics['accuracy'] = np.mean(accuracy)
     metrics['shape_avg_iou'] = shape_ious * 1.0 / count
 
-    time_cost = int((datetime.datetime.now() - time_cost).total_seconds())
-    outstr = '[Test epoch %d], time: %d, loss: %f, test acc: %f  test ins_iou: %f' % (
-        epoch + 1, time_cost, test_loss * 1.0 / count, metrics['accuracy'], metrics['shape_avg_iou'])
+    outstr = 'Test %d, loss: %f, test acc: %f  test ins_iou: %f' % (epoch + 1, test_loss * 1.0 / count,
+                                                                    metrics['accuracy'], metrics['shape_avg_iou'])
 
     io.cprint(outstr)
 
@@ -308,8 +304,8 @@ def test(args, io):
     test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
     print("The number of test data is:%d", len(test_data))
 
-    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=8,
-                             drop_last=False, pin_memory=True)
+    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=6,
+                             drop_last=False)
 
     # Try to load models
     num_part = 50
@@ -319,7 +315,7 @@ def test(args, io):
     io.cprint(str(model))
 
     from collections import OrderedDict
-    state_dict = torch.load("new_checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
+    state_dict = torch.load("checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
                             map_location=torch.device('cpu'))['model']
 
     new_state_dict = OrderedDict()
@@ -401,16 +397,18 @@ if __name__ == "__main__":
                         help='lr decay step')
     parser.add_argument('--lr', type=float, default=0.003, metavar='LR',
                         help='learning rate')
+    parser.add_argument('--wd', type=float, default=1e-4, metavar='LR',
+                        help='learning rate')
+
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                         help='SGD momentum (default: 0.9)')
-    parser.add_argument('--weight_decay', type=float, default=0., help='weight_decay (default: 0.)')
     parser.add_argument('--no_cuda', type=bool, default=False,
                         help='enables CUDA training')
     parser.add_argument('--manual_seed', type=int, metavar='S',
                         help='random seed (default: 1)')
     parser.add_argument('--eval', type=bool,  default=False,
                         help='evaluate the model')
-    parser.add_argument('--num_points', type=int, default=2048,
+    parser.add_argument('--num_points', type=int, default=1024,
                         help='num of points to use')
     parser.add_argument('--resume', type=bool, default=False,
                         help='Resume training or not')
@@ -423,9 +421,9 @@ if __name__ == "__main__":
     _init_()
 
     if not args.eval:
-        io = IOStream('new_checkpoints/' + args.exp_name + '/train.log' % (args.exp_name))
+        io = IOStream('checkpoints/' + args.exp_name + '/%s_train.log' % (args.exp_name))
     else:
-        io = IOStream('new_checkpoints/' + args.exp_name + '/test.log' % (args.exp_name))
+        io = IOStream('checkpoints/' + args.exp_name + '/%s_test.log' % (args.exp_name))
     io.cprint(str(args))
 
     if args.manual_seed is not None:

@@ -1,4 +1,5 @@
 """
+Based on PointMLP31, more complex classifier.
 Based on PointMLP9, change to 128, 256, 512, 512
 Based on PointMLP4, use fps replace random sample.
 Based on PointMLP3, change dropout to 0.1
@@ -547,6 +548,40 @@ def model32J(num_classes=50, **kwargs) -> PointMLP32:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
+
+
+
+def model32K(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 7], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model32L(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 6], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model32M(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 12], reducers=[4, 4, 4, 2],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model32N(num_classes=50, **kwargs) -> PointMLP32:
+    return PointMLP32(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 6], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
 
 
 if __name__ == '__main__':
