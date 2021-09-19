@@ -423,9 +423,9 @@ if __name__ == "__main__":
     _init_()
 
     if not args.eval:
-        io = IOStream('new_checkpoints/' + args.exp_name + '/train.log' % (args.exp_name))
+        io = IOStream('new_checkpoints/' + args.exp_name + '/train.log')
     else:
-        io = IOStream('new_checkpoints/' + args.exp_name + '/test.log' % (args.exp_name))
+        io = IOStream('new_checkpoints/' + args.exp_name + '/test.log')
     io.cprint(str(args))
 
     if args.manual_seed is not None:
