@@ -113,7 +113,11 @@ def train(args, io):
         opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
 
     if args.scheduler == 'cos':
-        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=1e-3)
+        if args.use_sgd:
+            eta_min = args.lr/5.0
+        else:
+            eta_min = args.lr/100.0
+        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=eta_min)
     elif args.scheduler == 'step':
         scheduler = MultiStepLR(opt, [140, 180], gamma=0.1)
     criterion = cal_loss
