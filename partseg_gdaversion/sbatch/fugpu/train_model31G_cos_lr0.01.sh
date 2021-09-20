@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model model31G --exp_name cos_lr0.01 --scheduler cos --test_batch_size 16 --lr 0.01
+python main.py --model model31G --exp_name cos_lr0.01 --scheduler cos --lr 0.01
