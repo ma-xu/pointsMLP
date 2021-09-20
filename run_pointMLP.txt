@@ -383,3 +383,7 @@ CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31G --exp_name sep05_4 
 CUDA_VISIBLE_DEVICES=4 nohup python main.py --model model31G --exp_name sep05_5 --batch_size 32 --lr 0.005 --scheduler cos > nohup/model31G_sep05_5.out &
 
 
+
+### semantic segmentation on GCP ####
+CUDA_VISIBLE_DEVICES=0,1 nohup python train.py --model model31G --msg demo1 --train_batch_size 32 --workers 32
+
