@@ -397,7 +397,7 @@ if __name__ == "__main__":
                         help='Use SGD')
     parser.add_argument('--scheduler', type=str, default='step',
                         help='lr scheduler')
-    parser.add_argument('--step', type=int, default=40,
+    parser.add_argument('--step', type=int, default=50,
                         help='lr decay step')
     parser.add_argument('--lr', type=float, default=0.003, metavar='LR',
                         help='learning rate')
