@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument('--msg', type=str, help='message after checkpoint')
     parser.add_argument('--num_classes', type=int, default=13, help='class_number')
     parser.add_argument('--model', default='MLP', help='model name [default: pointnet_cls]')
-    parser.add_argument('--epoch', default=100, type=int, help='number of epoch in training')
+    parser.add_argument('--epoch', default=120, type=int, help='number of epoch in training')
     parser.add_argument('--num_point', type=int, default=4096, help='Point Number')
     parser.add_argument('--ignore_label', type=int, default=255, help='Point Number')
 
@@ -48,6 +48,7 @@ def parse_args():
     parser.add_argument('--train_batch_size', type=int, default=16)
     parser.add_argument('--train_batch_size_val', type=int, default=8)
     parser.add_argument('--data_root', default='dataset/s3dis')
+    parser.add_argument('--weight_init', action='store_true', default=False, help='loss smoothing')
 
     parser.add_argument('--val_list', type=str, default='dataset/s3dis/list/val5.txt')
 
@@ -60,6 +61,26 @@ def parse_args():
     parser.add_argument('--no_transformation', action='store_true', default=False, help='do not use trnsformations')
     return parser.parse_args()
 
+
+def weight_init(m):
+    if isinstance(m, torch.nn.Linear):
+        torch.nn.init.xavier_normal_(m.weight)
+        if m.bias is not None:
+            torch.nn.init.constant_(m.bias, 0)
+    elif isinstance(m, torch.nn.Conv2d):
+        torch.nn.init.xavier_normal_(m.weight)
+        if m.bias is not None:
+            torch.nn.init.constant_(m.bias, 0)
+    elif isinstance(m, torch.nn.Conv1d):
+        torch.nn.init.xavier_normal_(m.weight)
+        if m.bias is not None:
+            torch.nn.init.constant_(m.bias, 0)
+    elif isinstance(m, torch.nn.BatchNorm2d):
+        torch.nn.init.constant_(m.weight, 1)
+        torch.nn.init.constant_(m.bias, 0)
+    elif isinstance(m, torch.nn.BatchNorm1d):
+        torch.nn.init.constant_(m.weight, 1)
+        torch.nn.init.constant_(m.bias, 0)
 
 def get_git_commit_id():
     try:
@@ -109,6 +130,9 @@ def main():
 
     screen.info("==> Building model..\n")
     net = models.__dict__[args.model](num_classes=args.num_classes)
+    if args.weight_init:
+        screen.info("==> Initialize weights to xavier_normal_..\n")
+        net.apply(weight_init)
     net = torch.nn.DataParallel(net.cuda())
 
     screen.info("==> Preparing criterion, optimizer, scheduler ...\n")
