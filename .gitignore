@@ -6,3 +6,7 @@ Others/plot/data/*
 Others/plot/.DS_Store
 .DS_Store
 ~$sldies.pptx
+partseg_curvenet/models/curvenet_seg.py
+partseg_curvenet/models/curvenet_seg.py
+partseg_curvenet/models/curvenet_util.py
+partseg_curvenet/models/walk.py
