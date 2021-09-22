@@ -30,6 +30,8 @@ def _init_():
         os.makedirs('new_checkpoints')
     if not os.path.exists('new_checkpoints/' + args.exp_name):
         os.makedirs('new_checkpoints/' + args.exp_name)
+    if not args.eval:  # backup the running files
+        os.system('cp main.py new_checkpoints' + '/' + args.exp_name + '/' + 'main.py.backup')
 
 
 def weight_init(m):
