@@ -110,7 +110,7 @@ def train(args, io):
 
     if args.scheduler == 'cos':
         print("Use CosLR")
-        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr if args.use_sgd else args.lr / 100)
+        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr/10 if args.use_sgd else args.lr / 1000)
     else:
         print("Use StepLR")
         scheduler = StepLR(opt, step_size=args.step, gamma=0.5)
