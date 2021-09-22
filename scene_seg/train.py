@@ -139,7 +139,7 @@ def main():
     criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label).cuda()
     optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=args.learning_rate / 100)
+    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=0.0001)
 
     best_mIoU = 0.0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
