@@ -422,6 +422,32 @@ def pointsformer2N(num_classes=40, **kwargs) -> Pointsformer2:
                          k_neighbors=[24, 24], reducers=[4, 4], **kwargs)
 
 
+# ------------3 stages ---------
+def pointsformer2O(num_classes=40, **kwargs) -> Pointsformer2:
+    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot',
+                         ffn_ratio=0.125, heads=[1, 4, 8], head_dims=[64, 64, 64], norm_augmented=True, concat_anchor=True,
+                         expansions=[2, 2, 2], pre_blocks=[2, 4, 2], pos_blocks=[2, 4, 2],
+                         k_neighbors=[24, 24, 24], reducers=[4, 4, 2], **kwargs)
+
+def pointsformer2P(num_classes=40, **kwargs) -> Pointsformer2:
+    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot',
+                         ffn_ratio=0.125, heads=[2, 4, 8], head_dims=[64, 64, 64], norm_augmented=True, concat_anchor=True,
+                         expansions=[2, 2, 2], pre_blocks=[2, 4, 2], pos_blocks=[2, 4, 2],
+                         k_neighbors=[24, 24, 24], reducers=[4, 4, 2], **kwargs)
+
+def pointsformer2Q(num_classes=40, **kwargs) -> Pointsformer2:
+    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='relu', smilarity='dot',
+                         ffn_ratio=0.125, heads=[4, 8, 16], head_dims=[64, 64, 64], norm_augmented=True, concat_anchor=True,
+                         expansions=[2, 2, 2], pre_blocks=[2, 4, 2], pos_blocks=[2, 4, 2],
+                         k_neighbors=[24, 24, 24], reducers=[4, 4, 2], **kwargs)
+
+def pointsformer2R(num_classes=40, **kwargs) -> Pointsformer2:
+    return Pointsformer2(points=1024, class_num=num_classes, embed_dim=64, activation='gelu', smilarity='dot',
+                         ffn_ratio=0.125, heads=[1, 4, 8], head_dims=[64, 64, 64], norm_augmented=True, concat_anchor=True,
+                         expansions=[2, 2, 2], pre_blocks=[2, 4, 2], pos_blocks=[2, 4, 2],
+                         k_neighbors=[32,32,32], reducers=[4, 4, 2], **kwargs)
+
+
 if __name__ == '__main__':
     """
     data = torch.rand(2,128,10)
@@ -451,6 +477,6 @@ if __name__ == '__main__':
     """
 
     data = torch.rand(2, 3, 1024)
-    model = Pointsformer2()
+    model = pointsformer2O()
     out = model(data)
     print(out.shape)

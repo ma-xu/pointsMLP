@@ -33,5 +33,5 @@ from .modelelite3 import modelelite3A1, modelelite3A2, modelelite3B1, modelelite
 
 from .pointsformer2 import pointsformer2A, pointsformer2B, pointsformer2C, pointsformer2D, pointsformer2E, \
     pointsformer2F, pointsformer2G, pointsformer2H, pointsformer2I, pointsformer2J, pointsformer2K, \
-    pointsformer2L, pointsformer2M, pointsformer2N
+    pointsformer2L, pointsformer2M, pointsformer2N, pointsformer2O, pointsformer2P, pointsformer2Q, pointsformer2R
 # from .pointsformer2 import pointsformer2A, pointsformer2B
