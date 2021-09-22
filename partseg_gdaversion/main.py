@@ -62,7 +62,9 @@ def train(args, io):
     model = models.__dict__[args.model](num_part).to(device)
     io.cprint(str(model))
 
-    model.apply(weight_init)
+    if args.weight_init:
+        model.apply(weight_init)
+
     model = nn.DataParallel(model)
     print("Let's use ", torch.cuda.device_count(), " GPUs!")
 
@@ -86,10 +88,10 @@ def train(args, io):
         print("Training from scratch...")
 
     # =========== Dataloader =================
-    train_data = PartNormalDataset(npoints=2048, split='trainval', normalize=False)
+    train_data = PartNormalDataset(npoints=2048, split='trainval', normalize=args.normalize)
     print("The number of training data is:%d", len(train_data))
 
-    test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
+    test_data = PartNormalDataset(npoints=2048, split='test', normalize=args.normalize)
     print("The number of test data is:%d", len(test_data))
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=8,
@@ -395,6 +397,7 @@ if __name__ == "__main__":
                         help='number of episode to train')
     parser.add_argument('--use_sgd', type=bool, default=False,
                         help='Use SGD')
+    parser.add_argument('--normalize', type=bool, default=False)
     parser.add_argument('--scheduler', type=str, default='step',
                         help='lr scheduler')
     parser.add_argument('--step', type=int, default=50,
@@ -410,6 +413,8 @@ if __name__ == "__main__":
                         help='random seed (default: 1)')
     parser.add_argument('--eval', type=bool,  default=False,
                         help='evaluate the model')
+
+    parser.add_argument('--weight_init', type=bool,  default=True)
     parser.add_argument('--num_points', type=int, default=2048,
                         help='num of points to use')
     parser.add_argument('--resume', type=bool, default=False,
