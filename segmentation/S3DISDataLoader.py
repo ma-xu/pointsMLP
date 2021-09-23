@@ -98,8 +98,8 @@ class S3DISDataset(Dataset):
         current_labels = labels[selected_point_idxs]
         if self.transform is not None:
             current_points, current_labels = self.transform(current_points, current_labels)
-        # move the provider codes from main.py to dataloader
-        current_points[:, :, :3] =rotate_point_cloud_z(current_points[:, :, :3])
+        # move the provider codes from main.py to dataloader, updated to single data
+        current_points[ :, :3] =rotate_point_cloud_z(current_points[ :, :3])
         return current_points, current_labels
 
     def __len__(self):
