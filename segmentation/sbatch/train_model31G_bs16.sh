@@ -11,6 +11,6 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/segmentation/
-CUDA_VISIBLE_DEVICES=0,1 python main.py --model model31G --batch_size 16 --learning_rate 0.001 --optimizer Adam --scheduler cos --exp_name bs32lr0.001 &
-CUDA_VISIBLE_DEVICES=2,3 python main.py --model model31G --batch_size 16 --learning_rate 0.003 --optimizer Adam --scheduler cos --exp_name bs32lr0.003
+CUDA_VISIBLE_DEVICES=0,1 python main.py --model model31G --batch_size 16 --learning_rate 0.001 --optimizer Adam --scheduler cos --exp_name bs32lr0.001 --workers 28 &
+CUDA_VISIBLE_DEVICES=2,3 python main.py --model model31G --batch_size 16 --learning_rate 0.003 --optimizer Adam --scheduler cos --exp_name bs32lr0.003 --workers 28
 
