@@ -2,7 +2,7 @@
 Author: Benny
 Date: Nov 2019
 Usage:
-python
+python main.py --model model31G --batch_size 32 --learning_rate 0.001 --optimizer Adam --scheduler cos
 """
 import argparse
 import os
@@ -72,7 +72,7 @@ def main(args):
     logger = logging.getLogger("Model")
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('%s/out.txt' % (experiment_dir))
+    file_handler = logging.FileHandler('%s/log.txt' % (experiment_dir))
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
@@ -123,11 +123,11 @@ def main(args):
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam( classifier.parameters(), lr=args.learning_rate, weight_decay=args.decay_rate)
     else:
-        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate*100.0, momentum=0.9)
+        optimizer = torch.optim.SGD(classifier.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=args.decay_rate)
     if optimizer_dict is not None:
         optimizer.load_state_dict(optimizer_dict)
     if args.scheduler =="cos":
-        eta_min = args.learning_rate/50.0 if args.optimizer == 'Adam' else args.learning_rate
+        eta_min = args.learning_rate/100.0
         scheduler = CosineAnnealingLR(optimizer, args.epoch, eta_min=eta_min, last_epoch=start_epoch - 1)
     else:
         scheduler = StepLR(optimizer, args.step_size, gamma=args.lr_decay)
@@ -145,7 +145,7 @@ def main(args):
         for i, (points, target) in tqdm(enumerate(trainDataLoader), total=len(trainDataLoader), smoothing=0.9):
             optimizer.zero_grad()
             points = points.data.numpy()
-            points[:, :, :3] = provider.rotate_point_cloud_z(points[:, :, :3])
+            # points[:, :, :3] = provider.rotate_point_cloud_z(points[:, :, :3])
             points = torch.Tensor(points)
             points, target = points.float().cuda(), target.long().cuda()
             points = points.transpose(2, 1) # [b,d,n]
@@ -169,6 +169,7 @@ def main(args):
         scheduler.step()
 
         '''Evaluate on chopped scenes'''
+        classifier = classifier.eval()
         with torch.no_grad():
             num_batches = len(testDataLoader)
             total_correct = 0
@@ -178,7 +179,6 @@ def main(args):
             total_seen_class = [0 for _ in range(NUM_CLASSES)]
             total_correct_class = [0 for _ in range(NUM_CLASSES)]
             total_iou_deno_class = [0 for _ in range(NUM_CLASSES)]
-            classifier = classifier.eval()
             for i, (points, target) in tqdm(enumerate(testDataLoader), total=len(testDataLoader), smoothing=0.9):
                 points = points.data.numpy()
                 points = torch.Tensor(points)
