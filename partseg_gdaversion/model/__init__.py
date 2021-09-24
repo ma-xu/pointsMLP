@@ -23,3 +23,5 @@ from .pointMLP31 import model31A, model31B, model31C, model31D, model31E, \
     model31GA, model31GB, model31GC
 from .pointMLP32 import model32A, model32B, model32C, model32D, model32E, model32G ,model32H, model32I, \
     model32J, model32K, model32L, model32M, model32N, model32F
+
+from .pointMLP33 import model33G1, model33G2, model33G3, model33G4, model33G5, model33G6, model33G7, model33G8
