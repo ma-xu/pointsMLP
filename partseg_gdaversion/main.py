@@ -8,7 +8,7 @@ import argparse
 import datetime
 import torch
 import torch.optim as optim
-from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
+from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR,MultiStepLR
 from util.data_util import PartNormalDataset
 import torch.nn.functional as F
 import torch.nn as nn
@@ -113,6 +113,9 @@ def train(args, io):
     if args.scheduler == 'cos':
         print("Use CosLR")
         scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr/10 if args.use_sgd else args.lr / 1000)
+    elif args.scheduler == 'multistep':
+        scheduler = MultiStepLR(opt,
+                milestones=[int(args.epochs*0.3), int(args.epochs*0.6), int(args.epochs*0.9,)], gamma=0.1)
     else:
         print("Use StepLR")
         scheduler = StepLR(opt, step_size=args.step, gamma=0.5)
@@ -224,6 +227,12 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
 
     if args.scheduler == 'cos':
         scheduler.step()
+    elif args.scheduler == 'multistep':
+        if opt.param_groups[0]['lr'] > 0.5e-5:
+            scheduler.step()
+        if opt.param_groups[0]['lr'] < 0.5e-5:
+            for param_group in opt.param_groups:
+                param_group['lr'] = 0.5e-5
     elif args.scheduler == 'step':
         if opt.param_groups[0]['lr'] > 0.9e-5:
             scheduler.step()
