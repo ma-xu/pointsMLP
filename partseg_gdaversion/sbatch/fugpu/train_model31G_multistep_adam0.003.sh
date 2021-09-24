@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model model33G1 --exp_name mutlistep_adam0.003 --scheduler multistep --lr 0.003
+python main.py --model model31G --exp_name mutlistep_adam0.003 --scheduler multistep --lr 0.003
