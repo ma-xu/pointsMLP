@@ -15,7 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import einsum
 from einops import rearrange, repeat
-# from pointnet2_ops import pointnet2_utils
+from pointnet2_ops import pointnet2_utils
 
 def get_activation(activation):
     if activation.lower() == 'gelu':
@@ -167,8 +167,8 @@ class LocalGrouper(nn.Module):
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
         # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
-        fps_idx = farthest_point_sample(xyz, self.groups).long()
-        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        # fps_idx = farthest_point_sample(xyz, self.groups).long()
+        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
@@ -537,18 +537,7 @@ if __name__ == '__main__':
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing modelD ...")
-    model = model33D(50)
-    out = model(data, norm, cls_label)  # [2,2048,50]
-    print(out.shape)
 
-    model = model33A(50)
-    out = model(data, norm, cls_label)  # [2,2048,50]
-    print(out.shape)
-
-    model = model33B(50)
-    out = model(data, norm, cls_label)  # [2,2048,50]
-    print(out.shape)
-
-    model = model33C(50)
+    model = model33G1(50)
     out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)
