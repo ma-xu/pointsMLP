@@ -218,6 +218,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         output = model(input)
         if target.shape[-1] == 1:
             target = target[:, 0]  # for cls
+        print(f"output shape is {output.shape}")
+        print(f"target shape is {target.shape}")
         loss = criterion(output, target)
         optimizer.zero_grad()
         loss.backward()
