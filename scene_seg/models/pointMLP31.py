@@ -398,6 +398,7 @@ class PointMLP31(nn.Module):
         self.classifier = nn.Sequential(
             nn.Conv1d(de_dims[-1], 128, 1, bias=bias),
             nn.BatchNorm1d(128),
+            self.act,
             nn.Dropout(),
             nn.Conv1d(128, num_classes, 1, bias=bias)
         )

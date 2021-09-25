@@ -17,6 +17,7 @@ import torch.nn as nn
 import torch.nn.parallel
 import torch.optim
 import torch.utils.data
+import torch.nn.functional as F
 import torch.optim.lr_scheduler as lr_scheduler
 
 from util import dataset, transform
@@ -48,7 +49,7 @@ def parse_args():
     parser.add_argument('--train_batch_size', type=int, default=16)
     parser.add_argument('--train_batch_size_val', type=int, default=8)
     parser.add_argument('--data_root', default='dataset/s3dis')
-    parser.add_argument('--weight_init', action='store_true', default=False, help='loss smoothing')
+    parser.add_argument('--weight_init', action='store_true', default=False)
 
     parser.add_argument('--val_list', type=str, default='dataset/s3dis/list/val5.txt')
 
@@ -59,6 +60,11 @@ def parse_args():
     parser.add_argument('--seed', type=int, help='random seed')
     parser.add_argument('--workers', default=8, type=int, help='workers')
     parser.add_argument('--no_transformation', action='store_true', default=False, help='do not use trnsformations')
+
+    parser.add_argument('--optimizer', type=str, default='sgd', choices=["sgd", "adam"])
+    parser.add_argument('--scheduler', type=str, default='cos', choices=["cos", "step"])
+    parser.add_argument('--smoothing', type=float, default=0.)
+
     return parser.parse_args()
 
 
@@ -136,11 +142,20 @@ def main():
     net = torch.nn.DataParallel(net.cuda())
 
     screen.info("==> Preparing criterion, optimizer, scheduler ...\n")
-    criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label).cuda()
-    optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
-                                weight_decay=args.weight_decay)
-    scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=0.0001)
-
+    if args.smoothing > 0.:
+        criterion = SmoothingCrossEntropyLoss(trg_pad_idx=args.ignore_label, smoothing=args.smoothing).cuda()
+    else:
+        criterion = nn.CrossEntropyLoss(ignore_index=args.ignore_label).cuda()
+    if args.optimizer =="sgd":
+        optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
+                                    weight_decay=args.weight_decay)
+    else:
+        optimizer = torch.optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    if args.scheduler =="cos":
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=0.000001)
+    else:
+        scheduler = lr_scheduler.MultiStepLR(optimizer,
+                     milestones=[int(args.epoch*0.3), int(args.epoch*0.6), int(args.epoch*0.9)], gamma=0.1)
     best_mIoU = 0.0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     if not os.path.isfile(os.path.join(args.checkpoint, "last_checkpoint.pth")):
@@ -301,6 +316,27 @@ def validate(val_loader, model, criterion):
     screen.info('<<<<<<<<<<<<<<<<< End Evaluation <<<<<<<<<<<<<<<<<')
     return loss_meter.avg, mIoU, mAcc, allAcc
 
+class SmoothingCrossEntropyLoss(nn.Module):
+    def __init__(self, trg_pad_idx=999999, smoothing=0.):
+        super(SmoothingCrossEntropyLoss, self).__init__()
+        self.trg_pad_idx = trg_pad_idx
+        self.smoothing = smoothing
+
+    def forward(self, pred, gold):
+        gold = gold.contiguous().view(-1)
+        if self.smoothing>0:
+            eps = 0.1
+            n_class = pred.size(1)
+            one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
+            one_hot = one_hot * (1 - eps) + (1 - one_hot) * eps / (n_class - 1)
+            log_prb = F.log_softmax(pred, dim=1)
+
+            non_pad_mask = gold.ne(self.trg_pad_idx)
+            loss = -(one_hot * log_prb).sum(dim=1)
+            loss = loss.masked_select(non_pad_mask).mean()  # average later
+        else:
+            loss = F.cross_entropy(pred, gold, ignore_index=self.trg_pad_idx, reduction='mean')
+        return loss
 
 if __name__ == '__main__':
     main()
