@@ -329,6 +329,7 @@ class SmoothingCrossEntropyLoss(nn.Module):
         if self.smoothing>0:
             eps = 0.1
             n_class = pred.size(1)
+            pred = pred.permute(0,2,1).view(-1, n_class)
             one_hot = torch.zeros_like(pred).scatter(1, gold.view(-1, 1), 1)
             one_hot = one_hot * (1 - eps) + (1 - one_hot) * eps / (n_class - 1)
             log_prb = F.log_softmax(pred, dim=1)
