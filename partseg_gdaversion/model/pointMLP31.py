@@ -29,6 +29,8 @@ def get_activation(activation):
         return nn.Hardswish(inplace=True)
     elif activation.lower() == 'leakyrelu':
         return nn.LeakyReLU(inplace=True)
+    elif activation.lower() == 'leakyrelu0.2':
+        return nn.LeakyReLU(negative_slope=0.2, inplace=True)
     else:
         return nn.ReLU(inplace=True)
 
@@ -453,7 +455,7 @@ class PointMLP31(nn.Module):
         return x
 
 
-def model31A(num_classes=50, **kwargs) -> PointMLP31:
+def model31A(num_classes=50, **kwargs) -> PointMLP31:  # 0.85881 0.85861
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -462,7 +464,7 @@ def model31A(num_classes=50, **kwargs) -> PointMLP31:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
-def model31B(num_classes=50, **kwargs) -> PointMLP31:
+def model31B(num_classes=50, **kwargs) -> PointMLP31: # 0.85836  0.85864
     return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
@@ -470,7 +472,7 @@ def model31B(num_classes=50, **kwargs) -> PointMLP31:
                  de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-def model31C(num_classes=50, **kwargs) -> PointMLP31:
+def model31C(num_classes=50, **kwargs) -> PointMLP31: # 0.85707
     return PointMLP31(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -480,7 +482,7 @@ def model31C(num_classes=50, **kwargs) -> PointMLP31:
 
 
 
-def model31D(num_classes=50, **kwargs) -> PointMLP31:
+def model31D(num_classes=50, **kwargs) -> PointMLP31: # 0.85560
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=32, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=False, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -506,7 +508,8 @@ def model31F(num_classes=50, **kwargs) -> PointMLP31:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
-
+# model31G_cos 0.85927 model31G_cos-lr0.001new0.85824 model31G_cos-lr0.0050.859973
+# model31G_cos_lr0.01 0.85831 model31G_cos-noinit 0.85904
 def model31G(num_classes=50, **kwargs) -> PointMLP31:
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="anchor",
@@ -515,7 +518,7 @@ def model31G(num_classes=50, **kwargs) -> PointMLP31:
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-def model31GA(num_classes=50, **kwargs) -> PointMLP31:
+def model31GA(num_classes=50, **kwargs) -> PointMLP31:  # 0.85825
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -523,7 +526,7 @@ def model31GA(num_classes=50, **kwargs) -> PointMLP31:
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-def model31GB(num_classes=50, **kwargs) -> PointMLP31:
+def model31GB(num_classes=50, **kwargs) -> PointMLP31: # 0.85860
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="leakyrelu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -531,7 +534,7 @@ def model31GB(num_classes=50, **kwargs) -> PointMLP31:
                  de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
-def model31GC(num_classes=50, **kwargs) -> PointMLP31:
+def model31GC(num_classes=50, **kwargs) -> PointMLP31: # 0.86015
     return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="gelu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
@@ -579,6 +582,72 @@ def model31I(num_classes=50, **kwargs) -> PointMLP31:
                  de_dims=[512, 256, 128, 128], de_blocks=[4, 4, 4, 4],
                  gmp_dim=64,cls_dim=64, **kwargs)
 
+
+def model31X1(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[24, 24, 24, 24 ], reducers=[4, 4, 4, 2],
+                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+
+def model31X2(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=128, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2], pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2],
+                 k_neighbors=[24, 24, 24], reducers=[4, 4, 4],
+                 de_dims=[512, 256, 128], de_blocks=[3,3,3],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31X3(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 4], pre_blocks=[2,  2, 2], pos_blocks=[2, 2, 2],
+                 k_neighbors=[32, 32, 24], reducers=[4, 4, 4],
+                 de_dims=[512, 256, 128], de_blocks=[4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31X4(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=0.125,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+
+def model31X5(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 7], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 256, 256], de_blocks=[2,2,2,2],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31X6(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31X7(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                 activation="leakyrelu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
+                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
+def model31X8(num_classes=50, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, points=2048, embed_dim=128, groups=8, res_expansion=0.25,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[1, 2, 2], pre_blocks=[3, 3, 3], pos_blocks=[2, 2, 2],
+                 k_neighbors=[32, 32, 32], reducers=[4, 4, 4],
+                 de_dims=[512, 256, 128], de_blocks=[2,2,2],
+                 gmp_dim=64,cls_dim=64, **kwargs)
 
 
 def model31K(num_classes=50, **kwargs) -> PointMLP31:
