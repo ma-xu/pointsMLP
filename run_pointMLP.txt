@@ -407,6 +407,17 @@ nohup python train.py --model model31G --train_batch_size 32 --workers 32 --trai
 
 nohup python train.py --model model31H --train_batch_size 32 --workers 32 --train_batch_size_val 16 --smoothing 0.2 --scheduler step --learning_rate 0.1 > nohup/model31G_bs32_val16_smooth0.2_step_lr0.1.out &
 
+---------
+CUDA_VISIBLE_DEVICES=0 nohup python train.py --model model31X1 --train_batch_size 16 --workers 12 --train_batch_size_val 16 > nohup/model31X1_bs16_val16.out &
+
+CUDA_VISIBLE_DEVICES=1 nohup python train.py --model model31X2 --train_batch_size 16 --workers 12 --train_batch_size_val 16 > nohup/model31X2_bs16_val16.out &
+
+CUDA_VISIBLE_DEVICES=2 nohup python train.py --model model31X3 --train_batch_size 16 --workers 12 --train_batch_size_val 16 > nohup/model31X3_bs16_val16.out &
+
+CUDA_VISIBLE_DEVICES=3 nohup python train.py --model model31X4 --train_batch_size 16 --workers 12 --train_batch_size_val 16 > nohup/model31X4_bs16_val16.out &
+
+---------------------
+
 
 ### semantic segmentation on UNT ####
 nohup python train.py --model model31G --train_batch_size 16 --workers 24 --weight_init --learning_rate 0.1 > nohup/model31G_weight_init_bs16_lr0.1.out &

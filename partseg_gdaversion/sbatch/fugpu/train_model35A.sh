@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model model35A --exp_name cos_bs16_vbs16 --scheduler cos -- batch_size --test_batch_size 16
+python main.py --model model35A --exp_name cos_bs16_vbs16 --scheduler cos --batch_size 16 --test_batch_size 16
