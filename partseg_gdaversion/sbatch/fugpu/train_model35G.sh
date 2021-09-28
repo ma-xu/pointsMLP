@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model model35G --exp_name cos --scheduler cos
+python main.py --model model35G --exp_name cos32 --scheduler cos
