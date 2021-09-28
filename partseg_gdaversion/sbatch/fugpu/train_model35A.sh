@@ -4,9 +4,9 @@
 #SBATCH -N 1
 #SBATCH -p fugpu
 #SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:2
+#SBATCH --gres=gpu:1
 #SBATCH --output=%j.log
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model model35A --exp_name cos32 --scheduler cos
+python main.py --model model35A --exp_name cos_bs16_vbs16 --scheduler cos -- batch_size --test_batch_size 16
