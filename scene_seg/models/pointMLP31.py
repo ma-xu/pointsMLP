@@ -29,6 +29,8 @@ def get_activation(activation):
         return nn.Hardswish(inplace=True)
     elif activation.lower() == 'leakyrelu':
         return nn.LeakyReLU(inplace=True)
+    elif activation.lower() == 'leakyrelu0.2':
+        return nn.LeakyReLU(negative_slope=0.2, inplace=True)
     else:
         return nn.ReLU(inplace=True)
 
@@ -396,11 +398,11 @@ class PointMLP31(nn.Module):
 
         # classifier
         self.classifier = nn.Sequential(
-            nn.Conv1d(de_dims[-1], 128, 1, bias=bias),
-            nn.BatchNorm1d(128),
+            nn.Conv1d(de_dims[-1], de_dims[-1], 1, bias=bias),
+            nn.BatchNorm1d(de_dims[-1]),
             self.act,
             nn.Dropout(),
-            nn.Conv1d(128, num_classes, 1, bias=bias)
+            nn.Conv1d(de_dims[-1], num_classes, 1, bias=bias)
         )
         self.en_dims = en_dims
 
@@ -575,14 +577,51 @@ def model31N(num_classes=13, **kwargs) -> PointMLP31:
                  **kwargs)
 
 
+
+
+
+def model31X1(num_classes=13, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, c=9, points=4096, embed_dim=32, groups=1, res_expansion=1.0,
+                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[1, 2, 2, 2, 2], pre_blocks=[2, 2, 2, 2, 2], pos_blocks=[2, 2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32, 32], reducers=[2, 2, 4, 4, 4],
+                 de_dims=[512, 256, 256, 128, 64], de_blocks=[3,3,3,3, 3],
+                 **kwargs)
+
+def model31X2(num_classes=13, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, c=9, points=4096, embed_dim=32, groups=1, res_expansion=0.25,
+                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                 dim_expansion=[1, 2, 2, 2, 2], pre_blocks=[2, 2, 2, 2, 2], pos_blocks=[2, 2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32, 32], reducers=[2, 2, 4, 4, 4],
+                 de_dims=[512, 256, 256, 128, 64], de_blocks=[3,3,3,3, 3],
+                 **kwargs)
+
+def model31X3(num_classes=13, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, c=9, points=4096, embed_dim=32, groups=1, res_expansion=1.0,
+                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[1, 2, 2, 2, 2], pre_blocks=[2, 2, 2, 2, 2], pos_blocks=[2, 2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32, 32], reducers=[2, 2, 4, 4, 4],
+                 de_dims=[512, 256, 256, 128, 64], de_blocks=[3,3,3,3, 3],
+                 **kwargs)
+
+def model31X4(num_classes=13, **kwargs) -> PointMLP31:
+    return PointMLP31(num_classes=num_classes, c=9, points=4096, embed_dim=32, groups=1, res_expansion=1.0,
+                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[1, 2, 2, 2, 2], pre_blocks=[2, 2, 2, 2, 2], pos_blocks=[2, 2, 2, 2, 2],
+                 k_neighbors=[32, 32, 32, 32, 32], reducers=[2, 2, 4, 4, 4],
+                 de_dims=[512, 256, 128, 64, 32], de_blocks=[3,3,3,3,3],
+                 **kwargs)
+
+
+
 if __name__ == '__main__':
     data = torch.rand(2, 4096, 9)
     print("===> testing modelD ...")
-    model = model31D(13)
+    model = model31G(13)
     out = model(data)  # [2,13,4096]
     print(out.shape)
 
-    model = model31N()
+    model = model31X4()
     out = model(data)  # [2,13,4096]
     print(out.shape)
 
