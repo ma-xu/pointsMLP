@@ -112,7 +112,7 @@ def train(args, io):
 
     if args.scheduler == 'cos':
         print("Use CosLR")
-        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr/10 if args.use_sgd else args.lr / 1000)
+        scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr if args.use_sgd else args.lr / 100)
     elif args.scheduler == 'multistep':
         scheduler = MultiStepLR(opt,
                 milestones=[int(args.epochs*0.3), int(args.epochs*0.6), int(args.epochs*0.9,)], gamma=0.1)

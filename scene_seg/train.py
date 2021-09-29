@@ -152,7 +152,7 @@ def main():
     else:
         optimizer = torch.optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     if args.scheduler =="cos":
-        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=0.000001)
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=args.learning_rate/100)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer,
                      milestones=[int(args.epoch*0.3), int(args.epoch*0.6), int(args.epoch*0.9)], gamma=0.1)
