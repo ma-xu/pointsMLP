@@ -154,8 +154,7 @@ def main():
     if args.scheduler =="cos":
         scheduler = lr_scheduler.CosineAnnealingLR(optimizer, args.epoch, eta_min=args.learning_rate/100)
     else:
-        scheduler = lr_scheduler.MultiStepLR(optimizer,
-                     milestones=[int(args.epoch*0.3), int(args.epoch*0.6), int(args.epoch*0.9)], gamma=0.1)
+        scheduler = lr_scheduler.MultiStepLR(optimizer, milestones=[int(args.epoch*0.3), int(args.epoch*0.8)], gamma=0.1)
     best_mIoU = 0.0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
     if not os.path.isfile(os.path.join(args.checkpoint, "last_checkpoint.pth")):
