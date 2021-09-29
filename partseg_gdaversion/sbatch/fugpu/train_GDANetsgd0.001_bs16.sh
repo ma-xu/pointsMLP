@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python main.py --model GDANet --exp_name cos --scheduler cos
+python main.py --model GDANet --exp_name cos --scheduler cos --use_sgd True --lr 0.001 --batch_size 16
