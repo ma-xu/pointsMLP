@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python main.py --model PointNetNoBN --epoch 300 --workers 4
+python ablation.py --model PointNetNoBN --epoch 300 --workers 4
