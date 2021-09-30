@@ -1,7 +1,10 @@
 from __future__ import absolute_import
 from .pct import PCT
 from .pctmlp import PCTMLP
+from .pointnet_noBN import PointNetNoBN
 from .pointnet import PointNet
+from .pointnet2 import PointNet2
+from .pointnet2_noBN import PointNet2NoBN
 from .pointnetmlp import PointNetMLP
 from .model25 import model25H
 from .model26 import model26H, model26A, model26B, model26C, model26D
