@@ -1,20 +1,95 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+# plt.style.use('science')
+plt.rcParams["font.family"] = "Times New Roman"
 import numpy as np
 import os
 
+fig, ax = plt.subplots()
+fig.set_size_inches(6, 4)
+# ax.spines['right'].set_visible(False)
+# ax.spines['top'].set_visible(False)
+ax.grid(linestyle='dashed')
+
 path = os.getcwd()
-filename = "model31C.txt"
-data = np.loadtxt(os.path.join(path,filename), dtype=float)
-mean_1 = np.array([10, 20, 30, 25, 32, 43])
-std_1 = np.array([2.2, 2.3, 1.2, 2.2, 1.8, 3.5])
 
-mean_2 = np.array([12, 22, 30, 13, 33, 39])
-std_2 = np.array([2.4, 1.3, 2.2, 1.2, 1.9, 3.5])
 
-x = np.arange(len(mean_1))
-plt.plot(x, mean_1, 'b-', label='mean_1')
-plt.fill_between(x, mean_1 - std_1, mean_1 + std_1, color='b', alpha=0.2)
-plt.plot(x, mean_2, 'r-', label='mean_2')
-plt.fill_between(x, mean_2 - std_2, mean_2 + std_2, color='r', alpha=0.2)
+
+filename = "pointMLP24.txt"
+pointMLP24 = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP24_mean = pointMLP24.mean(axis=1)
+pointMLP24_std = pointMLP24.std(axis=1)
+
+
+filename = "pointMLP24_noBN.txt"
+pointMLP24noBN = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP24noBN_mean = pointMLP24noBN.mean(axis=1)
+pointMLP24noBN_std = pointMLP24noBN.std(axis=1)
+
+filename = "pointMLP40.txt"
+pointMLP40 = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP40_mean = pointMLP40.mean(axis=1)
+pointMLP40_std = pointMLP40.std(axis=1)
+
+filename = "pointMLP56.txt"
+pointMLP56 = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP56_mean = pointMLP56.mean(axis=1)
+pointMLP56_std = pointMLP56.std(axis=1)
+
+
+filename = "pointMLP56_noBN.txt"
+pointMLP56noBN = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP56noBN_mean = pointMLP56noBN.mean(axis=1)
+pointMLP56noBN_std = pointMLP56noBN.std(axis=1)
+
+
+csfont = {'fontname':'Times New Roman'}
+x = np.arange(len(pointMLP40_mean))
+
+plt.plot(x, pointMLP24_mean, 'c-', label='24-Layers w/ Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
+
+plt.plot(x, pointMLP24noBN_mean, 'c--', label='24-Layers w/o Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mean + pointMLP24noBN_std, color='c', alpha=0.2, linewidth=0.1)
+
+
+
+plt.plot(x, pointMLP40_mean, 'm-', label='40-Layers w/ Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP40_mean - pointMLP40_std, pointMLP40_mean + pointMLP40_std, color='m', alpha=0.4, linewidth=0.5)
+
+plt.plot(x, pointMLP56_mean, 'y-', label='56-Layers w/ Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP56_mean - pointMLP56_std, pointMLP56_mean + pointMLP56_std, color='y', alpha=0.4, linewidth=0.5)
+
+plt.plot(x, pointMLP56noBN_mean, 'y--', label='56-Layers w/o Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP56noBN_mean - pointMLP56noBN_std, pointMLP56noBN_mean + pointMLP56noBN_std, color='y', alpha=0.2, linewidth=0.1)
+
+
+plt.ylabel('Overall accuracy (OA)')
+plt.xlabel('Training epoch')
+plt.ylim([40,88])
 plt.legend()
+
+
+# Make the zoom-in plot:
+x1 = 40
+x2 = 60
+y1 = 75
+y2 = 83
+axins = zoomed_inset_axes(ax, 2.7, loc=8) # zoom = 2
+# axins.plot(pointMLP56)
+axins.plot(x, pointMLP24_mean, 'c-', label='24-Layers w/ Affine',linewidth=0.8)
+axins.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
+axins.plot(x, pointMLP24noBN_mean, 'c--', label='24-Layers w/o Affine',linewidth=0.8)
+axins.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mean + pointMLP24noBN_std, color='c', alpha=0.2, linewidth=0.1)
+
+axins.set_xlim(x1, x2)
+axins.set_ylim(y1, y2)
+plt.xticks(visible=False)
+plt.yticks(visible=False)
+mark_inset(ax, axins, loc1=1, loc2=2, fc="none", ec="0.5")
+
 plt.show()
+fig.savefig("with_without_affine.pdf", bbox_inches='tight', transparent=True)
+
+
