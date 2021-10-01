@@ -20,7 +20,7 @@ from .model29 import model29A, model29B, model29C, model29D, model29E, model29F,
 from .model30 import model30A, model30B, model30C, model30D, model30E, model30F, model30G, model30H, model30I, model30J
 from .model31 import model31A, model31B, model31C, model31D, model31E, model31F, model31G, \
     model31Ablation1111, model31Ablation1111NOnorm, model31Ablation3333, model31Ablation3333NOnorm, \
-    model31AblationNopre, model31AblationNopos
+    model31AblationNopre, model31AblationNopos, model31Ablation2222NOnorm
 from .model32 import model32A, model32B, model32C, model32D
 
 from .modelelite3 import modelelite3A1, modelelite3A2, modelelite3B1, modelelite3B2, modelelite3C1, modelelite3C2, \

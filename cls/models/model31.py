@@ -434,6 +434,12 @@ def model31Ablation3333NOnorm(num_classes=40, **kwargs) -> model31:
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
+def model31Ablation2222NOnorm(num_classes=40, **kwargs) -> model31:
+    return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=False, use_xyz=False, normalize=None,
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                   k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+
 
 def model31AblationNopre(num_classes=40, **kwargs) -> model31:
     return model31(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
