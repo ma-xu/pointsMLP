@@ -77,7 +77,7 @@ x2 = 60
 y1 = 75
 y2 = 83
 # axins = zoomed_inset_axes(ax, 3, loc=8) # zoom = 2
-axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[700,550,3,4]) # zoom = 2
+axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[250,200,3,4]) # zoom = 2
 # axins.plot(pointMLP56)
 axins.plot(x, pointMLP24_mean, 'c-', label='24-Layers w/ Affine',linewidth=0.8)
 axins.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
