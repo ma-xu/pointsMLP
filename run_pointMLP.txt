@@ -375,6 +375,11 @@ CUDA_VISIBLE_DEVICES=2,3 nohup python main.py --model model31G --exp_name bs64  
 Slurm Job_id=20969147 Name=train_model31c_wd2e-4.sh Ended no-voting 94.125   20210905101714
 
 
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31Ablation2222NOnorm > nohup/model31Ablation2222NOnorm_1.out & 
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31Ablation2222NOnorm > nohup/model31Ablation2222NOnorm_2.out & 
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model31Ablation2222NOnorm > nohup/model31Ablation2222NOnorm_3.out & 
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model31Ablation2222NOnorm > nohup/model31Ablation2222NOnorm_4.out & 
+
 
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model31G --exp_name sep05_1 --batch_size 32 --scheduler cos > nohup/model31G_sep05.out &
 CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model31G --exp_name sep05_2 --batch_size 32 --scheduler cos > nohup/model31G_sep05_2.out &
