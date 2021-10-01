@@ -4,6 +4,8 @@ from .pctmlp import PCTMLP
 from .pointnet_noBN import PointNetNoBN
 from .pointnet2_affine import PointNet2Affine
 from .pointnet import PointNet
+from .pointnet_deep import PointNetDeep
+from .pointnet_deep_noBN import PointNetDeepNoBN
 from .pointnet2 import PointNet2
 from .pointnet2_noBN import PointNet2NoBN
 from .pointnetmlp import PointNetMLP
