@@ -1,7 +1,7 @@
 """
 for training with resume functions.
 Usage:
-python main.py --model PointNet --msg demo
+python time.py --model PCT --msg test_time
 or
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/PointNet_demo.out &
 """
@@ -37,18 +37,18 @@ def parse_args():
     parser.add_argument('--learning_rate', default=0.1, type=float, help='learning rate in training')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
     parser.add_argument('--seed', type=int, help='random seed')
-    parser.add_argument('--workers', default=8, type=int, help='workers')
+    parser.add_argument('--workers', default=4, type=int, help='workers')
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
-    if args.seed is None:
-        args.seed = np.random.randint(1, 10000)
+
     os.environ["HDF5_USE_FILE_LOCKING"] = "FALSE"
 
     assert torch.cuda.is_available(), "Please ensure codes are executed in cuda."
     device = 'cuda'
+    torch.backends.cudnn.benchmark = True
     if args.seed is not None:
         torch.manual_seed(args.seed)
         np.random.seed(args.seed)
