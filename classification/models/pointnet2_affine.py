@@ -191,8 +191,8 @@ class PointNetSetAbstraction(nn.Module):
 class Affine(nn.Module):
     def __init__(self, channel):
         super(Affine, self).__init__()
-        self.alpha = torch.nn.Parameter(torch.ones(channel))
-        self.beta = torch.nn.Parameter(torch.zeros(channel))
+        self.alpha = torch.nn.Parameter(torch.rand(channel))
+        self.beta = torch.nn.Parameter(torch.rand(channel))
 
     def forward(self, x):
         dims = len(x.shape)
