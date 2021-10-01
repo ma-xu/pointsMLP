@@ -7,7 +7,7 @@ import numpy as np
 import os
 
 fig, ax = plt.subplots()
-fig.set_size_inches(6, 4)
+fig.set_size_inches(7, 5)
 # ax.spines['right'].set_visible(False)
 # ax.spines['top'].set_visible(False)
 ax.grid(linestyle='dashed')
@@ -65,10 +65,10 @@ plt.plot(x, pointMLP56noBN_mean, 'y--', label='56-Layers w/o Affine',linewidth=0
 plt.fill_between(x, pointMLP56noBN_mean - pointMLP56noBN_std, pointMLP56noBN_mean + pointMLP56noBN_std, color='y', alpha=0.2, linewidth=0.1)
 
 
-plt.ylabel('Overall accuracy (OA)')
-plt.xlabel('Training epoch')
+plt.ylabel('Overall accuracy (OA)', fontsize=16)
+plt.xlabel('Training epoch', fontsize=16)
 plt.ylim([40,88])
-plt.legend()
+plt.legend(fontsize=16)
 
 
 # Make the zoom-in plot:
@@ -76,7 +76,8 @@ x1 = 40
 x2 = 60
 y1 = 75
 y2 = 83
-axins = zoomed_inset_axes(ax, 2.7, loc=8) # zoom = 2
+# axins = zoomed_inset_axes(ax, 3, loc=8) # zoom = 2
+axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[700,550,3,4]) # zoom = 2
 # axins.plot(pointMLP56)
 axins.plot(x, pointMLP24_mean, 'c-', label='24-Layers w/ Affine',linewidth=0.8)
 axins.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
