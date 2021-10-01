@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .pct import PCT
+from .pointConv import PointConv
 from .pctmlp import PCTMLP
 from .pointnet_noBN import PointNetNoBN
 from .pointnet2_affine import PointNet2Affine
