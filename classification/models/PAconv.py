@@ -120,13 +120,12 @@ class ScoreNet(nn.Module):
 
 
 class PAConv(nn.Module):
-    def __init__(self, args):
+    def __init__(self):
         super(PAConv, self).__init__()
-        self.args = args
-        self.k = args.get('k_neighbors', 20)
-        self.calc_scores = args.get('calc_scores', 'softmax')
+        self.k = 20
+        self.calc_scores = "softmax"
 
-        self.m1, self.m2, self.m3, self.m4 = args.get('num_matrices', [8, 8, 8, 8])
+        self.m1, self.m2, self.m3, self.m4 = 8,8,8,8
         self.scorenet1 = ScoreNet(6, self.m1, hidden_unit=[16])
         self.scorenet2 = ScoreNet(6, self.m2, hidden_unit=[16])
         self.scorenet3 = ScoreNet(6, self.m3, hidden_unit=[16])
@@ -163,10 +162,10 @@ class PAConv(nn.Module):
 
         self.linear1 = nn.Linear(2048, 512, bias=False)
         self.bn11 = nn.BatchNorm1d(512)
-        self.dp1 = nn.Dropout(p=args.dropout)
+        self.dp1 = nn.Dropout(p=0.5)
         self.linear2 = nn.Linear(512, 256, bias=False)
         self.bn22 = nn.BatchNorm1d(256)
-        self.dp2 = nn.Dropout(p=args.dropout)
+        self.dp2 = nn.Dropout(p=0.5)
         self.linear3 = nn.Linear(256, 40)
 
     def forward(self, x):
