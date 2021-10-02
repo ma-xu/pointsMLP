@@ -567,37 +567,37 @@ def modelelite3X8(num_classes=40, **kwargs) -> modelelite3:  # 0.95M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=0.125,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[1, 1, 2, 1], pos_blocks=[1, 1, 1, 1],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 def modelelite3X9(num_classes=40, **kwargs) -> modelelite3:  # 1.59M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.125,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 1], pre_blocks=[1, 1, 1, 1], pos_blocks=[1, 1, 1, 1],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 def modelelite3X10(num_classes=40, **kwargs) -> modelelite3:  # 0.72M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=0.25,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 1], pre_blocks=[1, 1, 2, 1], pos_blocks=[1, 1, 2, 1],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 def modelelite3X11(num_classes=40, **kwargs) -> modelelite3:  # 0.78M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=48, groups=1, res_expansion=0.25,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[1, 2, 2, 2], pre_blocks=[1, 1, 2, 1], pos_blocks=[1, 1, 2, 1],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 def modelelite3X12(num_classes=40, **kwargs) -> modelelite3:  # 0.98M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.25,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[1, 2, 2, 2], pre_blocks=[1, 1, 1, 1], pos_blocks=[1, 1, 1, 0],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 def modelelite3X13(num_classes=40, **kwargs) -> modelelite3:  # 0.94M
     return modelelite3(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.125,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[1, 2, 2, 2], pre_blocks=[1, 2, 2, 2], pos_blocks=[1, 1, 0, 0],
-                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+                   k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 if __name__ == '__main__':
     # data = torch.rand(2, 128, 10)
