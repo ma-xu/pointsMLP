@@ -104,8 +104,8 @@ def main():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    list_1 = np.arange(-1, 1.05, 0.05)
-    list_2 = np.arange(-1, 1.05, 0.05)
+    list_1 = np.arange(-1, 1.1, 0.1)
+    list_2 = np.arange(-1, 1.1, 0.1)
 
     checkpoint = load_pretrained(args)
     direction1 = rand_normalize_directions(args, checkpoint)
