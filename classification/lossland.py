@@ -1,7 +1,7 @@
 """
 for training with resume functions.
 Usage:
-python main.py --model PointNet --msg demo
+python lossland.py --model PointNet2 --msg demo
 or
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/PointNet_demo.out &
 """
@@ -43,7 +43,7 @@ def parse_args():
 
 
 def load_pretrained(args):
-    print("=> loading checkpoint '{}'".format(args.resume))
+    print("=> loading checkpoint '{}'".format(args.model))
     checkpoint = torch.load(os.path.join("ablation_checkpoints",args.model+'-loss','best_checkpoint.pth'),
                             map_location=torch.device('cpu'))
     new_dict = OrderedDict()
