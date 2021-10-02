@@ -116,6 +116,7 @@ def main():
     criterion = cal_loss
     device = 'cuda'
     net = net.to(device)
+    net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
 
     print('==> Preparing data..')
