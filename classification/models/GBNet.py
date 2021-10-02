@@ -302,29 +302,28 @@ class DGCNN(nn.Module):
 
 
 class GBNet(nn.Module):
-    def __init__(self, args, output_channels=40):
+    def __init__(self, output_channels=40):
         super(GBNet, self).__init__()
-        self.args = args
-        self.k = args.k
+        self.k = 20
 
         self.abem1 = ABEM_Module(14, 64, self.k)
         self.abem2 = ABEM_Module(64, 64, self.k)
         self.abem3 = ABEM_Module(64, 128, self.k)
         self.abem4 = ABEM_Module(128, 256, self.k)
 
-        self.bn = nn.BatchNorm1d(args.emb_dims)
-        self.conv = nn.Sequential(nn.Conv1d(1024, args.emb_dims, kernel_size=1, bias=False),
+        self.bn = nn.BatchNorm1d(1024)
+        self.conv = nn.Sequential(nn.Conv1d(1024, 1024, kernel_size=1, bias=False),
                                   self.bn,
                                   nn.LeakyReLU(negative_slope=0.2))
 
         self.caa = CAA_Module(1024)
 
-        self.linear1 = nn.Linear(args.emb_dims * 2, 512, bias=False)
+        self.linear1 = nn.Linear(1024 * 2, 512, bias=False)
         self.bn_linear1 = nn.BatchNorm1d(512)
-        self.dp1 = nn.Dropout(p=args.dropout)
+        self.dp1 = nn.Dropout(p=0.5)
         self.linear2 = nn.Linear(512, 256)
         self.bn_linear2 = nn.BatchNorm1d(256)
-        self.dp2 = nn.Dropout(p=args.dropout)
+        self.dp2 = nn.Dropout(p=0.5)
         self.linear3 = nn.Linear(256, output_channels)
 
     def forward(self, x):
