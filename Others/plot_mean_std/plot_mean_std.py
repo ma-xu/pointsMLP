@@ -65,9 +65,11 @@ plt.plot(x, pointMLP56noBN_mean, 'y--', label='56-Layers w/o Affine',linewidth=0
 plt.fill_between(x, pointMLP56noBN_mean - pointMLP56noBN_std, pointMLP56noBN_mean + pointMLP56noBN_std, color='y', alpha=0.2, linewidth=0.1)
 
 
-plt.ylabel('Overall accuracy (OA)', fontsize=16)
-plt.xlabel('Training epoch', fontsize=16)
-plt.ylim([40,88])
+plt.ylabel('Overall accuracy (OA)', fontsize=18)
+plt.xlabel('Training epoch', fontsize=18)
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.ylim([30,88])
 plt.legend(fontsize=16)
 
 
@@ -76,10 +78,10 @@ x1 = 40
 x2 = 60
 y1 = 75
 y2 = 83
-# axins = zoomed_inset_axes(ax, 3, loc=8) # zoom = 2
-axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[250,200,3,4]) # zoom = 2
+# axins = zoomed_inset_axes(ax, 2, loc=8) # zoom = 2
+axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[250,200]) # zoom = 2
 # axins.plot(pointMLP56)
-axins.plot(x, pointMLP24_mean, 'c-', label='24-Layers w/ Affine',linewidth=0.8)
+axins.plot(x, pointMLP24_mean, 'c-', label='24-Layer w/ Affine',linewidth=0.8)
 axins.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
 axins.plot(x, pointMLP24noBN_mean, 'c--', label='24-Layers w/o Affine',linewidth=0.8)
 axins.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mean + pointMLP24noBN_std, color='c', alpha=0.2, linewidth=0.1)

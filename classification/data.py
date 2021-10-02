@@ -90,3 +90,7 @@ if __name__ == '__main__':
     for batch_idx, (data, label) in enumerate(train_loader):
         print(f"batch_idx: {batch_idx}  | data shape: {data.shape} | ;lable shape: {label.shape}")
 
+    train_set = ModelNet40(partition='train', num_points=1024)
+    test_set = ModelNet40(partition='test', num_points=1024)
+    print(f"train_set size {train_set.__len__()}")
+    print(f"test_set size {test_set.__len__()}")
