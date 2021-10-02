@@ -63,7 +63,7 @@ plt.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mea
 plt.plot(x, pointMLP40_mean, 'm-', label='40-Layers w/ Affine',linewidth=0.8)
 plt.fill_between(x, pointMLP40_mean - pointMLP40_std, pointMLP40_mean + pointMLP40_std, color='m', alpha=0.4, linewidth=0.5)
 
-plt.plot(x, pointMLP40noBN_mean, 'm-', label='40-Layers w/o Affine',linewidth=0.8)
+plt.plot(x, pointMLP40noBN_mean, 'm--', label='40-Layers w/o Affine',linewidth=0.8)
 plt.fill_between(x, pointMLP40noBN_mean - pointMLP40noBN_std, pointMLP40noBN_mean + pointMLP40noBN_std, color='m', alpha=0.4, linewidth=0.5)
 
 
