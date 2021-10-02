@@ -718,7 +718,7 @@ class CurveNet(nn.Module):
 
 
 if __name__ == '__main__':
-    data = torch.rand(2, 3, 1024)
-    model = CurveNet()
+    data = torch.rand(2, 3, 1024).cuda()
+    model = CurveNet().cuda()
     out = model(data)
     print(out.shape)
