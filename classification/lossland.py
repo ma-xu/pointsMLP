@@ -1,7 +1,7 @@
 """
 for training with resume functions.
 Usage:
-python lossland.py --model PointNet2 --msg demo
+nohup python lossland.py --model PointNet2 > lossland_PointNet2.txt &
 or
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/PointNet_demo.out &
 """
@@ -104,8 +104,8 @@ def main():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    list_1 = np.arange(-1, 1.1, 0.1)
-    list_2 = np.arange(-1, 1.1, 0.1)
+    list_1 = np.arange(-1, 1.05, 0.05)
+    list_2 = np.arange(-1, 1.05, 0.05)
 
     checkpoint = load_pretrained(args)
     direction1 = rand_normalize_directions(args, checkpoint)
@@ -126,11 +126,11 @@ def main():
 
     for w1 in list_1:
         for w2 in list_2:
-            print("\n\n===> w1 {w1:.2f} w2 {w2:.2f}".format(w1=w1, w2=w2))
+            print("\n\n===> w1 {w1:.3f} w2 {w2:.3f}".format(w1=w1, w2=w2))
             combined_weights = get_combined_weights(direction1, direction2, checkpoint, w1,w2)
             net.load_state_dict(combined_weights)
             test_out = validate(net, test_loader, criterion, device)
-            logger.info("{w1:.2f},{w2:.2f},{loss},{accuracy}".
+            logger.info("{w1:.3f},{w2:.3f},{loss},{accuracy}".
                         format(w1=w1, w2=w2,loss=test_out['loss'], accuracy=test_out['acc']))
 
 
