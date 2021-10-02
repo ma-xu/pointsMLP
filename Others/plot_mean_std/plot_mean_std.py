@@ -32,6 +32,11 @@ pointMLP40 = np.loadtxt(os.path.join(path,filename), dtype=float)
 pointMLP40_mean = pointMLP40.mean(axis=1)
 pointMLP40_std = pointMLP40.std(axis=1)
 
+filename = "pointMLP40_noBN.txt"
+pointMLP40noBN = np.loadtxt(os.path.join(path,filename), dtype=float)
+pointMLP40noBN_mean = pointMLP40noBN.mean(axis=1)
+pointMLP40noBN_std = pointMLP40noBN.std(axis=1)
+
 filename = "pointMLP56.txt"
 pointMLP56 = np.loadtxt(os.path.join(path,filename), dtype=float)
 pointMLP56_mean = pointMLP56.mean(axis=1)
@@ -58,6 +63,10 @@ plt.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mea
 plt.plot(x, pointMLP40_mean, 'm-', label='40-Layers w/ Affine',linewidth=0.8)
 plt.fill_between(x, pointMLP40_mean - pointMLP40_std, pointMLP40_mean + pointMLP40_std, color='m', alpha=0.4, linewidth=0.5)
 
+plt.plot(x, pointMLP40noBN_mean, 'm-', label='40-Layers w/o Affine',linewidth=0.8)
+plt.fill_between(x, pointMLP40noBN_mean - pointMLP40noBN_std, pointMLP40noBN_mean + pointMLP40noBN_std, color='m', alpha=0.4, linewidth=0.5)
+
+
 plt.plot(x, pointMLP56_mean, 'y-', label='56-Layers w/ Affine',linewidth=0.8)
 plt.fill_between(x, pointMLP56_mean - pointMLP56_std, pointMLP56_mean + pointMLP56_std, color='y', alpha=0.4, linewidth=0.5)
 
@@ -74,17 +83,17 @@ plt.legend(fontsize=16)
 
 
 # Make the zoom-in plot:
-x1 = 40
-x2 = 60
-y1 = 75
-y2 = 83
+x1 = 175
+x2 = 200
+y1 = 78.5
+y2 = 86
 # axins = zoomed_inset_axes(ax, 2, loc=8) # zoom = 2
 axins = zoomed_inset_axes(ax, 3, bbox_to_anchor=[250,200]) # zoom = 2
-# axins.plot(pointMLP56)
-axins.plot(x, pointMLP24_mean, 'c-', label='24-Layer w/ Affine',linewidth=0.8)
-axins.fill_between(x, pointMLP24_mean - pointMLP24_std, pointMLP24_mean + pointMLP24_std, color='c', alpha=0.4, linewidth=0.5)
-axins.plot(x, pointMLP24noBN_mean, 'c--', label='24-Layers w/o Affine',linewidth=0.8)
-axins.fill_between(x, pointMLP24noBN_mean - pointMLP24noBN_std, pointMLP24noBN_mean + pointMLP24noBN_std, color='c', alpha=0.2, linewidth=0.1)
+# axins.plot(pointMLP40)
+axins.plot(x, pointMLP40_mean, 'm-', label='40-Layer w/ Affine',linewidth=0.8)
+axins.fill_between(x, pointMLP40_mean - pointMLP40_std, pointMLP40_mean + pointMLP40_std, color='m', alpha=0.4, linewidth=0.5)
+axins.plot(x, pointMLP40noBN_mean, 'm--', label='40-Layers w/o Affine',linewidth=0.8)
+axins.fill_between(x, pointMLP40noBN_mean - pointMLP40noBN_std, pointMLP40noBN_mean + pointMLP40noBN_std, color='m', alpha=0.2, linewidth=0.1)
 
 axins.set_xlim(x1, x2)
 axins.set_ylim(y1, y2)
