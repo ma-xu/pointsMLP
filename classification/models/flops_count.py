@@ -4,7 +4,7 @@ import numpy as np
 
 
 def get_model_complexity_info(model, points, print_per_layer_stat=True, as_strings=True, channel=3):
-    batch = torch.FloatTensor(1, channel, points).cuda()
+    batch = torch.FloatTensor(1, channel, points)
     flops_model = add_flops_counting_methods(model)
     flops_model.eval().start_flops_count()
     out = flops_model(batch)
@@ -318,10 +318,10 @@ def add_flops_mask_variable_or_reset(module):
 if __name__ == '__main__':
     # import models as models
     # model = models.__dict__['new1A'](num_classes=40)
-    from CurveNet import CurveNet as net
+    from modelelite3 import modelelite3X10 as net
 
 
-    model = net().cuda()
+    model = net()
 
     flops, params = get_model_complexity_info(model, 1024, as_strings=False, print_per_layer_stat=False, channel=3)
     print('Flops:  %.3fG' % (flops / 1e9))
