@@ -72,7 +72,7 @@ def test(args):
     # start plot
     print(f"===> stat plotting")
     plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
-    # plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
+    plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
 
 
 def plot_xyz(xyz, target, name="figures/figure.pdf"):
