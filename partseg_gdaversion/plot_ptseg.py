@@ -25,7 +25,7 @@ import random
 import matplotlib.colors as mcolors
 def_colors = mcolors.CSS4_COLORS
 colrs_list = []
-np.random.seed(2021)
+np.random.seed(0)
 for k, v in def_colors.items():
     colrs_list.append(k)
 np.random.shuffle(colrs_list)
@@ -91,7 +91,7 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
-    fig.savefig(name, bbox_inches='tight', pad_inches=-0.6, transparent=True)
+    fig.savefig(name, bbox_inches='tight', pad_inches=-0.5, transparent=True)
     pyplot.close()
 
 if __name__ == "__main__":
