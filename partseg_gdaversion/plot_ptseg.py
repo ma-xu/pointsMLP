@@ -41,10 +41,10 @@ def test(args):
     model.eval()
     num_classes = 16
     points, label, target, norm_plt = test_data.__getitem__(args.id)
-    points = points.unsqueeze(dim=0)
-    label = label.unsqueeze(dim=0)
-    target = target.unsqueeze(dim=0)
-    norm_plt = norm_plt.unsqueeze(dim=0)
+    points = torch.tensor(points).unsqueeze(dim=0)
+    label = torch.tensor(label).unsqueeze(dim=0)
+    target = torch.tensor(target).unsqueeze(dim=0)
+    norm_plt = torch.tensor(norm_plt).unsqueeze(dim=0)
     points = points.transpose(2, 1)
     norm_plt = norm_plt.transpose(2, 1)
     points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze().cuda(
