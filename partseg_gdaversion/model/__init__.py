@@ -29,3 +29,4 @@ from .pointMLP33 import model33G1, model33G2, model33G3, model33G4, model33G5, m
 from .pointMLP34 import model34G1, model34G2, model34G3, model34G4, model34G5, model34G6, model34G7, model34G8
 from .pointMLP35 import model35A, model35B, model35C, model35D, model35E, model35F, model35G
 from .pointMLP36 import model36A, model36B, model36C, model36D, model36E
+from .pointMLP37 import model37A, model37B, model37C, model37D

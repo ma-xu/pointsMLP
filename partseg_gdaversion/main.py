@@ -96,10 +96,10 @@ def train(args, io):
     test_data = PartNormalDataset(npoints=2048, split='test', normalize=args.normalize)
     print("The number of test data is:%d", len(test_data))
 
-    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=8,
+    train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=args.workers,
                               drop_last=True, pin_memory=True)
 
-    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=8,
+    test_loader = DataLoader(test_data, batch_size=args.test_batch_size, shuffle=False, num_workers=args.workers,
                              drop_last=False, pin_memory=True)
 
     # ============= Optimizer ================
@@ -428,6 +428,7 @@ if __name__ == "__main__":
     parser.add_argument('--weight_init', type=bool,  default=True)
     parser.add_argument('--num_points', type=int, default=2048,
                         help='num of points to use')
+    parser.add_argument('--workers', type=int, default=12)
     parser.add_argument('--resume', type=bool, default=False,
                         help='Resume training or not')
     parser.add_argument('--model_type', type=str, default='insiou',
