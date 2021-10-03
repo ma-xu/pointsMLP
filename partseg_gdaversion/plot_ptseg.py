@@ -6,6 +6,8 @@ from __future__ import print_function
 import os
 import argparse
 import torch
+from matplotlib import pyplot
+from mpl_toolkits.mplot3d import Axes3D
 import torch.optim as optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
 from util.data_util import PartNormalDataset
@@ -19,6 +21,14 @@ from tqdm import tqdm
 from collections import defaultdict
 from torch.autograd import Variable
 import random
+
+import matplotlib.colors as mcolors
+def_colors = mcolors.CSS4_COLORS
+colrs_list = []
+np.random.seed(2021)
+for k, v in def_colors.items():
+    colrs_list.append(k)
+np.random.shuffle(colrs_list)
 
 def test(args):
     # Dataloader
@@ -52,12 +62,39 @@ def test(args):
     with torch.no_grad():
             cls_lable = to_categorical(label, num_classes)
             print(f"cls_lable.shape is {cls_lable.shape}")
-            seg_pred = model(points, norm_plt, cls_lable)  # b,n,50
+            predict = model(points, norm_plt, cls_lable)  # b,n,50
+    # up to now, points [1, 3, 2048]  predict [1, 2048, 50] target [1, 2048]
+    predict = predict.max(dim=-1)[1]
+    predict = predict.squeeze(dim=0).cpu().data.numpy()  # 2048
+    target = target.squeeze(dim=0).cpu().data.numpy()   # 2048
+    points = points.transpose(2, 1).squeeze(dim=0).cpu().data.numpy() #[2048,3]
 
-    print(f"target shape is: {target.shape}")
-    print(f"seg_pred shape is: {seg_pred.shape}")
-    print(f"points shape is: {points.shape}")
 
+    # start plot
+    print(f"===> stat plotting")
+    plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
+    plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
+
+
+def plot_xyz(xyz, target, name="figures/figure.pdf"):
+    fig = pyplot.figure()
+    ax = Axes3D(fig)
+    # ax = fig.gca(projection='3d')
+    x_vals = xyz[:, 0]
+    y_vals = xyz[:, 1]
+    z_vals = xyz[:, 2]
+    ax.set_xlim3d(min(x_vals)*0.9, max(x_vals)*0.9)
+    ax.set_ylim3d(min(y_vals)*0.9, max(y_vals)*0.9)
+    ax.set_zlim3d(min(z_vals)*0.9, max(z_vals)*0.9)
+    for i in range(0,2048):
+        col = int(target[i])
+        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col])
+    ax.set_axis_off()
+    ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    # pyplot.tight_layout()
+    if args.save:
+        fig.savefig(name, bbox_inches='tight', pad_inches=0.00, transparent=True)
+    pyplot.close()
 
 if __name__ == "__main__":
     # Training settings
