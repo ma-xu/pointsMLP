@@ -438,6 +438,17 @@ CUDA_VISIBLE_DEVICES=0 nohup python train.py --model model36B --train_batch_size
 CUDA_VISIBLE_DEVICES=1 nohup python train.py --model model36B --train_batch_size 16 --workers 8 --train_batch_size_val 16 --scheduler step --optimizer adam --learning_rate 0.001 > nohup/model36B_bs16_val16_step_adam_0.001.out &
 
 
+CUDA_VISIBLE_DEVICES=0 nohup python main.py --model model37A --exp_name cos --scheduler cos > model37A.out &
+CUDA_VISIBLE_DEVICES=1 nohup python main.py --model model37B --exp_name cos --scheduler cos > model37B.out &
+CUDA_VISIBLE_DEVICES=2 nohup python main.py --model model37C --exp_name cos --scheduler cos > model37C.out &
+CUDA_VISIBLE_DEVICES=3 nohup python main.py --model model37D --exp_name cos --scheduler cos > model37D.out &
+
+
+nohup python main_ptseg.py --model model38G --exp_name demo1 --batch_size 64 --scheduler cos > model38G_demo1.out &
+nohup python main_ptseg.py --model model38G1 --exp_name demo1 --batch_size 64 --scheduler cos > model38G1_demo1.out &
+nohup python main_ptseg.py --model model38G2 --exp_name demo1 --batch_size 64 --scheduler cos > model38G2_demo1.out &
+nohup python main_ptseg.py --model model38G3 --exp_name demo1 --batch_size 64 --scheduler cos > model38G3_demo1.out &
+
 
 ### semantic segmentation on UNT ####
 nohup python train.py --model model31G --train_batch_size 16 --workers 24 --weight_init --learning_rate 0.1 > nohup/model31G_weight_init_bs16_lr0.1.out &
