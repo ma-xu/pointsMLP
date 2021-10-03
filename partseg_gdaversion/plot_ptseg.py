@@ -56,6 +56,7 @@ def test(args):
 
     print(f"target shape is: {target.shape}")
     print(f"seg_pred shape is: {seg_pred.shape}")
+    print(f"points shape is: {points.shape}")
 
 
 if __name__ == "__main__":
