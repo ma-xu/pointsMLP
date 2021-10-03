@@ -22,13 +22,19 @@ from collections import defaultdict
 from torch.autograd import Variable
 import random
 
-import matplotlib.colors as mcolors
-def_colors = mcolors.CSS4_COLORS
-colrs_list = []
-np.random.seed(2021)
-for k, v in def_colors.items():
-    colrs_list.append(k)
-np.random.shuffle(colrs_list)
+# import matplotlib.colors as mcolors
+# def_colors = mcolors.CSS4_COLORS
+# colrs_list = []
+# np.random.seed(2021)
+# for k, v in def_colors.items():
+#     colrs_list.append(k)
+# np.random.shuffle(colrs_list)
+colrs_list = [
+    "C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
+    "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet","C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
+    "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet","C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
+    "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet"
+]
 
 def test(args):
     # Dataloader
@@ -85,10 +91,9 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_xlim3d(min(x_vals)*0.9, max(x_vals)*0.9)
     ax.set_ylim3d(min(y_vals)*0.9, max(y_vals)*0.9)
     ax.set_zlim3d(min(z_vals)*0.9, max(z_vals)*0.9)
-    norm = pyplot.Normalize(vmin=0, vmax=50)
     for i in range(0,2048):
         col = int(target[i])
-        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=col, cmap='gist_rainbow', norm=norm)
+        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker="o", s=30, alpha=0.7)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
