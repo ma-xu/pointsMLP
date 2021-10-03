@@ -50,7 +50,9 @@ def test(args):
     points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze().cuda(
         non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
     with torch.no_grad():
-            seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # b,n,50
+            cls_lable = to_categorical(label, num_classes)
+            print(f"cls_lable.shape is {cls_lable.shape}")
+            seg_pred = model(points, norm_plt, cls_lable)  # b,n,50
 
     print(f"label shape is: {label.shape}")
     print(f"seg_pred shape is: {seg_pred.shape}")
