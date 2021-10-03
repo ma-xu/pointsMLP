@@ -54,7 +54,7 @@ def test(args):
             print(f"cls_lable.shape is {cls_lable.shape}")
             seg_pred = model(points, norm_plt, cls_lable)  # b,n,50
 
-    print(f"label shape is: {label.shape}")
+    print(f"target shape is: {target.shape}")
     print(f"seg_pred shape is: {seg_pred.shape}")
 
 
