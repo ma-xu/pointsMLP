@@ -3,7 +3,7 @@
 #SBATCH --mail-user=ma.xu1@northeastern.edu
 #SBATCH -N 1
 #SBATCH -p gpu
-#SBATCH --gres=gpu:t4:2
+#SBATCH --gres=gpu:t4:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32Gb
 #SBATCH --time=8:00:00
