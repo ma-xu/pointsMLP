@@ -58,7 +58,7 @@ def load_pretrained(args):
     return new_dict
 
 
-def rand_normalize_directions(args, states, ignore=None):
+def rand_normalize_directions(args, states, ignore="biasbn"):
     # assert(len(direction) == len(states))
     model = models.__dict__[args.model]()
     init_dict = model.state_dict()
@@ -99,13 +99,13 @@ def main():
     logger = logging.getLogger("loss_landscape")
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter('%(message)s')
-    file_handler = logging.FileHandler(os.path.join(args.checkpoint, "loss_landscape_allrand.txt"))
+    file_handler = logging.FileHandler(os.path.join(args.checkpoint, "loss_landscape_large.txt"))
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-    list_1 = np.arange(-1, 1.1, 0.1)
-    list_2 = np.arange(-1, 1.1, 0.1)
+    list_1 = np.arange(-3, 3.3, 0.3)
+    list_2 = np.arange(-3, 3.3, 0.3)
 
     checkpoint = load_pretrained(args)
     direction1 = rand_normalize_directions(args, checkpoint)
