@@ -1,7 +1,7 @@
 """
 for training with resume functions.
 Usage:
-nohup python lossland_rand1dweight.py --model model31CNoRes > lossland_model31CNoRes.txt &
+nohup python lossland_rand1dweight.py --model model31CNoRes > lossland_model31CNoRes_rand1dweight.txt &
 or
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/PointNet_demo.out &
 """
@@ -58,13 +58,20 @@ def load_pretrained(args):
     return new_dict
 
 
-def rand_normalize_directions(args, states, ignore='biasbn'):
+def rand_normalize_directions(args, states, ignore=None):
     # assert(len(direction) == len(states))
     model = models.__dict__[args.model]()
     init_dict = model.state_dict()
     new_dict = OrderedDict()
     for (k, w), (k2, d) in zip(states.items(), init_dict.items()):
-        d.mul_(w.norm()/(d.norm() + 1e-10))
+        if w.dim() <= 1:
+            if ignore == 'biasbn':
+                d = torch.zeros_like(w)  # ignore directions for weights with 1 dimension
+            else:
+                d = w
+        else:
+            # if w.dim() > 1:
+            d.mul_(w.norm() / (d.norm() + 1e-10))
         new_dict[k] = d
     return new_dict
 
