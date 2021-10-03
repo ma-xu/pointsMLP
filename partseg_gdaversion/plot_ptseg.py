@@ -61,7 +61,6 @@ def test(args):
         non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
     with torch.no_grad():
             cls_lable = to_categorical(label, num_classes)
-            print(f"cls_lable.shape is {cls_lable.shape}")
             predict = model(points, norm_plt, cls_lable)  # b,n,50
     # up to now, points [1, 3, 2048]  predict [1, 2048, 50] target [1, 2048]
     predict = predict.max(dim=-1)[1]
@@ -73,7 +72,7 @@ def test(args):
     # start plot
     print(f"===> stat plotting")
     plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
-    plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
+    # plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
 
 
 def plot_xyz(xyz, target, name="figures/figure.pdf"):
@@ -88,11 +87,11 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_zlim3d(min(z_vals)*0.9, max(z_vals)*0.9)
     for i in range(0,2048):
         col = int(target[i])
-        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col])
+        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], alpha=0.7)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
-    fig.savefig(name, bbox_inches='tight', pad_inches=0.00, transparent=True)
+    fig.savefig(name, bbox_inches='tight', pad_inches=-0.6, transparent=True)
     pyplot.close()
 
 if __name__ == "__main__":
