@@ -1,7 +1,7 @@
 """
 for training with resume functions.
 Usage:
-nohup python lossland.py --model PointNet2 > lossland_PointNet2.txt &
+nohup python lossland.py --model model31CNoRes > lossland_model31CNoRes.txt &
 or
 CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/PointNet_demo.out &
 """

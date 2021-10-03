@@ -10,8 +10,9 @@ plt.rcParams["font.family"] = "Times New Roman"
 fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
 # Make data.
-# filename="model31C_loss_landscape"
-filename="pointnet2_loss_landscape"
+filename="model31C_loss_landscape"
+# filename="pointnet2_loss_landscape"
+# filename="model31CNoRes_loss_landscape"
 data = genfromtxt(filename+'.txt', delimiter=',')
 where_are_NaNs = np.isnan(data)
 data[where_are_NaNs] = 10000000
@@ -44,9 +45,7 @@ ax.grid(linestyle='dashed')
 
 ax.get_xaxis().set_visible(True)
 ax.axes.get_yaxis().set_visible(True)
-ax.set_xlabel('Direction 1')
-ax.set_ylabel('Direction 2')
-ax.set_zlabel('Testing loss')
+ax.set_zlabel('Testing loss', fontsize=16)
 # plt.axis('off')
 plt.show()
 fig.savefig(f"{filename}.pdf", bbox_inches='tight', pad_inches=0, transparent=True)
