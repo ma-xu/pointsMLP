@@ -39,12 +39,12 @@ plt.plot(x, pointMLP56noBN_mean, '--', color='C2',  label='w/o Affine',linewidth
 plt.fill_between(x, pointMLP56noBN_mean - pointMLP56noBN_std, pointMLP56noBN_mean + pointMLP56noBN_std, color='C2', alpha=0.2, linewidth=0.1)
 
 
-plt.ylabel('Overall accuracy (OA)', fontsize=18)
-plt.xlabel('Training epoch', fontsize=18)
+plt.ylabel('Overall accuracy (OA)', fontsize=20)
+plt.xlabel('Training epoch', fontsize=20)
 plt.xticks(fontsize=16)
 plt.yticks(fontsize=16)
 plt.ylim([30,88])
-plt.legend(fontsize=16)
+plt.legend(fontsize=18)
 
 
 # Make the zoom-in plot:
