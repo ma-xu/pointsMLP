@@ -25,7 +25,7 @@ import random
 import matplotlib.colors as mcolors
 def_colors = mcolors.CSS4_COLORS
 colrs_list = []
-np.random.seed(666)
+np.random.seed(2021)
 for k, v in def_colors.items():
     colrs_list.append(k)
 np.random.shuffle(colrs_list)
