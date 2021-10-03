@@ -87,7 +87,7 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_zlim3d(min(z_vals)*0.9, max(z_vals)*0.9)
     for i in range(0,2048):
         col = int(target[i])
-        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker="o", s=20, alpha=0.7)
+        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker="o", s=30, alpha=0.9)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
