@@ -47,7 +47,7 @@ def test(args):
     norm_plt = torch.tensor(norm_plt).unsqueeze(dim=0)
     points = points.transpose(2, 1)
     norm_plt = norm_plt.transpose(2, 1)
-    points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze().cuda(
+    points, label, target, norm_plt = points.cuda(non_blocking=True), label.cuda(
         non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
     with torch.no_grad():
             cls_lable = to_categorical(label, num_classes)
