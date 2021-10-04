@@ -493,6 +493,14 @@ def model38G3(num_classes=50, **kwargs) -> PointMLP38:
                  gmp_dim=64,cls_dim=64, **kwargs)
 
 
+def model38G4(num_classes=50, **kwargs) -> PointMLP38:
+    return PointMLP38(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=0.25,
+                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
+                 dim_expansion=[2, 2, 2, 1], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                 k_neighbors=[32, 32, 24, 12], reducers=[4, 4, 4, 2],
+                 de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
+                 gmp_dim=64,cls_dim=64, **kwargs)
+
 
 
 
