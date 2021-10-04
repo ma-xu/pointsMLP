@@ -63,7 +63,7 @@ def main():
         message = time_str
     else:
         message = "-"+args.msg
-    args.checkpoint = 'checkpoints/' + args.model + message
+    args.checkpoint = 'checkpoints/' + args.model + message + '-'+str(args.seed)
     if not os.path.isdir(args.checkpoint):
         mkdir_p(args.checkpoint)
 
