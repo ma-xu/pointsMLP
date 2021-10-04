@@ -10,4 +10,4 @@
 #SBATCH --output=%j.log
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python voting.py --model modelelite3X10 --msg 20211002174353 --epoch 200
+python voting.py --model modelelite3X10 --msg 20211002203755 --epoch 100
