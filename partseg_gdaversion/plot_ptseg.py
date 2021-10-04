@@ -97,7 +97,7 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
-    fig.savefig(name, bbox_inches='tight', pad_inches=-0.5, transparent=True)
+    fig.savefig(name, bbox_inches='tight', pad_inches=-0.3, transparent=True)
     pyplot.close()
 
 if __name__ == "__main__":
