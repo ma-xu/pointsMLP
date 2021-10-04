@@ -161,7 +161,8 @@ def voting(net, testloader, device, args):
     best_acc = 0
     best_mean_acc = 0
     # pointscale = PointcloudScale(scale_low=0.8, scale_high=1.18)  # set the range of scaling
-    pointscale = PointcloudScale()
+    # pointscale = PointcloudScale()
+    pointscale = PointcloudScale(scale_low=0.85, scale_high=1.15)
 
     for i in range(args.NUM_PEPEAT):
         test_true = []
