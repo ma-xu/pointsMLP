@@ -10,4 +10,4 @@
 source /home/ma.xu1/.condarc
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python voting.py --model model31C --msg 20210905101714 --epoch 200
+python voting.py --model model31C --msg 20210905101714 --NUM_PEPEAT 200

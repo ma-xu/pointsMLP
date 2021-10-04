@@ -87,7 +87,7 @@ def main():
 
     print('==> Preparing data..')
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=4,
-                             batch_size=args.batch_size//2, shuffle=True, drop_last=False)
+                             batch_size=args.batch_size//2, shuffle=False, drop_last=False)
     # Model
     print('==> Building model..')
     net = models.__dict__[args.model]()
