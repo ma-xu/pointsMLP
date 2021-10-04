@@ -128,7 +128,7 @@ def main():
     train_loader = DataLoader(ModelNet40(partition='train', num_points=args.num_points), num_workers=args.workers,
                               batch_size=args.batch_size, shuffle=True, drop_last=True)
     test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=args.workers,
-                             batch_size=args.batch_size//2, shuffle=True, drop_last=False)
+                             batch_size=args.batch_size//2, shuffle=False, drop_last=False)
 
     optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=0.9, weight_decay=args.weight_decay)
     if optimizer_dict is not None:
