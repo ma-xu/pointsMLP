@@ -29,6 +29,7 @@ def parse_args():
     parser.add_argument('--num_points', type=int, default=5000, help='Point Number')
     parser.add_argument('--id', default=800, type=int, help='ID of the example 2468')
     parser.add_argument('--save', action='store_true', default=False, help='use normals besides x,y,z')
+    parser.add_argument('--show', action='store_true', default=True, help='use normals besides x,y,z')
     return parser.parse_args()
 
 
