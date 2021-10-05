@@ -74,6 +74,9 @@ def test(args):
     target = target.squeeze(dim=0).cpu().data.numpy()   # 2048
     points = points.transpose(2, 1).squeeze(dim=0).cpu().data.numpy() #[2048,3]
 
+    np.savetxt(f"figures/{args.id}-point.txt", points)
+    np.savetxt(f"figures/{args.id}-target.txt", target)
+    np.savetxt(f"figures/{args.id}-label.txt", label)
 
     # start plot
     print(f"===> stat plotting")
