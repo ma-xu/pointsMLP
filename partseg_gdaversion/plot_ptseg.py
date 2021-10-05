@@ -78,10 +78,10 @@ def test(args):
     np.savetxt(f"figures/{args.id}-target.txt", target)
     np.savetxt(f"figures/{args.id}-label.txt", label)
 
-    # start plot
-    print(f"===> stat plotting")
-    plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
-    plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
+    # # start plot
+    # print(f"===> stat plotting")
+    # plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
+    # plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
 
 
 def plot_xyz(xyz, target, name="figures/figure.pdf"):
