@@ -9,14 +9,9 @@ import torch
 from matplotlib import pyplot
 from mpl_toolkits.mplot3d import Axes3D
 import torch.optim as optim
-from torch.optim.lr_scheduler import CosineAnnealingLR, StepLR
-from util.data_util import PartNormalDataset
-import torch.nn.functional as F
 import torch.nn as nn
-import model as models
 import numpy as np
 from torch.utils.data import DataLoader
-from util.util import to_categorical, compute_overall_iou, IOStream
 from tqdm import tqdm
 from collections import defaultdict
 from torch.autograd import Variable
@@ -37,47 +32,13 @@ colrs_list = [
 ]
 
 def test(args):
-    # Dataloader
-    test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
-    print("===> The number of test data is:%d", len(test_data))
-    # Try to load models
-    print("===> Create model...")
-    num_part = 50
-    device = torch.device("cuda" if args.cuda else "cpu")
-    model = models.__dict__[args.model](num_part).to(device)
-    print("===> Load checkpoint...")
-    from collections import OrderedDict
-    state_dict = torch.load("checkpoints/%s/best_%s_model.pth" % (args.exp_name, args.model_type),
-                            map_location=torch.device('cpu'))['model']
-    new_state_dict = OrderedDict()
-    for layer in state_dict:
-        new_state_dict[layer.replace('module.', '')] = state_dict[layer]
-    model.load_state_dict(new_state_dict)
-    print("===> Start evaluate...")
-    model.eval()
-    num_classes = 16
-    points, label, target, norm_plt = test_data.__getitem__(args.id)
-    points = torch.tensor(points).unsqueeze(dim=0)
-    label = torch.tensor(label).unsqueeze(dim=0)
-    target = torch.tensor(target).unsqueeze(dim=0)
-    norm_plt = torch.tensor(norm_plt).unsqueeze(dim=0)
-    points = points.transpose(2, 1)
-    norm_plt = norm_plt.transpose(2, 1)
-    points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze(dim=0).cuda(
-        non_blocking=True), target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
-    with torch.no_grad():
-            cls_lable = to_categorical(label, num_classes)
-            predict = model(points, norm_plt, cls_lable)  # b,n,50
-    # up to now, points [1, 3, 2048]  predict [1, 2048, 50] target [1, 2048]
-    predict = predict.max(dim=-1)[1]
-    predict = predict.squeeze(dim=0).cpu().data.numpy()  # 2048
-    target = target.squeeze(dim=0).cpu().data.numpy()   # 2048
-    points = points.transpose(2, 1).squeeze(dim=0).cpu().data.numpy() #[2048,3]
 
-    np.savetxt(f"figures/{args.id}-point.txt", points)
-    np.savetxt(f"figures/{args.id}-target.txt", target)
-    np.savetxt(f"figures/{args.id}-predict.txt", predict)
-
+    # np.savetxt(f"figures/{args.id}-point.txt", points)
+    # np.savetxt(f"figures/{args.id}-target.txt", target)
+    # np.savetxt(f"figures/{args.id}-predict.txt", predict)
+    points = np.recfromtxt(f"{args.id}-point.txt")
+    target = np.recfromtxt(f"{args.id}-target.txt")
+    predict = np.recfromtxt(f"{args.id}-predict.txt")
     # start plot
     print(f"===> stat plotting")
     plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
@@ -100,6 +61,7 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
     # pyplot.tight_layout()
+    pyplot.show()
     fig.savefig(name, bbox_inches='tight', pad_inches=-0.3, transparent=True)
     pyplot.close()
 
