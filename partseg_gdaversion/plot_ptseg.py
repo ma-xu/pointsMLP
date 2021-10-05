@@ -76,7 +76,7 @@ def test(args):
 
     np.savetxt(f"figures/{args.id}-point.txt", points)
     np.savetxt(f"figures/{args.id}-target.txt", target)
-    np.savetxt(f"figures/{args.id}-label.txt", label)
+    np.savetxt(f"figures/{args.id}-predict.txt", predict)
 
     # # start plot
     # print(f"===> stat plotting")
