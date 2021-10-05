@@ -68,9 +68,9 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
         ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker=".", s=200, alpha=0.6)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
-    # ax.view_init(30,30)
+    ax.view_init(30,30)
     # pyplot.tight_layout()
-    # pyplot.show()
+    pyplot.show()
     fig.savefig(name, bbox_inches='tight', pad_inches=-0., transparent=True)
     pyplot.close()
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
     parser.add_argument('--model', type=str, default='PointMLP1')
-    parser.add_argument('--id', type=int, default='1531')
+    parser.add_argument('--id', type=int, default='1')
     parser.add_argument('--exp_name', type=str, default='demo1', metavar='N',
                         help='Name of the experiment')
     parser.add_argument('--no_cuda', type=bool, default=False,
