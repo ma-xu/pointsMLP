@@ -26,7 +26,7 @@ from mpl_toolkits.mplot3d import Axes3D
 def parse_args():
     """Parameters"""
     parser = argparse.ArgumentParser('training')
-    parser.add_argument('--num_points', type=int, default=5000, help='Point Number')
+    parser.add_argument('--num_points', type=int, default=10000, help='Point Number')
     parser.add_argument('--id', default=800, type=int, help='ID of the example 2468')
     parser.add_argument('--save', action='store_true', default=False, help='use normals besides x,y,z')
     parser.add_argument('--show', action='store_true', default=True, help='use normals besides x,y,z')
@@ -83,6 +83,7 @@ def main():
     test_set = ScanObjectNN(partition='test', num_points=args.num_points)
 
     data, label = test_set.__getitem__(args.id)
+    print(data.shape)
     print('==> plotting ...')
     plot_xyz(data, args, name=f"figures/Image-{args.id}-{args.num_points}.pdf" )
 
