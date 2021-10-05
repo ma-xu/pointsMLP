@@ -25,9 +25,13 @@ import random
 #     colrs_list.append(k)
 # np.random.shuffle(colrs_list)
 colrs_list = [
-    "C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
-    "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet","C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
-    "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet","C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime","c","y",
+    "C6", "C1","C2","C3","C4","C5","C6","C7","C8","C9",
+    "deepskyblue", "tan","orangered","C9","tan","c","y", "gold","darkorange","g",
+    "orangered","tomato","tan","darkorchid","C1","tomato", "y","C5","C3","C4",
+    "C5","C6","C7","C8","C9","deepskyblue", "m","deeppink","hotpink","lime",
+    "c","y", "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet",
+    "C0", "C1","C2","C3","C4","C5","C6","C7","C8","C9",
+    "deepskyblue", "m","deeppink","hotpink","lime","c","y",
     "gold","darkorange","g","orangered","tomato","tan","darkorchid","violet"
 ]
 
@@ -37,12 +41,16 @@ def test(args):
     # np.savetxt(f"figures/{args.id}-target.txt", target)
     # np.savetxt(f"figures/{args.id}-predict.txt", predict)
     points = np.recfromtxt(f"{args.id}-point.txt")
+    # print(points.shape)
     target = np.recfromtxt(f"{args.id}-target.txt")
+    # target = target[:400]
     predict = np.recfromtxt(f"{args.id}-predict.txt")
+    print(f"unique label is: {np.unique(predict)}")
+    # predict = predict[:400]
     # start plot
     print(f"===> stat plotting")
-    plot_xyz(points, target, name=f"figures/{args.id}-gt.pdf")
-    plot_xyz(points, predict, name=f"figures/{args.id}-predict.pdf")
+    plot_xyz(points, target, name=f"{args.id}-gt.pdf")
+    plot_xyz(points, predict, name=f"{args.id}-predict.pdf")
 
 
 def plot_xyz(xyz, target, name="figures/figure.pdf"):
@@ -57,19 +65,20 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
     ax.set_zlim3d(min(z_vals)*0.9, max(z_vals)*0.9)
     for i in range(0,2048):
         col = int(target[i])
-        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker="o", s=30, alpha=0.7)
+        ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker=".", s=200, alpha=0.6)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
+    # ax.view_init(30,30)
     # pyplot.tight_layout()
-    pyplot.show()
-    fig.savefig(name, bbox_inches='tight', pad_inches=-0.3, transparent=True)
+    # pyplot.show()
+    fig.savefig(name, bbox_inches='tight', pad_inches=-0., transparent=True)
     pyplot.close()
 
 if __name__ == "__main__":
     # Training settings
     parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
     parser.add_argument('--model', type=str, default='PointMLP1')
-    parser.add_argument('--id', type=int, default='1')
+    parser.add_argument('--id', type=int, default='1531')
     parser.add_argument('--exp_name', type=str, default='demo1', metavar='N',
                         help='Name of the experiment')
     parser.add_argument('--no_cuda', type=bool, default=False,
