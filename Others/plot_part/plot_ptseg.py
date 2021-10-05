@@ -68,7 +68,7 @@ def plot_xyz(xyz, target, name="figures/figure.pdf"):
         ax.scatter(x_vals[i], y_vals[i], z_vals[i], c=colrs_list[col], marker=".", s=200, alpha=0.6)
     ax.set_axis_off()
     ax.get_xaxis().get_major_formatter().set_useOffset(False)
-    ax.view_init(30,30)
+    # ax.view_init(30,30)
     # pyplot.tight_layout()
     pyplot.show()
     fig.savefig(name, bbox_inches='tight', pad_inches=-0., transparent=True)
