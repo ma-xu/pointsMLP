@@ -29,3 +29,12 @@ from .modelelite3 import modelelite3A1, modelelite3A2, modelelite3B1, modelelite
     modelelite3K1, modelelite3K2, modelelite3L1, modelelite3L2, modelelite3M1, modelelite3M2, \
     modelelite3X1, modelelite3X2, modelelite3X3, modelelite3X4, modelelite3X5, modelelite3X6, modelelite3X7, \
     modelelite3X8, modelelite3X9, modelelite3X10, modelelite3X11, modelelite3X12, modelelite3X13
+
+
+
+
+#######pointnet2##########
+from .pointnet2 import PointNet2
+from .model311 import model311C
+from .pointnet2_affine import PointNet2Affine
+from .model312 import model312C
