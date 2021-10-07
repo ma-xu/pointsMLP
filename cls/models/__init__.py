@@ -38,3 +38,4 @@ from .pointnet2 import PointNet2
 from .model311 import model311C
 from .pointnet2_affine import PointNet2Affine
 from .model312 import model312C
+from .model313 import model313C
