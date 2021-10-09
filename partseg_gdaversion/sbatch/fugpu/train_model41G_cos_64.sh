@@ -3,7 +3,7 @@
 #SBATCH --mail-user=ma.xu1@northeastern.edu
 #SBATCH -N 1
 #SBATCH -p fugpu
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=12
 #SBATCH --gres=gpu:2
 #SBATCH --output=%j.log
 
