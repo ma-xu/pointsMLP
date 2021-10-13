@@ -194,8 +194,8 @@ if __name__ == "__main__":
                         help='Size of batch)')
     parser.add_argument('--test_batch_size', type=int, default=32, metavar='batch_size',
                         help='Size of batch)')
-    parser.add_argument('--epochs', type=int, default=350, metavar='N',
-                        help='number of episode to train')
+    # parser.add_argument('--epochs', type=int, default=350, metavar='N',
+    #                     help='number of episode to train')
     parser.add_argument('--use_sgd', type=bool, default=False,
                         help='Use SGD')
     parser.add_argument('--scheduler', type=str, default='step',
@@ -219,6 +219,9 @@ if __name__ == "__main__":
                         help='Resume training or not')
     parser.add_argument('--model_type', type=str, default='insiou',
                         help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')
+     # voting
+    parser.add_argument('--NUM_VOTE', type=int, default=10)
+    parser.add_argument('--epochs', type=int, default=200)
 
     args = parser.parse_args()
     args.exp_name = args.model+"_"+args.exp_name
