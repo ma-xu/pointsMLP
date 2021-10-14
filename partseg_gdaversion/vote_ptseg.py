@@ -132,9 +132,11 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
 
         seg_pred = 0.
         for v in range(args.NUM_VOTE):
-            scaled_point = pointscale(points)
+            scaled_point = points
+            scaled_point.data = pointscale(points.data)
             scaled_point = scaled_point.transpose(2, 1)
-            seg_pred_v = model(scaled_point, norm_plt, to_categorical(label, num_classes))  # b,n,50
+            with torch.no_grad():
+                seg_pred_v = model(scaled_point, norm_plt, to_categorical(label, num_classes))  # b,n,50
             seg_pred += seg_pred_v
         seg_pred /= args.NUM_VOTE
 
