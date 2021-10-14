@@ -90,9 +90,9 @@ def train(args, io):
         drop_last = False
     else:
         drop_last = True
-    train_loader = DataLoader(train_dataset, num_workers=8, batch_size=args.batch_size, shuffle=True, drop_last=drop_last, pin_memory=True)
+    train_loader = DataLoader(train_dataset, num_workers=args.workers, batch_size=args.batch_size, shuffle=True, drop_last=drop_last, pin_memory=True)
     test_loader = DataLoader(ShapeNetPart(partition='test', num_points=args.num_points, class_choice=args.class_choice),
-                            num_workers=8, batch_size=args.test_batch_size, shuffle=False, drop_last=False, pin_memory=True)
+                            num_workers=args.workers, batch_size=args.test_batch_size, shuffle=False, drop_last=False, pin_memory=True)
 
     device = torch.device("cuda" if args.cuda else "cpu")
     io.cprint("Let's use " + str(torch.cuda.device_count()) + " GPUs!")
@@ -315,6 +315,7 @@ if __name__ == "__main__":
                                  'motor', 'mug', 'pistol', 'rocket', 'skateboard', 'table'])
     parser.add_argument('--batch_size', type=int, default=32, metavar='batch_size',
                         help='Size of batch)')
+    parser.add_argument('--workers', type=int, default=12)
     parser.add_argument('--test_batch_size', type=int, default=16, metavar='batch_size',
                         help='Size of batch)')
     parser.add_argument('--epochs', type=int, default=200, metavar='N',
