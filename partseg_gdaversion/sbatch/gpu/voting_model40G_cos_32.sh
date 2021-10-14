@@ -11,4 +11,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_gdaversion/
-python vote_ptseg.py --model model40G --exp_name cos_bs32 --scheduler cos --batch_size 16
+python vote_ptseg.py --model model40G --exp_name cos_bs32 --scheduler cos --test_batch_size 16
