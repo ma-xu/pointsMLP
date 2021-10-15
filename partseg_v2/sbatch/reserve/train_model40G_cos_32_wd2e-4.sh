@@ -5,10 +5,11 @@
 #SBATCH -p reservation
 #SBATCH --reservation=xuma_mlp_test
 #SBATCH --time=24:00:00
-#SBATCH --gres=gpu:v100-sxm2:2
-#SBATCH --cpus-per-task=12
+#SBATCH --gres=gpu:v100-sxm2:4
+#SBATCH --cpus-per-task=24
 #SBATCH --output=%j.log
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_v2/
-python main.py --model model40G --exp_name cos_bs32_wd2e-4 --scheduler cos --batch_size 32 --weight_decay 2e-4
+CUDA_VISIBLE_DEVICES=0,1 python main.py --model model40G --exp_name cos_bs32_wd2e-4 --scheduler cos --batch_size 32 --weight_decay 2e-4 &
+CUDA_VISIBLE_DEVICES=2,3 python main.py --model model40G --exp_name cos_bs64_wd2e-4 --scheduler cos --batch_size 64 --weight_decay 2e-4
