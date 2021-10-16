@@ -8,14 +8,14 @@ Based on PointMLP1, using poseExtraction to replace MLP in decode.
 PointsformerE2, 1)change relu to GELU, 2) change backbone to model24.
 """
 
-
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch import einsum
 from einops import rearrange, repeat
-# from pointnet2_ops import pointnet2_utils
+
+
+from pointnet2_ops import pointnet2_utils
 
 def get_activation(activation):
     if activation.lower() == 'gelu':
@@ -157,8 +157,8 @@ class LocalGrouper(nn.Module):
             print(f"Unrecognized normalize parameter (self.normalize), set to None. Should be one of [center, anchor].")
             self.normalize = None
         if self.normalize is not None:
-            add_channel=3 if self.use_xyz else 0
-            self.affine_alpha = nn.Parameter(torch.ones([1,1,1,channel + add_channel]))
+            add_channel = 3 if self.use_xyz else 0
+            self.affine_alpha = nn.Parameter(torch.ones([1, 1, 1, channel + add_channel]))
             self.affine_beta = nn.Parameter(torch.zeros([1, 1, 1, channel + add_channel]))
 
     def forward(self, xyz, points):
@@ -166,9 +166,9 @@ class LocalGrouper(nn.Module):
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
+        # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
         # fps_idx = farthest_point_sample(xyz, self.groups).long()
-        # fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
+        fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
 
@@ -177,18 +177,19 @@ class LocalGrouper(nn.Module):
         grouped_xyz = index_points(xyz, idx)  # [B, npoint, k, 3]
         grouped_points = index_points(points, idx)  # [B, npoint, k, d]
         if self.use_xyz:
-            grouped_points = torch.cat([grouped_points, grouped_xyz],dim=-1)  # [B, npoint, k, d+3]
+            grouped_points = torch.cat([grouped_points, grouped_xyz], dim=-1)  # [B, npoint, k, d+3]
         if self.normalize is not None:
-            if self.normalize =="center":
+            if self.normalize == "center":
                 mean = torch.mean(grouped_points, dim=2, keepdim=True)
-            if self.normalize =="anchor":
-                mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
+            if self.normalize == "anchor":
+                mean = torch.cat([new_points, new_xyz], dim=-1) if self.use_xyz else new_points
                 mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
 
             # instance-wise points std
-            std = torch.std((grouped_points-mean).reshape(B,-1),dim=-1,keepdim=True).unsqueeze(dim=-1).unsqueeze(dim=-1)
-            grouped_points = (grouped_points-mean)/(std + 1e-5)
-            grouped_points = self.affine_alpha*grouped_points + self.affine_beta
+            std = torch.std((grouped_points - mean).reshape(B, -1), dim=-1, keepdim=True).unsqueeze(dim=-1).unsqueeze(
+                dim=-1)
+            grouped_points = (grouped_points - mean) / (std + 1e-5)
+            grouped_points = self.affine_alpha * grouped_points + self.affine_beta
 
         new_points = torch.cat([grouped_points, new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)], dim=-1)
         return new_xyz, new_points
@@ -240,7 +241,7 @@ class ConvBNReLURes1D(nn.Module):
 
 
 class PreExtraction(nn.Module):
-    def __init__(self, channels, out_channels,  blocks=1, groups=1, res_expansion=1, bias=True,
+    def __init__(self, channels, out_channels, blocks=1, groups=1, res_expansion=1, bias=True,
                  activation='relu', use_xyz=True):
         """
         input: [b,g,k,d]: output:[b,d,g]
@@ -248,7 +249,7 @@ class PreExtraction(nn.Module):
         :param blocks:
         """
         super(PreExtraction, self).__init__()
-        in_channels = 3+2*channels if use_xyz else 2*channels
+        in_channels = 3 + 2 * channels if use_xyz else 2 * channels
         self.transfer = ConvBNReLU1D(in_channels, out_channels, bias=bias, activation=activation)
         operation = []
         for _ in range(blocks):
@@ -296,7 +297,6 @@ class PointNetFeaturePropagation(nn.Module):
         self.extraction = PosExtraction(out_channel, blocks, groups=groups,
                                         res_expansion=res_expansion, bias=bias, activation=activation)
 
-
     def forward(self, xyz1, xyz2, points1, points2):
         """
         Input:
@@ -338,20 +338,20 @@ class PointNetFeaturePropagation(nn.Module):
         return new_points
 
 
-
-
 class PointMLP40(nn.Module):
-    def __init__(self, num_classes=50,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+    def __init__(self, num_classes=50, points=2048, embed_dim=64, groups=1, res_expansion=1.0, norm_plt=True,
                  activation="relu", bias=True, use_xyz=True, normalize="anchor",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[2,2,2,2],
-                 gmp_dim=64,cls_dim=64, **kwargs):
+                 de_dims=[512, 256, 128, 128], de_blocks=[2, 2, 2, 2],
+                 gmp_dim=64, cls_dim=64, **kwargs):
         super(PointMLP40, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = num_classes
         self.points = points
-        self.embedding = ConvBNReLU1D(6, embed_dim, bias=bias, activation=activation)
+        self.norm_plt = norm_plt
+        in_dim = 6 if self.norm_plt else 3
+        self.embedding = ConvBNReLU1D(in_dim, embed_dim, bias=bias, activation=activation)
         assert len(pre_blocks) == len(k_neighbors) == len(reducers) == len(pos_blocks) == len(dim_expansion), \
             "Please check stage number consistent for pre_blocks, pos_blocks k_neighbors, reducers."
         self.local_grouper_list = nn.ModuleList()
@@ -384,15 +384,14 @@ class PointMLP40(nn.Module):
             last_channel = out_channel
             en_dims.append(last_channel)
 
-
         ### Building Decoder #####
         self.decode_list = nn.ModuleList()
         en_dims.reverse()
-        de_dims.insert(0,en_dims[0])
-        assert len(en_dims) ==len(de_dims) == len(de_blocks)+1
-        for i in range(len(en_dims)-1):
+        de_dims.insert(0, en_dims[0])
+        assert len(en_dims) == len(de_dims) == len(de_blocks) + 1
+        for i in range(len(en_dims) - 1):
             self.decode_list.append(
-                PointNetFeaturePropagation(de_dims[i]+en_dims[i+1], de_dims[i+1],
+                PointNetFeaturePropagation(de_dims[i] + en_dims[i + 1], de_dims[i + 1],
                                            blocks=de_blocks[i], groups=groups, res_expansion=res_expansion,
                                            bias=bias, activation=activation)
             )
@@ -408,20 +407,22 @@ class PointMLP40(nn.Module):
         self.gmp_map_list = nn.ModuleList()
         for en_dim in en_dims:
             self.gmp_map_list.append(ConvBNReLU1D(en_dim, gmp_dim, bias=bias, activation=activation))
-        self.gmp_map_end = ConvBNReLU1D(gmp_dim*len(en_dims), gmp_dim, bias=bias, activation=activation)
+        self.gmp_map_end = ConvBNReLU1D(gmp_dim * len(en_dims), gmp_dim, bias=bias, activation=activation)
 
         # classifier
         self.classifier = nn.Sequential(
-            nn.Conv1d(gmp_dim+cls_dim+de_dims[-1], 128, 1, bias=bias),
-            nn.BatchNorm1d(128),
-            nn.Dropout(),
-            nn.Conv1d(128, num_classes, 1, bias=bias)
+            nn.Conv1d(gmp_dim + cls_dim + de_dims[-1], 256, 1, bias=bias),
+            nn.BatchNorm1d(256),
+            nn.Dropout(0.4),
+            get_activation(activation),
+            nn.Conv1d(256, num_classes, 1, bias=bias)
         )
         self.en_dims = en_dims
 
     def forward(self, x, norm_plt, cls_label):
         xyz = x.permute(0, 2, 1)
-        x = torch.cat([x,norm_plt],dim=1)
+        if self.norm_plt:
+            x = torch.cat([x, norm_plt], dim=1)
         x = self.embedding(x)  # B,D,N
 
         xyz_list = [xyz]  # [B, N, 3]
@@ -441,15 +442,15 @@ class PointMLP40(nn.Module):
         x_list.reverse()
         x = x_list[0]
         for i in range(len(self.decode_list)):
-            x = self.decode_list[i](xyz_list[i+1], xyz_list[i], x_list[i+1],x)
+            x = self.decode_list[i](xyz_list[i + 1], xyz_list[i], x_list[i + 1], x)
 
         # here is the global context
         gmp_list = []
         for i in range(len(x_list)):
             gmp_list.append(F.adaptive_max_pool1d(self.gmp_map_list[i](x_list[i]), 1))
-        global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1)) # [b, gmp_dim, 1]
+        global_context = self.gmp_map_end(torch.cat(gmp_list, dim=1))  # [b, gmp_dim, 1]
 
-        #here is the cls_token
+        # here is the cls_token
         cls_token = self.cls_map(cls_label.unsqueeze(dim=-1))  # [b, cls_dim, 1]
         x = torch.cat([x, global_context.repeat([1, 1, x.shape[-1]]), cls_token.repeat([1, 1, x.shape[-1]])], dim=1)
         x = self.classifier(x)
@@ -457,243 +458,46 @@ class PointMLP40(nn.Module):
         return x
 
 
-def model40A(num_classes=50, **kwargs) -> PointMLP40:  # 0.85881 0.85861
+def model40A(num_classes=50, **kwargs) -> PointMLP40:
     return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
+                      norm_plt=True, activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                      dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                      k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], de_dims=[512, 256, 128, 128],
+                      de_blocks=[3,3,3,3], gmp_dim=64, cls_dim=64, **kwargs)
 
+def model40B(num_classes=50, **kwargs) -> PointMLP40:
+    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                      norm_plt=False, activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                      dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                      k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], de_dims=[512, 256, 128, 128],
+                      de_blocks=[3,3,3,3], gmp_dim=64, cls_dim=64, **kwargs)
 
-def model40B(num_classes=50, **kwargs) -> PointMLP40: # 0.85836  0.85864
-    return PointMLP40(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
-                 gmp_dim=64,cls_dim=64, **kwargs)
+def model40C(num_classes=50, **kwargs) -> PointMLP40:
+    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
+                      norm_plt=True, activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
+                      dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                      k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], de_dims=[512, 256, 128, 128],
+                      de_blocks=[3,3,3,3], gmp_dim=64, cls_dim=64, **kwargs)
 
-def model40C(num_classes=50, **kwargs) -> PointMLP40: # 0.85707
-    return PointMLP40(num_classes=num_classes,points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[3, 3, 3, 3],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-
-def model40D(num_classes=50, **kwargs) -> PointMLP40: # 0.85560
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=32, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
+def model40D(num_classes=50, **kwargs) -> PointMLP40:
+    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=0.25,
+                      norm_plt=True, activation="leakyrelu0.2", bias=True, use_xyz=False, normalize="anchor",
+                      dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                      k_neighbors=[24, 24, 24, 24], reducers=[4, 4, 4, 4], de_dims=[512, 256, 128, 128],
+                      de_blocks=[3,3,3,3], gmp_dim=64, cls_dim=64, **kwargs)
 
 def model40E(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[4, 4, 4, 4], pos_blocks=[4, 4, 4, 4],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[6,6,6,6],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40F(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 2, 4, 2],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-# model40G_cos 0.85927 model40G_cos-lr0.001new0.85824 model40G_cos-lr0.0050.859973
-# model40G_cos_lr0.01 0.85831 model40G_cos-noinit 0.85904
-def model40G(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40GA(num_classes=50, **kwargs) -> PointMLP40:  # 0.85825
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40GB(num_classes=50, **kwargs) -> PointMLP40: # 0.85860
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40GC(num_classes=50, **kwargs) -> PointMLP40: # 0.86015
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40G1(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=False, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40G2(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40G3(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 2, 2],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40H(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40I(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 1], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4, 4, 4, 4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model40X1(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[24, 24, 24, 24 ], reducers=[4, 4, 4, 2],
-                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model40X2(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=128, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2], pre_blocks=[2, 2, 2], pos_blocks=[2, 2, 2],
-                 k_neighbors=[24, 24, 24], reducers=[4, 4, 4],
-                 de_dims=[512, 256, 128], de_blocks=[3,3,3],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40X3(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 4], pre_blocks=[2,  2, 2], pos_blocks=[2, 2, 2],
-                 k_neighbors=[32, 32, 24], reducers=[4, 4, 4],
-                 de_dims=[512, 256, 128], de_blocks=[4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40X4(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=0.125,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model40X5(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="gelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 24, 7], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 256, 256], de_blocks=[2,2,2,2],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40X6(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40X7(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="leakyrelu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 128, 128], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40X8(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=128, groups=8, res_expansion=0.25,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[1, 2, 2], pre_blocks=[3, 3, 3], pos_blocks=[2, 2, 2],
-                 k_neighbors=[32, 32, 32], reducers=[4, 4, 4],
-                 de_dims=[512, 256, 128], de_blocks=[2,2,2],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-
-def model40K(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 24, 7], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40L(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 24, 6], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40M(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=False, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 24, 12], reducers=[4, 4, 4, 2],
-                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
-def model40N(num_classes=50, **kwargs) -> PointMLP40:
-    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=64, groups=1, res_expansion=1.0,
-                 activation="relu", bias=True, use_xyz=True, normalize="anchor",
-                 dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
-                 k_neighbors=[32, 32, 24, 6], reducers=[4, 4, 4, 4],
-                 de_dims=[512, 256, 256, 256], de_blocks=[4,4,4,4],
-                 gmp_dim=64,cls_dim=64, **kwargs)
-
+    return PointMLP40(num_classes=num_classes, points=2048, embed_dim=32, groups=1, res_expansion=1.0,
+                      norm_plt=True, activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                      dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                      k_neighbors=[32, 32, 32, 32], reducers=[4, 4, 4, 4], de_dims=[512, 256, 128, 128],
+                      de_blocks=[3,3,3,3], gmp_dim=64, cls_dim=64, **kwargs)
 
 if __name__ == '__main__':
     data = torch.rand(2, 3, 2048)
     norm = torch.rand(2, 3, 2048)
     cls_label = torch.rand([2, 16])
     print("===> testing modelD ...")
-    model = model40D(50)
-    out = model(data, norm, cls_label)  # [2,2048,50]
-    print(out.shape)
-
     model = model40A(50)
     out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)
@@ -703,5 +507,13 @@ if __name__ == '__main__':
     print(out.shape)
 
     model = model40C(50)
+    out = model(data, norm, cls_label)  # [2,2048,50]
+    print(out.shape)
+
+    model = model40D(50)
+    out = model(data, norm, cls_label)  # [2,2048,50]
+    print(out.shape)
+
+    model = model40E(50)
     out = model(data, norm, cls_label)  # [2,2048,50]
     print(out.shape)

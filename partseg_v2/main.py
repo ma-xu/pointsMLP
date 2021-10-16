@@ -19,9 +19,58 @@ import subprocess
 import datetime
 
 
-classes_str = ['aero','bag','cap','car','chair','ear','guitar','knife','lamp','lapt','moto','mug','Pistol','rock','stake','table']
+def parse_args():
+    # Training settings
+    parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
+    parser.add_argument('--model', type=str, default='PointMLP1')
+    parser.add_argument('--exp_name', type=str, metavar='N',
+                        help='Name of the experiment')
+    parser.add_argument('--batch_size', type=int, default=32, metavar='batch_size',
+                        help='Size of batch)')
+    parser.add_argument('--test_batch_size', type=int, default=32, metavar='batch_size',
+                        help='Size of batch)')
+    parser.add_argument('--epochs', type=int, default=350, metavar='N',
+                        help='number of episode to train')
+    parser.add_argument('--use_sgd', type=bool, default=False,
+                        help='Use SGD')
+    parser.add_argument('--scheduler', type=str, default='step',
+                        help='lr scheduler')
+    parser.add_argument('--step', type=int, default=40,
+                        help='lr decay step')
+    parser.add_argument('--lr', type=float, default=0.003, metavar='LR',
+                        help='learning rate')
+    parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
+                        help='SGD momentum (default: 0.9)')
+    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--no_cuda', type=bool, default=False,
+                        help='enables CUDA training')
+    parser.add_argument('--manual_seed', type=int, metavar='S',
+                        help='random seed (default: 1)')
+    parser.add_argument('--eval', type=bool, default=False,
+                        help='evaluate the model')
+    parser.add_argument('--num_points', type=int, default=2048,
+                        help='num of points to use')
+    parser.add_argument('--workers', type=int, default=12)
+    parser.add_argument('--resume', type=bool, default=False,
+                        help='Resume training or not')
+    parser.add_argument('--smooth', type=bool, default=False,
+                        help='smooth loss')
+    parser.add_argument('--model_type', type=str, default='insiou',
+                        help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')
+    return parser.parse_args()
 
-criterion = cal_loss
+
+args = parse_args()
+time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
+if args.exp_name is None:
+    args.exp_name = time_str
+args.exp_name = args.model + "_" + args.exp_name
+
+classes_str = ['aero', 'bag', 'cap', 'car', 'chair', 'ear', 'guitar', 'knife', 'lamp', 'lapt', 'moto', 'mug', 'Pistol',
+               'rock', 'stake', 'table']
+
+criterion = cal_loss(smoothing=args.smooth)
+
 
 def _init_():
     if not os.path.exists('checkpoints'):
@@ -50,6 +99,7 @@ def weight_init(m):
         torch.nn.init.constant_(m.weight, 1)
         torch.nn.init.constant_(m.bias, 0)
 
+
 def get_git_commit_id():
     try:
         cmd_out = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
@@ -60,19 +110,18 @@ def get_git_commit_id():
 
 
 def train(args, io):
-
     # ============= Model ===================
     num_part = 50
     device = torch.device("cuda" if args.cuda else "cpu")
 
     model = models.__dict__[args.model](num_part).to(device)
-    io.cprint(str(model))
+    # io.cprint(str(model))
 
-    io.cprint(f"Current git ID is: {get_git_commit_id()}")
+    io.cprint(f"\n=== Current git ID is: {get_git_commit_id()} ===\n")
 
     model.apply(weight_init)
     model = nn.DataParallel(model)
-    print("Let's use", torch.cuda.device_count(), "GPUs!")
+    io.cprint(f"Let's use {str(torch.cuda.device_count())} GPUs!")
 
     '''Resume or not'''
     if args.resume:
@@ -88,17 +137,17 @@ def train(args, io):
             break
         model.load_state_dict(state_dict)
 
-        print("Resume training model...")
-        print(torch.load("checkpoints/%s/best_insiou_model.pth" % args.exp_name).keys())
+        io.cprint("Resume training model...")
+
     else:
-        print("Training from scratch...")
+        io.cprint("Training from scratch...")
 
     # =========== Dataloader =================
     train_data = PartNormalDataset(npoints=2048, split='trainval', normalize=False)
-    print("The number of training data is:%d", len(train_data))
+    io.cprint(f"The number of training data is: {str(len(train_data))}")
 
     test_data = PartNormalDataset(npoints=2048, split='test', normalize=False)
-    print("The number of test data is:%d", len(test_data))
+    io.cprint(f"The number of test data is:{str(len(test_data))}")
 
     train_loader = DataLoader(train_data, batch_size=args.batch_size, shuffle=True, num_workers=args.workers,
                               drop_last=True)
@@ -109,7 +158,7 @@ def train(args, io):
     # ============= Optimizer ================
     if args.use_sgd:
         print("Use SGD")
-        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=args.weight_decay)
+        opt = optim.SGD(model.parameters(), lr=args.lr * 100, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
         print("Use Adam")
         opt = optim.Adam(model.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=args.weight_decay)
@@ -188,7 +237,8 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
     metrics = defaultdict(lambda: list())
     model.train()
 
-    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(train_loader), total=len(train_loader), smoothing=0.9):
+    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(train_loader), total=len(train_loader),
+                                                            smoothing=0.9):
         batch_size, num_point, _ = points.size()
         points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
                                           Variable(norm_plt.float())
@@ -201,9 +251,11 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
         loss = criterion(seg_pred.contiguous().view(-1, num_part), target.view(-1, 1)[:, 0])
 
         # instance iou without considering the class average at each batch_size:
-        batch_shapeious = compute_overall_iou(seg_pred, target, num_part)  # list of of current batch_iou:[iou1,iou2,...,iou#b_size]
+        batch_shapeious = compute_overall_iou(seg_pred, target,
+                                              num_part)  # list of of current batch_iou:[iou1,iou2,...,iou#b_size]
         # total iou of current batch in each process:
-        batch_shapeious = seg_pred.new_tensor([np.sum(batch_shapeious)], dtype=torch.float64)  # same device with seg_pred!!!
+        batch_shapeious = seg_pred.new_tensor([np.sum(batch_shapeious)],
+                                              dtype=torch.float64)  # same device with seg_pred!!!
 
         # Loss backward
         loss = torch.mean(loss)
@@ -213,15 +265,15 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
 
         # accuracy
         seg_pred = seg_pred.contiguous().view(-1, num_part)  # b*n,50
-        target = target.view(-1, 1)[:, 0]   # b*n
+        target = target.view(-1, 1)[:, 0]  # b*n
         pred_choice = seg_pred.contiguous().data.max(1)[1]  # b*n
         correct = pred_choice.eq(target.contiguous().data).sum()  # torch.int64: total number of correct-predict pts
 
         # sum
         shape_ious += batch_shapeious.item()  # count the sum of ious in each iteration
-        count += batch_size   # count the total number of samples in each iteration
+        count += batch_size  # count the total number of samples in each iteration
         train_loss += loss.item() * batch_size
-        accuracy.append(correct.item()/(batch_size * num_point))   # append the accuracy of each iteration
+        accuracy.append(correct.item() / (batch_size * num_point))  # append the accuracy of each iteration
 
         # Note: We do not need to calculate per_class iou during training
 
@@ -233,12 +285,12 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
         if opt.param_groups[0]['lr'] < 0.9e-5:
             for param_group in opt.param_groups:
                 param_group['lr'] = 0.9e-5
-    io.cprint('Learning rate: %f' % opt.param_groups[0]['lr'])
+    io.cprint('\n\n==== Epoch: %d Learning rate: %f ====' % (epoch + 1, opt.param_groups[0]['lr']))
 
     metrics['accuracy'] = np.mean(accuracy)
     metrics['shape_avg_iou'] = shape_ious * 1.0 / count
 
-    outstr = 'Train %d, loss: %f, train acc: %f, train ins_iou: %f' % (epoch+1, train_loss * 1.0 / count,
+    outstr = 'Train loss: %f, train acc: %f, train ins_iou: %f' % (train_loss * 1.0 / count,
                                                                        metrics['accuracy'], metrics['shape_avg_iou'])
     io.cprint(outstr)
 
@@ -254,7 +306,8 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
     model.eval()
 
     # label_size: b, means each sample has one corresponding class
-    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
+    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader),
+                                                            smoothing=0.9):
         batch_size, num_point, _ = points.size()
         points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), \
                                           Variable(norm_plt.float())
@@ -295,12 +348,13 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
 
     for cat_idx in range(16):
         if final_total_per_cat_seen[cat_idx] > 0:  # indicating this cat is included during previous iou appending
-            final_total_per_cat_iou[cat_idx] = final_total_per_cat_iou[cat_idx] / final_total_per_cat_seen[cat_idx]  # avg class iou across all samples
+            final_total_per_cat_iou[cat_idx] = final_total_per_cat_iou[cat_idx] / final_total_per_cat_seen[
+                cat_idx]  # avg class iou across all samples
 
     metrics['accuracy'] = np.mean(accuracy)
     metrics['shape_avg_iou'] = shape_ious * 1.0 / count
 
-    outstr = 'Test %d, loss: %f, test acc: %f  test ins_iou: %f' % (epoch + 1, test_loss * 1.0 / count,
+    outstr = 'Test loss: %f, test acc: %f  test ins_iou: %f' % ( test_loss * 1.0 / count,
                                                                     metrics['accuracy'], metrics['shape_avg_iou'])
 
     io.cprint(outstr)
@@ -341,9 +395,11 @@ def test(args, io):
     total_per_cat_iou = np.zeros((16)).astype(np.float32)
     total_per_cat_seen = np.zeros((16)).astype(np.int32)
 
-    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader), smoothing=0.9):
+    for batch_id, (points, label, target, norm_plt) in tqdm(enumerate(test_loader), total=len(test_loader),
+                                                            smoothing=0.9):
         batch_size, num_point, _ = points.size()
-        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(target.long()), Variable(norm_plt.float())
+        points, label, target, norm_plt = Variable(points.float()), Variable(label.long()), Variable(
+            target.long()), Variable(norm_plt.float())
         points = points.transpose(2, 1)
         norm_plt = norm_plt.transpose(2, 1)
         points, label, target, norm_plt = points.cuda(non_blocking=True), label.squeeze().cuda(
@@ -382,52 +438,12 @@ def test(args, io):
         class_iou += total_per_cat_iou[cat_idx]
         io.cprint(classes_str[cat_idx] + ' iou: ' + str(total_per_cat_iou[cat_idx]))  # print the iou of each class
     avg_class_iou = class_iou / 16
-    outstr = 'Test :: test acc: %f  test class mIOU: %f, test instance mIOU: %f' % (metrics['accuracy'], avg_class_iou, metrics['shape_avg_iou'])
+    outstr = 'Test :: test acc: %f  test class mIOU: %f, test instance mIOU: %f' % (
+    metrics['accuracy'], avg_class_iou, metrics['shape_avg_iou'])
     io.cprint(outstr)
 
 
 if __name__ == "__main__":
-    # Training settings
-    parser = argparse.ArgumentParser(description='3D Shape Part Segmentation')
-    parser.add_argument('--model', type=str, default='PointMLP1')
-    parser.add_argument('--exp_name', type=str, metavar='N',
-                        help='Name of the experiment')
-    parser.add_argument('--batch_size', type=int, default=32, metavar='batch_size',
-                        help='Size of batch)')
-    parser.add_argument('--test_batch_size', type=int, default=32, metavar='batch_size',
-                        help='Size of batch)')
-    parser.add_argument('--epochs', type=int, default=350, metavar='N',
-                        help='number of episode to train')
-    parser.add_argument('--use_sgd', type=bool, default=False,
-                        help='Use SGD')
-    parser.add_argument('--scheduler', type=str, default='step',
-                        help='lr scheduler')
-    parser.add_argument('--step', type=int, default=40,
-                        help='lr decay step')
-    parser.add_argument('--lr', type=float, default=0.003, metavar='LR',
-                        help='learning rate')
-    parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
-                        help='SGD momentum (default: 0.9)')
-    parser.add_argument('--weight_decay', type=float, default=1e-4)
-    parser.add_argument('--no_cuda', type=bool, default=False,
-                        help='enables CUDA training')
-    parser.add_argument('--manual_seed', type=int, metavar='S',
-                        help='random seed (default: 1)')
-    parser.add_argument('--eval', type=bool,  default=False,
-                        help='evaluate the model')
-    parser.add_argument('--num_points', type=int, default=2048,
-                        help='num of points to use')
-    parser.add_argument('--workers', type=int, default=12)
-    parser.add_argument('--resume', type=bool, default=False,
-                        help='Resume training or not')
-    parser.add_argument('--model_type', type=str, default='insiou',
-                        help='choose to test the best insiou/clsiou/acc model (options: insiou, clsiou, acc)')
-
-    args = parser.parse_args()
-    time_str = str(datetime.datetime.now().strftime('-%Y%m%d%H%M%S'))
-    if args.exp_name is None:
-        args.exp_name = time_str
-    args.exp_name = args.model+"_"+args.exp_name
 
     _init_()
 
