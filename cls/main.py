@@ -7,6 +7,7 @@ CUDA_VISIBLE_DEVICES=0 nohup python main.py --model PointNet --msg demo > nohup/
 """
 import argparse
 import os
+import subprocess
 import logging
 import datetime
 import torch
@@ -42,6 +43,13 @@ def parse_args():
     parser.add_argument('--workers', default=4, type=int, help='workers')
     return parser.parse_args()
 
+def get_git_commit_id():
+    try:
+        cmd_out = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+        return cmd_out
+    except:
+        # indicating no git found.
+        return "0000000"
 
 def main():
     args = parse_args()
@@ -77,6 +85,7 @@ def main():
 
     # Model
     printf(f"args: {args}")
+    printf(f"\n=== Current git ID is: {get_git_commit_id()} ===\n")
     printf('==> Building model..')
     net = models.__dict__[args.model](num_classes=args.num_classes)
     criterion = cal_loss

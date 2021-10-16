@@ -173,8 +173,8 @@ class LocalGrouper(nn.Module):
         S = self.groups
         xyz = xyz.contiguous()  # xyz [btach, points, xyz]
 
-        fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
-        fps_idx = farthest_point_sample(xyz, self.groups).long()
+        # fps_idx = torch.multinomial(torch.linspace(0, N - 1, steps=N).repeat(B, 1).to(xyz.device), num_samples=self.groups, replacement=False).long()
+        # fps_idx = farthest_point_sample(xyz, self.groups).long()
         fps_idx = pointnet2_utils.furthest_point_sample(xyz, self.groups).long()  # [B, npoint]
         new_xyz = index_points(xyz, fps_idx)  # [B, npoint, 3]
         new_points = index_points(points, fps_idx)  # [B, npoint, d]
@@ -458,26 +458,27 @@ def pointsformer1(num_classes=40, **kwargs) -> Pointsformer1:
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer2(num_classes=40, **kwargs) -> Pointsformer1:
-    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
-                   activation="relu", bias=True, use_xyz=False, normalize="anchor",
+    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.25,
+                   activation="relu", bias=True, use_xyz=True, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
+
 def pointsformer3(num_classes=40, **kwargs) -> Pointsformer1:
-    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
-                   activation="relu", bias=True, use_xyz=True, normalize="center",
+    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.25,
+                   activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer4(num_classes=40, **kwargs) -> Pointsformer1:
-    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
-                   activation="gelu", bias=True, use_xyz=True, normalize="anchor",
+    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.25,
+                   activation="leakyrelu0.2", bias=True, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
 def pointsformer5(num_classes=40, **kwargs) -> Pointsformer1:
     return Pointsformer1(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
-                   activation="leakyrelu0.2", bias=True, use_xyz=True, normalize="anchor",
+                   activation="gelu", bias=True, use_xyz=True, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
