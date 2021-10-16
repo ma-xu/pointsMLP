@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_v2/
-python main.py --model model40D --scheduler cos --batch_size 64 --workers 14
+python main.py --model model40D --scheduler cos --batch_size 64 --workers 14 --weight_decay 0
