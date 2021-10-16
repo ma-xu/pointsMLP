@@ -1,5 +1,5 @@
 """
-Remove statistics in affine
+Channel-wise std (std over g and k)
 Based on model30, change the grouper operation by normalization.
 Based on model28, only change configurations, mainly the reducer.
 Based on model27, change to x-a, reorgnized structure
@@ -184,13 +184,16 @@ class LocalGrouper(nn.Module):
         if self.use_xyz:
             grouped_points = torch.cat([grouped_points, grouped_xyz],dim=-1)  # [B, npoint, k, d+3]
         if self.normalize is not None:
-            # if self.normalize =="center":
-            #     std, mean = torch.std_mean(grouped_points, dim=2, keepdim=True)
-            # if self.normalize =="anchor":
-            #     mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
-            #     mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
-            #     std = torch.std(grouped_points-mean,dim=2,keepdim=True)
-            # grouped_points = (grouped_points-mean)/(std + 1e-5)
+            if self.normalize =="center":
+                mean = torch.mean(grouped_points, dim=2, keepdim=True)
+            if self.normalize =="anchor":
+                mean = torch.cat([new_points, new_xyz],dim=-1) if self.use_xyz else new_points
+                mean = mean.unsqueeze(dim=-2)  # [B, npoint, 1, d+3]
+
+            # instance-wise points std
+            s_b, s_g, s_k, s_d = grouped_points.shape
+            std = torch.std((grouped_points-mean).reshape(B, s_g*s_k, s_d), dim=1, keepdim=True).unsqueeze(dim=1)
+            grouped_points = (grouped_points-mean)/(std + 1e-5)
             grouped_points = self.affine_alpha*grouped_points + self.affine_beta
 
         new_points = torch.cat([grouped_points, new_points.view(B, S, 1, -1).repeat(1, 1, self.kneighbors, 1)], dim=-1)
@@ -292,12 +295,12 @@ class PosExtraction(nn.Module):
         return self.operation(x)
 
 
-class model312(nn.Module):
+class model314(nn.Module):
     def __init__(self, points=1024, class_num=40, embed_dim=64, groups=1, res_expansion=1.0,
                  activation="relu", bias=True, use_xyz=True, normalize="center",
                  dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                  k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs):
-        super(model312, self).__init__()
+        super(model314, self).__init__()
         self.stages = len(pre_blocks)
         self.class_num = class_num
         self.points = points
@@ -360,48 +363,48 @@ class model312(nn.Module):
 
 
 
-def model312A(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314A(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312B(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314B(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="center",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
-# removing statistics 80.638/79.875/82.235/81.471
-def model312C(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+
+def model314C(num_classes=40, **kwargs) -> model314: # 85.219, 85.67, 85.115 , 85.566
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312D(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314D(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[20, 20, 20, 20], reducers=[2, 2, 2, 2], **kwargs)
 
 
-def model312E(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
+def model314E(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 
-def model312F(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.125,
+def model314F(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=0.125,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
 
 
-def model312G(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=16, res_expansion=2.0,
+def model314G(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=16, res_expansion=2.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[32, 32, 32, 32], reducers=[2, 2, 2, 2], **kwargs)
@@ -411,45 +414,45 @@ def model312G(num_classes=40, **kwargs) -> model312:
 for ablation study
 """
 
-def model312Ablation1111(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314Ablation1111(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[1, 1, 1, 1], pos_blocks=[1, 1, 1, 1],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312Ablation1111NOnorm(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314Ablation1111NOnorm(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize=None,
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[1, 1, 1, 1], pos_blocks=[1, 1, 1, 1],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312Ablation3333(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314Ablation3333(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312Ablation3333NOnorm(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314Ablation3333NOnorm(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize=None,
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[3, 3, 3, 3], pos_blocks=[3, 3, 3, 3],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312Ablation2222NOnorm(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314Ablation2222NOnorm(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize=None,
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
 
-def model312AblationNopre(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314AblationNopre(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[0, 0, 0, 0], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
-def model312AblationNopos(num_classes=40, **kwargs) -> model312:
-    return model312(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+def model314AblationNopos(num_classes=40, **kwargs) -> model314:
+    return model314(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[0, 0, 0, 0],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
@@ -474,58 +477,58 @@ if __name__ == '__main__':
 
     data = torch.rand(2, 3, 1024)
     print("===> testing model ...")
-    model = model312()
+    model = model314()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelA ...")
-    model = model312A()
+    model = model314A()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelB ...")
-    model = model312B()
+    model = model314B()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelC ...")
-    model = model312C()
+    model = model314C()
     out = model(data)
     print(out.shape)
 
     print("===> testing modelD ...")
-    model = model312D()
+    model = model314D()
     out = model(data)
     print(out.shape)
 
 
-    print("===> testing model312Ablation1111 ...")
-    model = model312Ablation1111()
+    print("===> testing model314Ablation1111 ...")
+    model = model314Ablation1111()
     out = model(data)
     print(out.shape)
 
-    print("===> testing model312Ablation1111NOnorm ...")
-    model = model312Ablation1111NOnorm()
+    print("===> testing model314Ablation1111NOnorm ...")
+    model = model314Ablation1111NOnorm()
     out = model(data)
     print(out.shape)
 
-    print("===> testing model312Ablation3333 ...")
-    model = model312Ablation3333()
+    print("===> testing model314Ablation3333 ...")
+    model = model314Ablation3333()
     out = model(data)
     print(out.shape)
 
-    print("===> testing model312Ablation3333NOnorm ...")
-    model = model312Ablation3333NOnorm()
+    print("===> testing model314Ablation3333NOnorm ...")
+    model = model314Ablation3333NOnorm()
     out = model(data)
     print(out.shape)
 
-    print("===> testing model312AblationNopre ...")
-    model = model312AblationNopre()
+    print("===> testing model314AblationNopre ...")
+    model = model314AblationNopre()
     out = model(data)
     print(out.shape)
 
-    print("===> testing model312AblationNopos ...")
-    model = model312AblationNopos()
+    print("===> testing model314AblationNopos ...")
+    model = model314AblationNopos()
     out = model(data)
     print(out.shape)
 
