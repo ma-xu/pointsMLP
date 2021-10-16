@@ -69,9 +69,6 @@ args.exp_name = args.model + "_" + args.exp_name
 classes_str = ['aero', 'bag', 'cap', 'car', 'chair', 'ear', 'guitar', 'knife', 'lamp', 'lapt', 'moto', 'mug', 'Pistol',
                'rock', 'stake', 'table']
 
-criterion = cal_loss(smoothing=args.smooth)
-
-
 def _init_():
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
@@ -248,7 +245,7 @@ def train_epoch(train_loader, model, opt, scheduler, epoch, num_part, num_classe
                                           target.cuda(non_blocking=True), norm_plt.cuda(non_blocking=True)
         # target: b,n
         seg_pred = model(points, norm_plt, to_categorical(label, num_classes))  # seg_pred: b,n,50
-        loss = criterion(seg_pred.contiguous().view(-1, num_part), target.view(-1, 1)[:, 0])
+        loss = cal_loss(seg_pred.contiguous().view(-1, num_part), target.view(-1, 1)[:, 0], smoothing=args.smooth)
 
         # instance iou without considering the class average at each batch_size:
         batch_shapeious = compute_overall_iou(seg_pred, target,
@@ -334,7 +331,7 @@ def test_epoch(test_loader, model, epoch, num_part, num_classes, io):
         seg_pred = seg_pred.contiguous().view(-1, num_part)
         target = target.view(-1, 1)[:, 0]
         # Loss
-        loss = criterion(seg_pred.contiguous(), target.contiguous())
+        loss = cal_loss(seg_pred.contiguous(), target.contiguous(),smoothing=args.smooth)
 
         # accuracy:
         pred_choice = seg_pred.data.max(1)[1]  # b*n
