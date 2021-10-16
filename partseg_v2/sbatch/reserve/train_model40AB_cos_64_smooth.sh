@@ -11,5 +11,5 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_v2/
-CUDA_VISIBLE_DEVICES=0,1 python main.py --model model40A --scheduler cos --batch_size 64 &
-CUDA_VISIBLE_DEVICES=2,3 python main.py --model model40B --scheduler cos --batch_size 64
+CUDA_VISIBLE_DEVICES=0,1 python main.py --model model40A --scheduler cos --batch_size 64 --smooth &
+CUDA_VISIBLE_DEVICES=2,3 python main.py --model model40B --scheduler cos --batch_size 64 --smooth
