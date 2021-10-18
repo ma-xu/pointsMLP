@@ -41,7 +41,7 @@ def parse_args():
                         help='learning rate')
     parser.add_argument('--momentum', type=float, default=0.9, metavar='M',
                         help='SGD momentum (default: 0.9)')
-    parser.add_argument('--weight_decay', type=float, default=1e-4)
+    parser.add_argument('--weight_decay', type=float, default=0.)
     parser.add_argument('--no_cuda', type=bool, default=False,
                         help='enables CUDA training')
     parser.add_argument('--manual_seed', type=int, metavar='S',
