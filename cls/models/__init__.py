@@ -44,4 +44,4 @@ from .model314 import model314C
 
 
 ############pointsformer################
-from .pointsformer import pointsformer1, pointsformer2, pointsformer3, pointsformer4, pointsformer5, pointsformer6
+from .pointsformer import pointsformer1, pointsformer2, pointsformer3, pointsformer4, pointsformer5, pointsformer6, pointsformer62

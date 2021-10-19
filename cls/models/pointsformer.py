@@ -488,6 +488,13 @@ def pointsformer6(num_classes=40, **kwargs) -> Pointsformer1:
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[0, 0, 0, 0],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
+def pointsformer62(num_classes=40, **kwargs) -> Pointsformer1:
+    return Pointsformer1(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1,
+                   activation="relu", bias=True, use_xyz=True, normalize="anchor",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
+                    heads=[4, 4, 4, 4], head_dims=[64,64,64,64], similarity="dot",
+                   k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+
 
 if __name__ == '__main__':
     # data = torch.rand(2, 128, 10)
