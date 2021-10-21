@@ -48,4 +48,4 @@ from .pointsformer import pointsformer1, pointsformer2, pointsformer3, pointsfor
 
 from .pformer import pformer1, pformer2, pformer3, pformer4
 
-from .pformer2 import pformer2A, pformer2B, pformer2C, pformer2D, pformer2E, pformer2F
+from .pformer2 import pformer2A, pformer2B, pformer2C, pformer2D, pformer2E, pformer2F, pformer2G, pformer2H, pformer2I
