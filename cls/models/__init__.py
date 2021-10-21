@@ -47,3 +47,5 @@ from .model314 import model314C
 from .pointsformer import pointsformer1, pointsformer2, pointsformer3, pointsformer4, pointsformer5, pointsformer6, pointsformer62
 
 from .pformer import pformer1, pformer2, pformer3, pformer4
+
+from .pformer2 import pformer2A, pformer2B, pformer2C, pformer2D, pformer2E, pformer2F
