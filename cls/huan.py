@@ -23,7 +23,7 @@ from ScanObjectNN import ScanObjectNN
 from torch.optim.lr_scheduler import CosineAnnealingLR
 import sklearn.metrics as metrics
 import numpy as np
-from smilelogging import Logger
+from smilelogging import Logger as LoggerX
 from smilelogging import argparser as parser
 
 
@@ -45,8 +45,8 @@ def parse_args():
     parser.add_argument('--seed', type=int, help='random seed')
     parser.add_argument('--workers', default=4, type=int, help='workers')
     args = parser.parse_args()
-    logger = Logger(args)
-    global print; print = logger.log_printer.logprint # change print function so that logs can be printed to a txt file
+    loggerx = LoggerX(args)
+    global print; print = loggerx.log_printer.logprint # change print function so that logs can be printed to a txt file
     return args
 
 def get_git_commit_id():
