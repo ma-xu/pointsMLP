@@ -11,4 +11,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/cls/
-python main.py --model pformer2C
+python main.py --model pformer2C --learning_rate 0.1
