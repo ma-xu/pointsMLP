@@ -9,4 +9,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/partseg_curvenet/
-python main.py --model CurveNet --exp_name=demo2
+python main.py --model CurveNet --exp_name=demo_current_main
