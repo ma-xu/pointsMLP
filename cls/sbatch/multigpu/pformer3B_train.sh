@@ -11,4 +11,5 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/cls/
+nvidia-smi
 python main.py --model pformer3B --learning_rate 0.1
