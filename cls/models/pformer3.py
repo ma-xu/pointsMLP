@@ -499,6 +499,13 @@ def pformer3I(num_classes=40, **kwargs) -> Model:
                    heads = [1,1,1,1], head_dims = [64,64,64,64], similarity="dot",
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
+def pformer3J(num_classes=40, **kwargs) -> Model:
+    return Model(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
+                   activation="relu", bias=True, use_xyz=False, normalize="anchor",
+                   dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[1,1,1,1],
+                   heads = [6,6,6,6], head_dims = [64,64,64,64], similarity="dot",
+                   k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
+
 if __name__ == '__main__':
     data = torch.rand(2, 3, 1024)
     print("===> testing model ...")

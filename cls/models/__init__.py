@@ -50,4 +50,4 @@ from .pformer import pformer1, pformer2, pformer3, pformer4
 
 from .pformer2 import pformer2A, pformer2B, pformer2C, pformer2D, pformer2E, pformer2F, pformer2G, pformer2H, pformer2I
 
-from .pformer3 import pformer3A, pformer3B, pformer3C, pformer3D, pformer3E, pformer3F, pformer3G, pformer3H, pformer3I
+from .pformer3 import pformer3A, pformer3B, pformer3C, pformer3D, pformer3E, pformer3F, pformer3G, pformer3H, pformer3I, pformer3J
