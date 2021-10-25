@@ -46,7 +46,6 @@ def parse_args():
     parser.add_argument('--workers', default=4, type=int, help='workers')
     args = parser.parse_args()
     loggerx = LoggerX(args)
-    global print; print = loggerx.log_printer.logprint # change print function so that logs can be printed to a txt file
     return args
 
 def get_git_commit_id():
