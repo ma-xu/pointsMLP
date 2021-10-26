@@ -5,3 +5,5 @@ from .pointMLP32 import model32A, model32B, model32C, model32D, model32E, model3
 from .pointMLP33 import model33A, model33B, model33C, model33D, model33E, model33F, model33G
 from .pointMLP34 import model34A, model34B, model34C, model34D
 from .pformer34 import pformer34A, pformer34B, pformer34C, pformer34D, pformer34E
+from .pformer35 import pformer35A, pformer35B, pformer35C, pformer35D
+from .pformer36 import pformer36A, pformer36B, pformer36C, pformer36D
