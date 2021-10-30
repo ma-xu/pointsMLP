@@ -7,3 +7,5 @@ from .pointMLP34 import model34A, model34B, model34C, model34D
 from .pformer34 import pformer34A, pformer34B, pformer34C, pformer34D, pformer34E
 from .pformer35 import pformer35A, pformer35B, pformer35C, pformer35D
 from .pformer36 import pformer36A, pformer36B, pformer36C, pformer36D
+from .pformer37 import pformer37A, pformer37B, pformer37C, pformer37D, pformer37E, pformer37F, pformer37G, \
+                        pformer37H, pformer37I, pformer37J, pformer37K
