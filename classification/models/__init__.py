@@ -50,3 +50,7 @@ from .pointsformer2 import pointsformer2A, pointsformer2B, pointsformer2C, point
     pointsformer2F, pointsformer2G, pointsformer2H, pointsformer2I, pointsformer2J, pointsformer2K, \
     pointsformer2L, pointsformer2M, pointsformer2N, pointsformer2O, pointsformer2P, pointsformer2Q, pointsformer2R
 # from .pointsformer2 import pointsformer2A, pointsformer2B
+
+
+# rebuttal
+from .pointnet2res import PointNet2Res
