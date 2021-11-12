@@ -11,4 +11,4 @@
 
 source activate point
 cd /scratch/ma.xu1/pointsMLP/classification/
-python main.py --model PointNet2Affine --epoch 300 --workers 4
+python main.py --model PointNet2Affine --epoch 300 --workers 4  --weight_decay 2e-4
