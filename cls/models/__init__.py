@@ -52,4 +52,10 @@ from .pformer2 import pformer2A, pformer2B, pformer2C, pformer2D, pformer2E, pfo
 
 from .pformer3 import pformer3A, pformer3B, pformer3C, pformer3D, pformer3E, pformer3F, pformer3G, pformer3H, pformer3I, pformer3J
 
+
+# rebuttal
 from .CurveNet import CurveNet
+from .DGCNNAffine import DGCNNAffine
+from .pointnet2Affine import PointNet2Affine
+from .model31 import RebuttalR3Q61, RebuttalR3Q62
+from .model31NoRes import model31CNoRes

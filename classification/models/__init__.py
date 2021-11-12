@@ -7,7 +7,7 @@ from .GBNet import GBNet, DGCNN
 from .CurveNet import CurveNet
 from .pctmlp import PCTMLP
 from .pointnet_noBN import PointNetNoBN
-from .pointnet2_affine import PointNet2Affine
+# from .pointnet2_affine import PointNet2Affine
 from .pointnet import PointNet
 from .pointnet_deep import PointNetDeep
 from .pointnet_deep_noBN import PointNetDeepNoBN
@@ -54,3 +54,6 @@ from .pointsformer2 import pointsformer2A, pointsformer2B, pointsformer2C, point
 
 # rebuttal
 from .pointnet2res import PointNet2Res
+from .DGCNNAffine import DGCNNAffine
+from .pointnet2Affine import PointNet2Affine
+from .model31 import model31CNoAffine
