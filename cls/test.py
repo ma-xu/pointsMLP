@@ -96,7 +96,7 @@ def main():
 
 
     print(f"Resuming last checkpoint from {args.checkpoint}")
-    checkpoint_path = os.path.join(args.checkpoint, "last_checkpoint.pth")
+    checkpoint_path = os.path.join(args.checkpoint, "best_checkpoint.pth")
     checkpoint = torch.load(checkpoint_path)
     net.load_state_dict(checkpoint['net'])
     start_epoch = checkpoint['epoch']
