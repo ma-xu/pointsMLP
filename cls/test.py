@@ -111,7 +111,7 @@ def main():
 
     print('==> Preparing data..')
     test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points), num_workers=args.workers,
-                             batch_size=args.batch_size, shuffle=True, drop_last=False)
+                             batch_size=args.batch_size, shuffle=False, drop_last=False)
 
 
     test_out = validate(net, test_loader, criterion, device)
