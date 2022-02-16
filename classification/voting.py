@@ -31,11 +31,11 @@ def parse_args():
     parser.add_argument('--msg', type=str, help='message after checkpoint')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size in training')
     parser.add_argument('--model', default='model31A', help='model name [default: pointnet_cls]')
-    parser.add_argument('--num_classes', default=40, type=int, choices=[10, 40], help='training on ModelNet10/40')
-    parser.add_argument('--epoch', default=350, type=int, help='number of epoch in training')
+    # parser.add_argument('--num_classes', default=40, type=int, choices=[10, 40], help='training on ModelNet10/40')
+    # parser.add_argument('--epoch', default=350, type=int, help='number of epoch in training')
     parser.add_argument('--num_points', type=int, default=1024, help='Point Number')
-    parser.add_argument('--learning_rate', default=0.01, type=float, help='learning rate in training')
-    parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
+    # parser.add_argument('--learning_rate', default=0.01, type=float, help='learning rate in training')
+    # parser.add_argument('--weight_decay', type=float, default=1e-4, help='decay rate')
     parser.add_argument('--seed', type=int, help='random seed (default: 1)')
 
     # Voting evaluation, referring: https://github.com/CVMI-Lab/PAConv/blob/main/obj_cls/eval_voting.py
@@ -195,7 +195,7 @@ def voting(net, testloader, device, args):
                  (i, test_acc, test_mean_acc, best_acc, best_mean_acc)
         io.cprint(outstr)
 
-    final_outstr = 'Final voting test acc: %.6f,' % (best_acc * 100)
+    final_outstr = 'Final voting test acc: %.6f,' % (best_acc)
     io.cprint(final_outstr)
 
 
