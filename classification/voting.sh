@@ -1,6 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=vote_model31C_20210829112651
-#SBATCH --mail-type=END,FAIL,BEGIN
+#SBATCH --mail-type=END
 #SBATCH --mail-user=ma.xu1@northeastern.edu
 #SBATCH -N 1
 #SBATCH -p multigpu
