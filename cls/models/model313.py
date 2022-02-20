@@ -381,6 +381,12 @@ def model313C(num_classes=40, **kwargs) -> model313: # 85.219, 85.67, 85.115 , 8
                    dim_expansion=[2, 2, 2, 2], pre_blocks=[2, 2, 2, 2], pos_blocks=[2, 2, 2, 2],
                    k_neighbors=[24, 24, 24, 24], reducers=[2, 2, 2, 2], **kwargs)
 
+def model313Elite(num_classes=40, **kwargs) -> model313: # 85.219, 85.67, 85.115 , 85.566
+    return model313(points=1024, class_num=num_classes, embed_dim=32, groups=1, res_expansion=0.25,
+                   activation="relu", bias=False, use_xyz=False, normalize="anchor",
+                   dim_expansion=[2, 2, 2, 1], pre_blocks=[1, 1, 2, 1], pos_blocks=[1, 1, 2, 1],
+                   k_neighbors=[24,24,24,24], reducers=[2, 2, 2, 2], **kwargs)
+
 def model313C2(num_classes=40, **kwargs) -> model313: # 85.219, 85.67, 85.115 , 85.566
     return model313(points=1024, class_num=num_classes, embed_dim=64, groups=1, res_expansion=1.0,
                    activation="relu", bias=False, use_xyz=False, normalize="anchor",
